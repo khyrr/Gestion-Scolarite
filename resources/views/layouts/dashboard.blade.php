@@ -48,6 +48,7 @@
             height: var(--header-height);
             background: white;
             border-bottom: 1px solid #dee2e6;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
             z-index: 1050;
             display: none;
             align-items: center;
@@ -59,6 +60,8 @@
             font-weight: 600;
             color: #0d6efd;
             text-decoration: none;
+            display: flex;
+            align-items: center;
         }
         
         .sidebar-toggle {
@@ -69,6 +72,7 @@
             padding: 0.5rem;
             border-radius: 0.375rem;
             transition: all 0.2s ease;
+            cursor: pointer;
         }
         
         .sidebar-toggle:hover {
@@ -76,21 +80,59 @@
             color: #495057;
         }
         
+        .sidebar-toggle:active {
+            background-color: #e9ecef;
+        }
+        
         .main-content {
             flex: 1;
-            margin-left: var(--sidebar-width);
             min-height: 100vh;
-            transition: margin-left 0.3s ease;
+            transition: margin-left 0.3s ease, margin-right 0.3s ease;
+        }
+        [dir="ltr"] .main-content {
+            margin-left: var(--sidebar-width);
+            margin-right: 0;
+        }
+        [dir="rtl"] .main-content {
+            margin-right: var(--sidebar-width);
+            margin-left: 0;
         }
         
         .content-header {
             background: white;
-            padding: 1rem 1.5rem;
+            padding: 1.25rem 1.5rem;
             border-bottom: 1px solid #dee2e6;
             margin-bottom: 1.5rem;
             position: sticky;
             top: 0;
             z-index: 1020;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        
+        .header-left {
+            min-width: 0; /* Allow text truncation */
+        }
+        
+        .header-right {
+            flex-shrink: 0;
+        }
+        [dir="ltr"] .header-right {
+            margin-left: 1rem;
+            margin-right: 0;
+        }
+        [dir="rtl"] .header-right {
+            margin-right: 1rem;
+            margin-left: 0;
+        }
+        
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .header-actions .btn {
+            white-space: nowrap;
         }
         
         .content-body {
@@ -109,30 +151,97 @@
             background: none;
             padding: 0;
             font-size: 0.875rem;
+            display: flex;
+            flex-wrap: wrap;
+            list-style: none;
+        }
+        
+        .breadcrumb-item {
+            display: flex;
+            align-items: center;
         }
         
         .breadcrumb-item + .breadcrumb-item::before {
-            content: "›";
+            content: ">";
             color: #6c757d;
+            padding: 0 0.5rem;
+            font-weight: 400;
+        }
+        
+        .breadcrumb-item a {
+            color: #6c757d;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        
+        .breadcrumb-item a:hover {
+            color: #0d6efd;
+        }
+        
+        .breadcrumb-item.active {
+            color: #495057;
+            font-weight: 500;
+        }
+        
+        /* Alert Improvements */
+        .alert {
+            border-radius: 0.5rem;
+            border-left-width: 4px;
+        }
+        
+        [dir="rtl"] .alert {
+            border-left-width: 1px;
+            border-right-width: 4px;
+        }
+        
+        .alert i {
+            font-size: 1.1em;
+        }
+        
+        @media (max-width: 767.98px) {
+            .alert {
+                font-size: 0.875rem;
+                padding: 0.75rem 1rem;
+            }
+            
+            .alert i {
+                font-size: 1em;
+            }
         }
         
         /* Language Switcher */
         .lang-switcher .dropdown-toggle {
-            background: none;
-            border: none;
-            color: #6c757d;
-            padding: 0.5rem;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            color: #495057;
+            padding: 0.5rem 0.75rem;
             border-radius: 0.375rem;
             transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
         }
         
         .lang-switcher .dropdown-toggle:hover {
-            background-color: #f8f9fa;
-            color: #495057;
+            background-color: #e9ecef;
+            border-color: #adb5bd;
+            color: #212529;
+        }
+        
+        .lang-switcher .dropdown-toggle:focus {
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+        
+        .lang-switcher .dropdown-toggle::after {
+            margin-left: 0.25rem;
         }
         
         .lang-switcher .dropdown-menu {
-            min-width: 8rem;
+            min-width: 10rem;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(0, 0, 0, 0.1);
         }
         
         .lang-switcher .dropdown-item {
@@ -140,11 +249,21 @@
             align-items: center;
             gap: 0.5rem;
             padding: 0.5rem 1rem;
+            transition: all 0.15s ease;
+        }
+        
+        .lang-switcher .dropdown-item:hover {
+            background-color: #f8f9fa;
         }
         
         .lang-switcher .dropdown-item.active {
             background-color: #e7f1ff;
             color: #0d6efd;
+            font-weight: 500;
+        }
+        
+        .lang-switcher .dropdown-item.active .fi {
+            box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.2);
         }
         
         /* Flag Icons Styling */
@@ -154,6 +273,28 @@
             border-radius: 2px;
             display: inline-block;
             vertical-align: middle;
+            flex-shrink: 0;
+        }
+        
+        /* Touch-friendly improvements for mobile */
+        @media (hover: none) and (pointer: coarse) {
+            .sidebar-toggle {
+                min-width: 44px;
+                min-height: 44px;
+            }
+            
+            .lang-switcher .dropdown-toggle {
+                min-height: 44px;
+            }
+            
+            .lang-switcher .dropdown-item {
+                padding: 0.75rem 1rem;
+                min-height: 44px;
+            }
+            
+            .header-actions .btn {
+                min-height: 44px;
+            }
         }
         
         /* Sidebar Responsive */
@@ -161,15 +302,20 @@
             position: fixed;
             top: 0;
             left: 0;
+            right: 0;
+            bottom: 0;
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.5);
             z-index: 1040;
             display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
         
         .sidebar-overlay.show {
             display: block;
+            opacity: 1;
         }
         
         /* Tablet Styles */
@@ -179,11 +325,24 @@
             }
             
             .content-header {
-                padding: 0.75rem 1rem;
+                padding: 1rem 1.25rem;
             }
             
             .content-body {
                 padding: 0 1rem 1rem;
+            }
+            
+            .page-title {
+                font-size: 1.35rem;
+            }
+            
+            [dir="ltr"] .header-right {
+                margin-left: 0.75rem;
+                margin-right: 0;
+            }
+            [dir="rtl"] .header-right {
+                margin-right: 0.75rem;
+                margin-left: 0;
             }
         }
         
@@ -194,18 +353,41 @@
             }
             
             .main-content {
-                margin-left: 0;
+                margin-left: 0 !important;
+                margin-right: 0 !important;
                 padding-top: var(--header-height);
             }
             
-            .sidebar {
-                transform: translateX(-100%);
-                transition: transform 0.3s ease;
-                z-index: 1045;
+            /* Override direction-specific margins in mobile/tablet */
+            [dir="ltr"] .main-content,
+            [dir="rtl"] .main-content {
+                margin-left: 0 !important;
+                margin-right: 0 !important;
             }
             
-            .sidebar.show {
-                transform: translateX(0);
+                    [dir="ltr"] .sidebar {
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        right: auto;
+                        bottom: 0;
+                        transform: translateX(-100%);
+                        transition: transform 0.3s ease;
+                        z-index: 1045;
+                    }
+                    [dir="rtl"] .sidebar {
+                        position: fixed;
+                        top: 0;
+                        right: 0;
+                        left: auto;
+                        bottom: 0;
+                        transform: translateX(100%);
+                        transition: transform 0.3s ease;
+                        z-index: 1045;
+                    }
+                    .sidebar.show {
+                        transform: translateX(0);
+                    }
             }
             
             .content-header {
@@ -221,7 +403,7 @@
         /* Mobile Styles */
         @media (max-width: 767.98px) {
             .content-header {
-                padding: 0.5rem 0.75rem;
+                padding: 1rem 0.75rem;
             }
             
             .content-body {
@@ -229,26 +411,57 @@
             }
             
             .page-title {
-                font-size: 1.1rem;
+                font-size: 1.25rem;
             }
             
             .breadcrumb {
-                font-size: 0.8rem;
+                font-size: 0.813rem;
             }
             
-            .d-flex.justify-content-between {
-                flex-direction: column;
-                align-items: flex-start !important;
-                gap: 0.5rem;
+            [dir="ltr"] .header-right {
+                margin-left: 0.5rem;
+                margin-right: 0;
+            }
+            [dir="rtl"] .header-right {
+                margin-right: 0.5rem;
+                margin-left: 0;
             }
             
             .header-actions {
-                align-self: stretch;
+                gap: 0.25rem;
             }
             
             .header-actions .btn {
+                font-size: 0.813rem;
+                padding: 0.5rem 0.75rem;
+            }
+            
+            /* Stack header on very small screens */
+            .content-header .d-flex {
+                flex-wrap: wrap;
+                row-gap: 0.75rem;
+            }
+            
+            .header-left {
+                flex: 1 1 100%;
+                order: 1;
+            }
+            
+            .header-right {
+                flex: 1 1 100%;
+                order: 2;
+                margin-left: 0;
+                justify-content: flex-end;
+            }
+            
+            /* Improve mobile language switcher */
+            .lang-switcher .dropdown-toggle {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.813rem;
+            }
+            
+            .lang-switcher .dropdown-menu {
                 font-size: 0.875rem;
-                padding: 0.375rem 0.75rem;
             }
         }
         
@@ -256,14 +469,24 @@
         @media (max-width: 575.98px) {
             .mobile-header {
                 padding: 0 0.75rem;
+                height: 60px;
             }
             
             .mobile-header .navbar-brand {
+                font-size: 1.1rem;
+            }
+            
+            .mobile-header .navbar-brand i {
                 font-size: 1rem;
             }
             
+            .sidebar-toggle {
+                padding: 0.4rem;
+                font-size: 1.1rem;
+            }
+            
             .content-header {
-                padding: 0.5rem;
+                padding: 0.75rem 0.5rem;
             }
             
             .content-body {
@@ -271,7 +494,26 @@
             }
             
             .page-title {
-                font-size: 1rem;
+                font-size: 1.1rem;
+            }
+            
+            .breadcrumb {
+                font-size: 0.75rem;
+            }
+            
+            .header-actions .btn {
+                font-size: 0.75rem;
+                padding: 0.4rem 0.6rem;
+            }
+            
+            .lang-switcher .dropdown-toggle {
+                padding: 0.4rem 0.6rem;
+                font-size: 0.75rem;
+            }
+            
+            .lang-switcher .fi {
+                width: 18px;
+                height: 13px;
             }
         }
         
@@ -281,8 +523,18 @@
             margin-right: var(--sidebar-width);
         }
         
-        [dir="rtl"] .breadcrumb-item + .breadcrumb-item::before {
-            content: "‹";
+        [dir="rtl"] .header-right {
+            margin-left: 0;
+            margin-right: 1rem;
+        }
+        
+        [dir="rtl"] .header-actions {
+            flex-direction: row-reverse;
+        }
+        
+        /* Keep same separator for RTL, breadcrumb direction handles the flow */
+        [dir="rtl"] .breadcrumb {
+            direction: rtl;
         }
         
         [dir="rtl"] .sidebar {
@@ -294,12 +546,35 @@
             right: 0;
         }
         
+        [dir="rtl"] .lang-switcher .dropdown-toggle::after {
+            margin-left: 0;
+            margin-right: 0.25rem;
+        }
+        
+        [dir="rtl"] .dropdown-menu-end {
+            right: auto !important;
+            left: 0 !important;
+        }
+        
+        [dir="rtl"] .mobile-header .sidebar-toggle {
+            margin-left: 0.75rem;
+            margin-right: 0;
+        }
+        
+        [dir="rtl"] .mobile-header .ms-auto {
+            margin-left: 0 !important;
+            margin-right: auto !important;
+        }
+        
         [dir="rtl"] @media (max-width: 991.98px) {
             .main-content {
                 margin-right: 0;
+                margin-left: 0;
             }
             
             .sidebar {
+                left: auto;
+                right: 0;
                 transform: translateX(100%);
             }
             
@@ -308,9 +583,39 @@
             }
         }
         
+        [dir="rtl"] @media (max-width: 767.98px) {
+            .header-right {
+                margin-right: 0.5rem;
+                justify-content: flex-start;
+            }
+            
+            .header-left {
+                text-align: right;
+            }
+        }
+        
         /* Animations */
         .sidebar, .main-content {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .content-header.scrolled {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .lang-switcher .dropdown-menu {
+            animation: dropdownFadeIn 0.2s ease-in-out;
+        }
+        
+        @keyframes dropdownFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         
         /* Focus states for accessibility */
@@ -326,20 +631,20 @@
 <body>
     <!-- Mobile Header -->
     <header class="mobile-header">
-        <button class="sidebar-toggle me-3" type="button" aria-label="Toggle sidebar">
+        <button class="sidebar-toggle {{ app()->getLocale() === 'ar' ? 'ms-0' : 'me-3' }}" type="button" aria-label="Toggle sidebar">
             <i class="fas fa-bars"></i>
         </button>
         
         <a href="{{ route('tableau-bord') }}" class="navbar-brand">
-            <i class="fas fa-school me-2"></i>
+            <i class="fas fa-school {{ app()->getLocale() === 'ar' ? 'ms-2' : 'me-2' }}"></i>
             <span class="d-none d-sm-inline">{{ config('app.name', 'Gestion Scolaire') }}</span>
-            <span class="d-sm-none">École</span>
+            <span class="d-sm-none">{{ app()->getLocale() === 'ar' ? 'مدرسة' : 'École' }}</span>
         </a>
         
-        <div class="ms-auto d-flex align-items-center gap-2">
+        <div class="{{ app()->getLocale() === 'ar' ? 'me-auto' : 'ms-auto' }} d-flex align-items-center gap-2">
             <!-- Language Switcher -->
             <div class="lang-switcher dropdown">
-                <button class="dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-label="Change language">
+                <button class="dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-label="{{ __('app.change_language') }}">
                     @if(app()->getLocale() === 'fr')
                         <span class="fi fi-fr"></span>
                     @elseif(app()->getLocale() === 'ar')
@@ -347,25 +652,25 @@
                     @else
                         <span class="fi fi-us"></span>
                     @endif
-                    <span class="d-none d-sm-inline ms-1">{{ strtoupper(app()->getLocale()) }}</span>
+                    <span class="d-none d-sm-inline {{ app()->getLocale() === 'ar' ? 'me-1' : 'ms-1' }}">{{ strtoupper(app()->getLocale()) }}</span>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li>
                         <a class="dropdown-item {{ app()->getLocale() === 'fr' ? 'active' : '' }}" 
                            href="{{ route('lang.switch', 'fr') }}">
-                            <span class="fi fi-fr me-2"></span> Français
+                            <span class="fi fi-fr {{ app()->getLocale() === 'ar' ? 'ms-2' : 'me-2' }}"></span> Français
                         </a>
                     </li>
                     <li>
                         <a class="dropdown-item {{ app()->getLocale() === 'ar' ? 'active' : '' }}" 
                            href="{{ route('lang.switch', 'ar') }}">
-                            <span class="fi fi-sa me-2"></span> العربية
+                            <span class="fi fi-sa {{ app()->getLocale() === 'ar' ? 'ms-2' : 'me-2' }}"></span> العربية
                         </a>
                     </li>
                     <li>
                         <a class="dropdown-item {{ app()->getLocale() === 'en' ? 'active' : '' }}" 
                            href="{{ route('lang.switch', 'en') }}">
-                            <span class="fi fi-us me-2"></span> English
+                            <span class="fi fi-us {{ app()->getLocale() === 'ar' ? 'ms-2' : 'me-2' }}"></span> English
                         </a>
                     </li>
                 </ul>
@@ -375,7 +680,7 @@
             
             <!-- User Menu -->
             <div class="dropdown">
-                <button class="sidebar-toggle" type="button" data-bs-toggle="dropdown" aria-label="User menu">
+                <button class="sidebar-toggle" type="button" data-bs-toggle="dropdown" aria-label="{{ __('app.user_menu') }}">
                     <i class="fas fa-user-circle"></i>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
@@ -384,14 +689,14 @@
                         <small class="text-muted">{{ auth()->user()->email ?? 'user@example.com' }}</small>
                     </li>
                     <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item" href="{{ route('enseignant.profil') }}"><i class="fas fa-user-cog me-2"></i>{{ __('app.profile') }}</a></li>
-                    <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>{{ __('app.settings') }}</a></li>
+                    <li><a class="dropdown-item" href="{{ route('enseignant.profil') }}"><i class="fas fa-user-cog {{ app()->getLocale() === 'ar' ? 'ms-2' : 'me-2' }}"></i>{{ __('app.profile') }}</a></li>
+                    <li><a class="dropdown-item" href="#"><i class="fas fa-cog {{ app()->getLocale() === 'ar' ? 'ms-2' : 'me-2' }}"></i>{{ __('app.settings') }}</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li>
                         <form method="POST" action="{{ route('deconnexion') }}">
                             @csrf
                             <button type="submit" class="dropdown-item">
-                                <i class="fas fa-sign-out-alt me-2"></i>{{ __('app.logout') }}
+                                <i class="fas fa-sign-out-alt {{ app()->getLocale() === 'ar' ? 'ms-2' : 'me-2' }}"></i>{{ __('app.logout') }}
                             </button>
                         </form>
                     </li>
@@ -411,61 +716,63 @@
         <main class="main-content">
             <!-- Content Header -->
             <div class="content-header">
-                <div class="d-flex justify-content-between align-items-start align-items-md-center">
-                    <div class="flex-grow-1">
-                        <div class="d-flex align-items-center justify-content-between">
-                            <h1 class="page-title">@yield('title', 'Dashboard')</h1>
-                            
-                            <!-- Desktop Language Switcher -->
-                            <div class="lang-switcher dropdown d-none d-lg-block">
-                                <button class="dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-label="Change language">
-                                    @if(app()->getLocale() === 'fr')
-                        <span class="fi fi-fr"></span>
-                    @elseif(app()->getLocale() === 'ar')
-                        <span class="fi fi-sa"></span>
-                    @else
-                        <span class="fi fi-us"></span>
-                    @endif
-                                    <span class="ms-1">{{ strtoupper(app()->getLocale()) }}</span>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li>
-                                        <a class="dropdown-item {{ app()->getLocale() === 'fr' ? 'active' : '' }}" 
-                                           href="{{ route('lang.switch', 'fr') }}">
-                                            <span class="fi fi-fr me-2"></span> Français
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item {{ app()->getLocale() === 'ar' ? 'active' : '' }}" 
-                                           href="{{ route('lang.switch', 'ar') }}">
-                                            <span class="fi fi-sa me-2"></span> العربية
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item {{ app()->getLocale() === 'en' ? 'active' : '' }}" 
-                                           href="{{ route('lang.switch', 'en') }}">
-                                            <span class="fi fi-us me-2"></span> English
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <!-- Left Section: Title & Breadcrumb -->
+                    <div class="header-left flex-grow-1">
+                        <h1 class="page-title mb-0">@yield('title', 'Dashboard')</h1>
                         
                         @hasSection('breadcrumb')
                             <nav aria-label="breadcrumb" class="mt-1">
-                                <ol class="breadcrumb">
+                                <ol class="breadcrumb mb-0">
                                     @yield('breadcrumb')
                                 </ol>
                             </nav>
                         @endif
                     </div>
                     
-                    <!-- Header Actions -->
-                    @hasSection('header-actions')
-                        <div class="header-actions ms-3">
-                            @yield('header-actions')
+                    <!-- Right Section: Actions & Language Switcher -->
+                    <div class="header-right d-flex align-items-center gap-2">
+                        <!-- Header Actions (if any) -->
+                        @hasSection('header-actions')
+                            <div class="header-actions">
+                                @yield('header-actions')
+                            </div>
+                        @endif
+                        
+                        <!-- Desktop Language Switcher -->
+                        <div class="lang-switcher dropdown d-none d-lg-block">
+                            <button class="dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-label="{{ __('app.change_language') }}">
+                                @if(app()->getLocale() === 'fr')
+                                    <span class="fi fi-fr"></span>
+                                @elseif(app()->getLocale() === 'ar')
+                                    <span class="fi fi-sa"></span>
+                                @else
+                                    <span class="fi fi-us"></span>
+                                @endif
+                                <span class="{{ app()->getLocale() === 'ar' ? 'me-1' : 'ms-1' }}">{{ strtoupper(app()->getLocale()) }}</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a class="dropdown-item {{ app()->getLocale() === 'fr' ? 'active' : '' }}" 
+                                       href="{{ route('lang.switch', 'fr') }}">
+                                        <span class="fi fi-fr {{ app()->getLocale() === 'ar' ? 'ms-2' : 'me-2' }}"></span> Français
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item {{ app()->getLocale() === 'ar' ? 'active' : '' }}" 
+                                       href="{{ route('lang.switch', 'ar') }}">
+                                        <span class="fi fi-sa {{ app()->getLocale() === 'ar' ? 'ms-2' : 'me-2' }}"></span> العربية
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item {{ app()->getLocale() === 'en' ? 'active' : '' }}" 
+                                       href="{{ route('lang.switch', 'en') }}">
+                                        <span class="fi fi-us {{ app()->getLocale() === 'ar' ? 'ms-2' : 'me-2' }}"></span> English
+                                    </a>
+                                </li>
+                            </ul>
                         </div>
-                    @endif
+                    </div>
                 </div>
             </div>
             

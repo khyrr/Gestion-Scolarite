@@ -1,9 +1,9 @@
-<div class="sidebar bg-white shadow-sm border-end">
+<div class="sidebar bg-white shadow-sm {{ app()->getLocale() === 'ar' ? 'border-start' : 'border-end' }}">
     <!-- Sidebar Header -->
     <div class="sidebar-header border-bottom p-3">
         <div class="d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center">
-                <i class="fas fa-school text-primary fs-4 me-2"></i>
+                <i class="fas fa-school text-primary fs-4 {{ app()->getLocale() === 'ar' ? 'ms-2' : 'me-2' }}"></i>
                 <div class="d-none d-lg-block">
                     <h5 class="mb-0 fw-bold text-primary">{{ __('app.gestion_ecole') }}</h5>
                     <small class="text-muted">{{ config('app.name', 'École') }}</small>
@@ -31,18 +31,18 @@
                            role="button" 
                            aria-expanded="{{ collect($item['children'])->pluck('active')->contains(true) ? 'true' : 'false' }}"
                            aria-controls="menu-{{ Str::slug($item['title']) }}">
-                            <i class="{{ $item['icon'] }} me-2"></i>
+                            <i class="{{ $item['icon'] }} {{ app()->getLocale() === 'ar' ? 'ms-2' : 'me-2' }}"></i>
                             <span>{{ $item['title'] }}</span>
-                            <i class="fas fa-chevron-down ms-auto"></i>
+                            <i class="fas fa-chevron-down {{ app()->getLocale() === 'ar' ? 'me-auto' : 'ms-auto' }}"></i>
                         </a>
                         <div class="collapse {{ collect($item['children'])->pluck('active')->contains(true) ? 'show' : '' }}" 
                              id="menu-{{ Str::slug($item['title']) }}">
-                            <ul class="nav flex-column ms-3 mt-1">
+                            <ul class="nav flex-column {{ app()->getLocale() === 'ar' ? 'me-3' : 'ms-3' }} mt-1">
                                 @foreach($item['children'] as $child)
                                     <li class="nav-item">
                                         <a class="nav-link py-1 px-3 rounded {{ $child['active'] ?? false ? 'active' : '' }}" 
                                            href="{{ isset($child['params']) ? route($child['route'], $child['params']) : route($child['route']) }}">
-                                            <i class="fas fa-circle text-muted me-2" style="font-size: 6px;"></i>
+                                            <i class="fas fa-circle text-muted {{ app()->getLocale() === 'ar' ? 'ms-2' : 'me-2' }}" style="font-size: 6px;"></i>
                                             {{ $child['title'] }}
                                         </a>
                                     </li>
@@ -133,11 +133,22 @@
     width: var(--sidebar-width, 280px);
     position: fixed;
     top: 0;
-    left: 0;
     z-index: 1045;
     display: flex;
     flex-direction: column;
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* LTR: sidebar on left */
+[dir="ltr"] .sidebar {
+    left: 0;
+    right: auto;
+}
+
+/* RTL: sidebar on right */
+[dir="rtl"] .sidebar {
+    right: 0;
+    left: auto;
 }
 
 .sidebar-header {
@@ -195,11 +206,22 @@
 .sidebar .nav-link.active::before {
     content: '';
     position: absolute;
-    left: 0;
     top: 0;
     bottom: 0;
     width: 3px;
     background-color: #0d6efd;
+}
+
+/* LTR: active indicator on left */
+[dir="ltr"] .sidebar .nav-link.active::before {
+    left: 0;
+    right: auto;
+}
+
+/* RTL: active indicator on right */
+[dir="rtl"] .sidebar .nav-link.active::before {
+    right: 0;
+    left: auto;
 }
 
 .sidebar .nav-link i {
@@ -210,7 +232,18 @@
 
 .collapse .nav-link {
     font-size: 0.9rem;
+}
+
+/* LTR: indent collapsed items from left */
+[dir="ltr"] .collapse .nav-link {
     padding-left: 2.5rem;
+    padding-right: 0.75rem;
+}
+
+/* RTL: indent collapsed items from right */
+[dir="rtl"] .collapse .nav-link {
+    padding-right: 2.5rem;
+    padding-left: 0.75rem;
 }
 
 .sidebar-footer {
@@ -238,8 +271,16 @@
 }
 
 @media (max-width: 991.98px) {
-    .sidebar {
+    /* LTR: sidebar slides in from left */
+    [dir="ltr"] .sidebar {
         transform: translateX(-100%);
+        width: 280px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* RTL: sidebar slides in from right */
+    [dir="rtl"] .sidebar {
+        transform: translateX(100%);
         width: 280px;
         box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
     }

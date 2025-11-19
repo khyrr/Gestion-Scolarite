@@ -15,7 +15,7 @@ class EtudiantController extends Controller
      */
     public function index()
     {
-        $etudiants = Etudiant::with('classe')->latest()->get();
+        $etudiants = Etudiant::with('classe')->latest()->paginate(10);
         return view('academic.etudiants.index', compact('etudiants'));
     }
 

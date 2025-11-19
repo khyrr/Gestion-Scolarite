@@ -10,64 +10,42 @@
 @section('header-actions')
     @admin
         <a href="{{ route('etudiants.create') }}" class="btn btn-primary">
-            {{ __('app.add_student') }}
+            {{ __('app.ajouter_etudiant') }}
         </a>
     @endadmin
 @endsection
 
 @section('content')
-    <!-- Statistics Cards -->
-    <div class="stats-grid">
-        <div class="stats-card">
-            <div class="stats-icon" style="background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);">
-                <i class="bi bi-people"></i>
-            </div>
-            <div class="stats-content">
-                <div class="stats-label">{{ __('app.total_etudiants') }}</div>
-                <div class="stats-value">{{ $etudiants->count() }}</div>
-            </div>
+<div class="google-container">
+    <!-- Statistics Grid -->
+    <div class="google-stats-grid">
+        <div class="google-stat-card">
+            <div class="google-stat-label">{{ __('app.total_etudiants') }}</div>
+            <div class="google-stat-value">{{ $etudiants->count() }}</div>
         </div>
-        <div class="stats-card">
-            <div class="stats-icon" style="background: linear-gradient(135deg, #0dcaf0 0%, #0aa2c0 100%);">
-                <i class="bi bi-gender-male"></i>
-            </div>
-            <div class="stats-content">
-                <div class="stats-label">{{ __('app.etudiants_hommes') }}</div>
-                <div class="stats-value">{{ $etudiants->where('genre', 'masculin')->count() }}</div>
-            </div>
+        <div class="google-stat-card">
+            <div class="google-stat-label">{{ __('app.etudiants_hommes') }}</div>
+            <div class="google-stat-value">{{ $etudiants->where('genre', 'masculin')->count() }}</div>
         </div>
-        <div class="stats-card">
-            <div class="stats-icon" style="background: linear-gradient(135deg, #d63384 0%, #c22773 100%);">
-                <i class="bi bi-gender-female"></i>
-            </div>
-            <div class="stats-content">
-                <div class="stats-label">{{ __('app.etudiantes_femmes') }}</div>
-                <div class="stats-value">{{ $etudiants->where('genre', 'feminin')->count() }}</div>
-            </div>
+        <div class="google-stat-card">
+            <div class="google-stat-label">{{ __('app.etudiantes_femmes') }}</div>
+            <div class="google-stat-value">{{ $etudiants->where('genre', 'feminin')->count() }}</div>
         </div>
-        <div class="stats-card">
-            <div class="stats-icon" style="background: linear-gradient(135deg, #198754 0%, #146c43 100%);">
-                <i class="bi bi-building"></i>
-            </div>
-            <div class="stats-content">
-                <div class="stats-label">{{ __('app.classes_actives') }}</div>
-                <div class="stats-value">{{ $etudiants->pluck('classe')->unique()->count() }}</div>
-            </div>
+        <div class="google-stat-card">
+            <div class="google-stat-label">{{ __('app.classes_actives') }}</div>
+            <div class="google-stat-value">{{ $etudiants->pluck('classe')->unique()->count() }}</div>
         </div>
     </div>
 
     <!-- Students Table -->
-    <div class="table-card">
-        <div class="table-header">
-            <div>
-                <h5 class="table-title">{{ __('app.liste_etudiants') }}</h5>
-                <p class="table-subtitle">Gérez les étudiants et leurs informations</p>
-            </div>
+    <div class="google-table-wrapper">
+        <div class="google-table-header">
+            <h2 class="google-table-title">{{ __('app.liste_etudiants') }}</h2>
         </div>
 
         @if($etudiants->count() > 0)
-            <div class="table-responsive">
-                <table class="modern-table">
+            <div class="google-table-container">
+                <table class="google-table">
                     <thead>
                         <tr>
                             <th>{{ __('app.nom_complet') }}</th>
@@ -82,62 +60,65 @@
                         @foreach($etudiants as $etudiant)
                             <tr>
                                 <td>
-                                    <div class="student-name">
-                                        <div class="student-avatar">
+                                    <div class="google-student-name">
+                                        <div class="google-avatar">
                                             {{ substr($etudiant->prenom, 0, 1) }}{{ substr($etudiant->nom, 0, 1) }}
                                         </div>
-                                        <strong>{{ $etudiant->prenom }} {{ $etudiant->nom }}</strong>
+                                        <span class="google-name">{{ $etudiant->prenom }} {{ $etudiant->nom }}</span>
                                     </div>
                                 </td>
                                 <td>
                                     @if($etudiant->email)
-                                        <a href="mailto:{{ $etudiant->email }}" class="email-link">
-                                            <i class="bi bi-envelope"></i>
+                                        <a href="mailto:{{ $etudiant->email }}" class="google-link">
                                             {{ $etudiant->email }}
                                         </a>
                                     @else
-                                        <span class="text-na">N/A</span>
+                                        <span class="google-text-na">N/A</span>
                                     @endif
                                 </td>
                                 <td>
                                     @if($etudiant->telephone)
-                                        <a href="tel:{{ $etudiant->telephone }}" class="phone-link">
-                                            <i class="bi bi-telephone"></i>
+                                        <a href="tel:{{ $etudiant->telephone }}" class="google-link">
                                             {{ $etudiant->telephone }}
                                         </a>
                                     @else
-                                        <span class="text-na">N/A</span>
+                                        <span class="google-text-na">N/A</span>
                                     @endif
                                 </td>
                                 <td>
                                     @if($etudiant->classe)
-                                        <span class="badge-classe">{{ $etudiant->classe->nom_classe }}</span>
+                                        <span class="google-badge">{{ $etudiant->classe->nom_classe }}</span>
                                     @else
-                                        <span class="text-not-assigned">Non assigné</span>
+                                        <span class="google-text-na">Non assigné</span>
                                     @endif
                                 </td>
                                 <td>
                                     @if($etudiant->genre)
-                                        <span class="badge-genre {{ $etudiant->genre == 'masculin' ? 'badge-male' : 'badge-female' }}">
-                                            <i class="bi bi-gender-{{ $etudiant->genre == 'masculin' ? 'male' : 'female' }}"></i>
+                                        <span class="google-badge-genre">
                                             {{ ucfirst($etudiant->genre) }}
                                         </span>
                                     @else
-                                        <span class="text-na">N/A</span>
+                                        <span class="google-text-na">N/A</span>
                                     @endif
                                 </td>
                                 <td class="text-center">
-                                    <div class="action-buttons">
+                                    <div class="google-action-buttons">
                                         <a href="{{ route('etudiants.show', $etudiant) }}" 
-                                           class="btn-action btn-view" 
+                                           class="google-action-btn" 
                                            title="{{ __('app.voir') }}">
-                                            <i class="bi bi-eye"></i>
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                            </svg>
                                         </a>
                                         @admin
                                             <a href="{{ route('etudiants.edit', $etudiant) }}" 
-                                               class="btn-action btn-edit" 
+                                               class="google-action-btn" 
                                                title="{{ __('app.modifier') }}">
-                                                <i class="bi bi-pencil"></i>
+                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                </svg>
                                             </a>
                                             <form action="{{ route('etudiants.destroy', $etudiant) }}" 
                                                   method="POST" 
@@ -145,10 +126,12 @@
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="button" 
-                                                        class="btn-action btn-delete delete-student" 
+                                                        class="google-action-btn google-action-delete delete-student" 
                                                         title="{{ __('app.supprimer') }}"
                                                         data-student-name="{{ $etudiant->prenom }} {{ $etudiant->nom }}">
-                                                    <i class="bi bi-trash"></i>
+                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                        <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                    </svg>
                                                 </button>
                                             </form>
                                         @endadmin
@@ -157,572 +140,460 @@
                             </tr>
                         @endforeach
                     </tbody>
-                </table>
+                    </table>
             </div>
-        @else
-            <div class="empty-state">
-                <div class="empty-icon">
-                    <i class="bi bi-person-badge"></i>
+
+            @if($etudiants->hasPages())
+                <div class="google-pagination-wrapper">
+                    {{ $etudiants->links('pagination::bootstrap-5') }}
                 </div>
-                <h4 class="empty-title">{{ __('app.no_data') }}</h4>
-                <p class="empty-text">{{ __('app.aucun_etudiant_trouve') }}</p>
+            @endif
+        @else
+            <div class="google-empty-state">
+                <svg class="google-empty-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <h4 class="google-empty-title">{{ __('app.no_data') }}</h4>
+                <p class="google-empty-text">{{ __('app.aucun_etudiant_trouve') }}</p>
                 @admin
-                    <a href="{{ route('etudiants.create') }}" class="btn-empty-action">
-                        <i class="bi bi-plus-circle"></i>
+                    <a href="{{ route('etudiants.create') }}" class="google-btn google-btn-primary">
                         {{ __('app.ajouter_etudiant') }}
                     </a>
                 @endadmin
             </div>
         @endif
     </div>
+</div>
 @endsection
 
 @push('styles')
 <style>
     :root {
-        --primary-color: #0d6efd;
-        --primary-dark: #0a58ca;
-        --success-color: #198754;
-        --info-color: #0dcaf0;
-        --pink-color: #d63384;
-        --pink-dark: #c22773;
-        --bg-white: #ffffff;
-        --bg-light: #f8f9fa;
-        --bg-gray-50: #fafafa;
-        --text-dark: #212529;
-        --text-muted: #6c757d;
-        --text-light: #868e96;
-        --border-color: #dee2e6;
-        --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
-        --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.12);
+        --google-blue: #1a73e8;
+        --google-blue-hover: #1967d2;
+        --google-blue-light: #e8f0fe;
+        --google-gray-50: #f8f9fa;
+        --google-gray-100: #f1f3f4;
+        --google-gray-200: #e8eaed;
+        --google-gray-300: #dadce0;
+        --google-gray-400: #bdc1c6;
+        --google-gray-500: #9aa0a6;
+        --google-gray-600: #80868b;
+        --google-gray-700: #5f6368;
+        --google-gray-800: #3c4043;
+        --google-gray-900: #202124;
+        --google-spacing-xs: 4px;
+        --google-spacing-sm: 8px;
+        --google-spacing-md: 16px;
+        --google-spacing-lg: 24px;
+        --google-spacing-xl: 32px;
+        --google-spacing-2xl: 48px;
+        --google-shadow-1: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+        --google-shadow-2: 0 1px 3px 0 rgba(60, 64, 67, 0.3), 0 4px 8px 3px rgba(60, 64, 67, 0.15);
+        --google-transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+    }
+
+    /* Container */
+    .google-container {
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
     }
 
     /* Stats Grid */
-    .stats-grid {
+    .google-stats-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 20px;
-        margin-bottom: 24px;
+        grid-template-columns: repeat(4, 1fr);
+        gap: var(--google-spacing-md);
+        margin-bottom: var(--google-spacing-xl);
+        padding: var(--google-spacing-lg);
     }
 
-    .stats-card {
-        background: var(--bg-white);
-        border-radius: 12px;
-        padding: 24px;
-        box-shadow: var(--shadow);
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    .google-stat-card {
+        background: white;
+        border: 1px solid var(--google-gray-300);
+        border-radius: 8px;
+        padding: var(--google-spacing-lg);
+        text-align: center;
     }
 
-    [dir="rtl"] .stats-card {
-        flex-direction: row-reverse;
+    .google-stat-label {
+        font-size: 0.75rem;
+        color: var(--google-gray-600);
+        margin-bottom: var(--google-spacing-sm);
     }
 
-    .stats-card:hover {
-        box-shadow: var(--shadow-lg);
-        transform: translateY(-3px);
+    .google-stat-value {
+        font-size: 2rem;
+        font-weight: 400;
+        color: var(--google-gray-900);
     }
 
-    .stats-icon {
-        width: 56px;
-        height: 56px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-    }
-
-    .stats-icon i {
-        font-size: 28px;
-        color: var(--bg-white);
-    }
-
-    .stats-content {
-        flex: 1;
-    }
-
-    .stats-label {
-        font-size: 13px;
-        color: var(--text-muted);
-        margin-bottom: 6px;
-        font-weight: 500;
-    }
-
-    .stats-value {
-        font-size: 28px;
-        font-weight: 700;
-        color: var(--text-dark);
-        line-height: 1;
-    }
-
-    /* Table Card */
-    .table-card {
-        background: var(--bg-white);
-        border-radius: 12px;
-        box-shadow: var(--shadow);
+    /* Table Wrapper */
+    .google-table-wrapper {
+        background: white;
+        border: 1px solid var(--google-gray-300);
+        border-radius: 8px;
         overflow: hidden;
+        margin: 0 var(--google-spacing-lg);
     }
 
-    .table-header {
-        padding: 24px;
-        border-bottom: 1px solid var(--border-color);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 16px;
+    .google-table-header {
+        padding: var(--google-spacing-lg);
+        border-bottom: 1px solid var(--google-gray-300);
     }
 
-    [dir="rtl"] .table-header {
-        flex-direction: row-reverse;
-    }
-
-    .table-title {
-        font-size: 18px;
-        font-weight: 600;
-        color: var(--text-dark);
-        margin: 0 0 4px 0;
-    }
-
-    .table-subtitle {
-        font-size: 14px;
-        color: var(--text-muted);
+    .google-table-title {
+        font-size: 1.25rem;
+        font-weight: 400;
+        color: var(--google-gray-900);
         margin: 0;
     }
 
-    /* Modern Table */
-    .modern-table {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
+    .google-table-container {
+        overflow-x: auto;
     }
 
-    .modern-table thead th {
-        background: var(--bg-gray-50);
-        padding: 16px 20px;
+    /* Table */
+    .google-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .google-table thead th {
+        background: var(--google-gray-50);
+        padding: var(--google-spacing-md);
         text-align: left;
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--text-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        border-bottom: 2px solid var(--border-color);
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--google-gray-700);
+        border-bottom: 1px solid var(--google-gray-300);
         white-space: nowrap;
     }
 
-    [dir="rtl"] .modern-table thead th {
-        text-align: right;
+    .google-table tbody tr {
+        transition: var(--google-transition);
+        border-bottom: 1px solid var(--google-gray-200);
     }
 
-    .modern-table tbody tr {
-        transition: all 0.2s ease;
+    .google-table tbody tr:hover {
+        background: var(--google-gray-50);
     }
 
-    .modern-table tbody tr:hover {
-        background: var(--bg-light);
-    }
-
-    .modern-table tbody td {
-        padding: 16px 20px;
-        border-bottom: 1px solid var(--border-color);
-        font-size: 14px;
-        color: var(--text-dark);
+    .google-table tbody td {
+        padding: var(--google-spacing-md);
+        font-size: 0.875rem;
+        color: var(--google-gray-900);
         vertical-align: middle;
+        white-space: nowrap;
     }
 
-    .modern-table tbody tr:last-child td {
+    .google-table tbody tr:last-child {
         border-bottom: none;
     }
 
     /* Student Name with Avatar */
-    .student-name {
+    .google-student-name {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: var(--google-spacing-md);
     }
 
-    [dir="rtl"] .student-name {
-        flex-direction: row-reverse;
-    }
-
-    .student-avatar {
-        width: 40px;
-        height: 40px;
+    .google-avatar {
+        width: 36px;
+        height: 36px;
         border-radius: 50%;
-        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-        color: var(--bg-white);
+        background: var(--google-blue);
+        color: white;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-weight: 600;
-        font-size: 14px;
+        font-weight: 500;
+        font-size: 0.75rem;
         flex-shrink: 0;
     }
 
-    /* Email and Phone Links */
-    .email-link,
-    .phone-link {
-        color: var(--text-dark);
+    .google-name {
+        font-weight: 400;
+        color: var(--google-gray-900);
+    }
+
+    /* Links */
+    .google-link {
+        color: var(--google-blue);
         text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        transition: color 0.2s ease;
+        transition: var(--google-transition);
     }
 
-    [dir="rtl"] .email-link,
-    [dir="rtl"] .phone-link {
-        flex-direction: row-reverse;
+    .google-link:hover {
+        color: var(--google-blue-hover);
+        text-decoration: underline;
     }
 
-    .email-link:hover {
-        color: var(--primary-color);
-    }
-
-    .phone-link:hover {
-        color: var(--success-color);
-    }
-
-    .email-link i,
-    .phone-link i {
-        font-size: 14px;
-        opacity: 0.7;
-    }
-
-    .text-na {
-        color: var(--text-muted);
-        font-style: italic;
-        font-size: 13px;
+    .google-text-na {
+        color: var(--google-gray-500);
+        font-size: 0.875rem;
     }
 
     /* Badges */
-    .badge-classe {
+    .google-badge {
         display: inline-block;
-        padding: 6px 12px;
-        background: var(--bg-light);
-        color: var(--text-dark);
-        border: 1px solid var(--border-color);
-        border-radius: 6px;
-        font-size: 12px;
-        font-weight: 500;
+        padding: 4px 12px;
+        background: var(--google-gray-100);
+        color: var(--google-gray-700);
+        border-radius: 16px;
+        font-size: 0.75rem;
+        font-weight: 400;
         white-space: nowrap;
     }
 
-    .badge-genre {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 6px 12px;
-        border-radius: 6px;
-        font-size: 12px;
-        font-weight: 500;
+    .google-badge-genre {
+        display: inline-block;
+        padding: 4px 12px;
+        background: var(--google-gray-100);
+        color: var(--google-gray-700);
+        border-radius: 16px;
+        font-size: 0.75rem;
+        font-weight: 400;
         white-space: nowrap;
-    }
-
-    [dir="rtl"] .badge-genre {
-        flex-direction: row-reverse;
-    }
-
-    .badge-male {
-        background: rgba(13, 202, 240, 0.1);
-        color: var(--info-color);
-    }
-
-    .badge-female {
-        background: rgba(214, 51, 132, 0.1);
-        color: var(--pink-color);
-    }
-
-    .text-not-assigned {
-        color: var(--text-muted);
-        font-style: italic;
-        font-size: 13px;
     }
 
     /* Action Buttons */
-    .action-buttons {
+    .google-action-buttons {
         display: inline-flex;
-        gap: 8px;
+        gap: var(--google-spacing-xs);
         align-items: center;
     }
 
-    [dir="rtl"] .action-buttons {
-        flex-direction: row-reverse;
-    }
-
-    .btn-action {
-        width: 32px;
-        height: 32px;
-        border-radius: 6px;
+    .google-action-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         border: none;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        font-size: 14px;
         background: transparent;
+        cursor: pointer;
+        transition: var(--google-transition);
+        color: var(--google-gray-600);
     }
 
-    .btn-view {
-        color: var(--info-color);
-        background: rgba(13, 202, 240, 0.1);
+    .google-action-btn:hover {
+        background: var(--google-gray-100);
+        color: var(--google-blue);
     }
 
-    .btn-view:hover {
-        background: rgba(13, 202, 240, 0.2);
-        transform: scale(1.1);
-    }
-
-    .btn-edit {
-        color: var(--primary-color);
-        background: rgba(13, 110, 253, 0.1);
-    }
-
-    .btn-edit:hover {
-        background: rgba(13, 110, 253, 0.2);
-        transform: scale(1.1);
-    }
-
-    .btn-delete {
-        color: #dc3545;
-        background: rgba(220, 53, 69, 0.1);
-    }
-
-    .btn-delete:hover {
-        background: rgba(220, 53, 69, 0.2);
-        transform: scale(1.1);
+    .google-action-delete:hover {
+        background: var(--google-gray-100);
+        color: #d93025;
     }
 
     /* Empty State */
-    .empty-state {
+    .google-empty-state {
         text-align: center;
-        padding: 80px 20px;
+        padding: var(--google-spacing-2xl);
     }
 
-    .empty-icon {
-        width: 80px;
-        height: 80px;
-        margin: 0 auto 24px;
-        background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg-gray-50) 100%);
-        border-radius: 20px;
+    .google-empty-icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto var(--google-spacing-md);
+        color: var(--google-gray-400);
+    }
+
+    .google-empty-title {
+        font-size: 1rem;
+        font-weight: 400;
+        color: var(--google-gray-700);
+        margin: 0 0 var(--google-spacing-sm) 0;
+    }
+
+    .google-empty-text {
+        font-size: 0.875rem;
+        color: var(--google-gray-600);
+        margin: 0 0 var(--google-spacing-lg) 0;
+    }
+
+    /* Buttons */
+    .google-btn {
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 16px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: var(--google-transition);
+        text-decoration: none;
+    }
+
+    .google-btn-primary {
+        background: var(--google-blue);
+        color: white;
+    }
+
+    .google-btn-primary:hover {
+        background: var(--google-blue-hover);
+        box-shadow: var(--google-shadow-1);
+        color: white;
+    }
+
+    /* Pagination */
+    .google-pagination-wrapper {
+        padding: var(--google-spacing-lg);
+        border-top: 1px solid var(--google-gray-300);
+    }
+
+    .google-pagination-wrapper .pagination {
+        margin: 0;
+        justify-content: center;
+        gap: var(--google-spacing-xs);
+    }
+
+    .google-pagination-wrapper .page-link {
+        color: var(--google-gray-700);
+        background: transparent;
+        border: none;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
         display: flex;
         align-items: center;
         justify-content: center;
+        font-size: 0.875rem;
+        transition: var(--google-transition);
+        padding: 0;
     }
 
-    .empty-icon i {
-        font-size: 40px;
-        color: var(--text-light);
+    .google-pagination-wrapper .page-link:hover {
+        background: var(--google-gray-100);
+        color: var(--google-blue);
     }
 
-    .empty-title {
-        font-size: 20px;
-        font-weight: 600;
-        color: var(--text-dark);
-        margin: 0 0 8px 0;
-    }
-
-    .empty-text {
-        font-size: 14px;
-        color: var(--text-muted);
-        margin: 0 0 24px 0;
-    }
-
-    .btn-empty-action {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 12px 24px;
-        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-        color: var(--bg-white);
-        border-radius: 8px;
-        text-decoration: none;
+    .google-pagination-wrapper .page-item.active .page-link {
+        background: var(--google-blue);
+        color: white;
         font-weight: 500;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    [dir="rtl"] .btn-empty-action {
-        flex-direction: row-reverse;
-    }
-
-    .btn-empty-action:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
-        color: var(--bg-white);
+    .google-pagination-wrapper .page-item.disabled .page-link {
+        color: var(--google-gray-400);
+        background: transparent;
     }
 
     /* Responsive Design */
-    @media (max-width: 1400px) {
-        .stats-grid {
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-        }
-    }
-
-    @media (max-width: 1200px) {
-        .stats-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
-        }
-        
-        .stats-card {
-            padding: 20px;
-        }
-    }
-
     @media (max-width: 992px) {
-        .stats-icon {
-            width: 52px;
-            height: 52px;
-        }
-        
-        .stats-icon i {
-            font-size: 26px;
-        }
-        
-        .stats-value {
-            font-size: 26px;
-        }
-        
-        .modern-table thead th,
-        .modern-table tbody td {
-            padding: 14px 16px;
-            font-size: 13px;
+        .google-stats-grid {
+            grid-template-columns: repeat(2, 1fr);
         }
     }
 
     @media (max-width: 768px) {
-        .stats-grid {
+        .google-stats-grid {
             grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
+            gap: var(--google-spacing-sm);
+            margin-bottom: var(--google-spacing-lg);
+            padding: var(--google-spacing-md);
         }
 
-        .stats-card {
-            padding: 16px;
-            gap: 12px;
+        .google-stat-card {
+            padding: var(--google-spacing-md);
         }
 
-        .stats-icon {
-            width: 48px;
-            height: 48px;
+        .google-stat-value {
+            font-size: 1.5rem;
         }
 
-        .stats-icon i {
-            font-size: 22px;
+        .google-table-wrapper {
+            border-radius: 4px;
+            margin: 0 var(--google-spacing-md);
         }
 
-        .stats-value {
-            font-size: 22px;
+        .google-table-header {
+            padding: var(--google-spacing-md);
         }
 
-        .table-header {
-            padding: 16px 20px;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 8px;
+        .google-table-title {
+            font-size: 1rem;
         }
 
-        .table-title {
-            font-size: 16px;
+        .google-table thead th,
+        .google-table tbody td {
+            padding: var(--google-spacing-sm);
+            font-size: 0.75rem;
         }
 
-        .modern-table thead th,
-        .modern-table tbody td {
-            padding: 12px 14px;
+        .google-avatar {
+            width: 32px;
+            height: 32px;
+            font-size: 0.7rem;
         }
 
-        .student-avatar {
-            width: 36px;
-            height: 36px;
-            font-size: 12px;
-        }
-
-        .badge-classe,
-        .badge-genre {
-            font-size: 11px;
-            padding: 5px 10px;
+        .google-student-name {
+            gap: var(--google-spacing-sm);
         }
     }
 
     @media (max-width: 576px) {
-        .stats-grid {
-            grid-template-columns: 1fr;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-        
-        .stats-icon {
-            width: 44px;
-            height: 44px;
-        }
-        
-        .stats-icon i {
-            font-size: 20px;
-        }
-        
-        .stats-value {
-            font-size: 24px;
-        }
-        
-        .table-header {
-            padding: 16px;
-        }
-        
-        .table-responsive {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
+        .google-stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--google-spacing-sm);
+            padding: var(--google-spacing-sm);
         }
 
-        .modern-table {
-            min-width: 800px;
+        .google-stat-card {
+            padding: var(--google-spacing-sm) var(--google-spacing-md);
         }
-        
-        .student-avatar {
+
+        .google-table-wrapper {
+            margin: 0 var(--google-spacing-sm);
+        }
+
+        .google-stat-label {
+            font-size: 0.7rem;
+        }
+
+        .google-stat-value {
+            font-size: 1.5rem;
+        }
+
+        .google-table-header {
+            padding: var(--google-spacing-sm) var(--google-spacing-md);
+        }
+
+        .google-table-title {
+            font-size: 0.9rem;
+        }
+
+        .google-table thead th,
+        .google-table tbody td {
+            padding: var(--google-spacing-xs) var(--google-spacing-sm);
+            font-size: 0.7rem;
+        }
+
+        .google-avatar {
+            width: 28px;
+            height: 28px;
+            font-size: 0.65rem;
+        }
+
+        .google-badge,
+        .google-badge-genre {
+            font-size: 0.65rem;
+            padding: 2px 8px;
+        }
+
+        .google-action-btn {
             width: 32px;
             height: 32px;
-            font-size: 11px;
         }
 
-        .empty-state {
-            padding: 50px 20px;
-        }
-
-        .empty-icon {
-            width: 60px;
-            height: 60px;
-        }
-
-        .empty-icon i {
-            font-size: 28px;
-        }
-    }
-
-    @media (max-width: 400px) {
-        .stats-card {
-            padding: 14px;
-        }
-        
-        .stats-icon {
-            width: 40px;
-            height: 40px;
-        }
-        
-        .stats-icon i {
-            font-size: 18px;
-        }
-        
-        .stats-value {
-            font-size: 20px;
-        }
-        
-        .student-avatar {
-            width: 30px;
-            height: 30px;
-            font-size: 10px;
+        .google-action-btn svg {
+            width: 16px;
+            height: 16px;
         }
     }
 </style>

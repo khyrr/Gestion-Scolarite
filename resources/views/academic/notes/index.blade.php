@@ -133,8 +133,8 @@
                 @endif
             </div>
             @if($notes->count() > 0)
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
+                <div class="table-responsive" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+                    <table class="table table-hover align-middle" style="min-width: 800px;">
                         <thead>
                             <tr class="border-bottom">
                                 <th class="text-muted fw-normal">{{ __('app.etudiant') }}</th>

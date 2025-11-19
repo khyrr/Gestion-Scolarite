@@ -16,779 +16,531 @@
 @endsection
 
 @section('content')
-    <!-- Statistics Cards -->
-    <div class="stats-grid">
-        <div class="stats-card">
-            <div class="stats-icon" style="background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);">
-                <i class="bi bi-person-badge"></i>
+    <div class="google-container">
+        <!-- Statistics Cards -->
+        <div class="google-stats-grid">
+            <div class="google-stat-card">
+                <div class="google-stat-label">{{ __('app.total_enseignants') }}</div>
+                <div class="google-stat-value">{{ $enseignant->count() }}</div>
             </div>
-            <div class="stats-content">
-                <div class="stats-label">{{ __('app.total_enseignants') }}</div>
-                <div class="stats-value">{{ $enseignant->count() }}</div>
+            <div class="google-stat-card">
+                <div class="google-stat-label">{{ __('app.actifs_ce_mois') }}</div>
+                <div class="google-stat-value">{{ $enseignant->where('created_at', '>=', now()->startOfMonth())->count() }}</div>
             </div>
-        </div>
-        <div class="stats-card">
-            <div class="stats-icon" style="background: linear-gradient(135deg, #198754 0%, #146c43 100%);">
-                <i class="bi bi-calendar-check"></i>
+            <div class="google-stat-card">
+                <div class="google-stat-label">{{ __('app.matieres_enseignees') }}</div>
+                <div class="google-stat-value">{{ $enseignant->pluck('matieres')->flatten()->unique('id_matiere')->count() }}</div>
             </div>
-            <div class="stats-content">
-                <div class="stats-label">{{ __('app.actifs_ce_mois') }}</div>
-                <div class="stats-value">{{ $enseignant->where('created_at', '>=', now()->startOfMonth())->count() }}</div>
-            </div>
-        </div>
-        <div class="stats-card">
-            <div class="stats-icon" style="background: linear-gradient(135deg, #0dcaf0 0%, #0aa2c0 100%);">
-                <i class="bi bi-book"></i>
-            </div>
-            <div class="stats-content">
-                <div class="stats-label">{{ __('app.matieres_enseignees') }}</div>
-                <div class="stats-value">{{ $enseignant->pluck('matiere')->unique()->count() }}</div>
-            </div>
-        </div>
-        <div class="stats-card">
-            <div class="stats-icon" style="background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%);">
-                <i class="bi bi-people"></i>
-            </div>
-            <div class="stats-content">
-                <div class="stats-label">{{ __('app.classes_assignees') }}</div>
-                <div class="stats-value">{{ $enseignant->whereNotNull('id_classe')->count() }}</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Enseignants Table -->
-    <div class="table-card">
-        <div class="table-header">
-            <div>
-                <h5 class="table-title">{{ __('app.liste_enseignants') }}</h5>
-                <p class="table-subtitle">Gérez les enseignants et leurs affectations</p>
+            <div class="google-stat-card">
+                <div class="google-stat-label">{{ __('app.classes_assignees') }}</div>
+                <div class="google-stat-value">{{ $enseignant->filter(function($e) { return $e->classes->count() > 0; })->count() }}</div>
             </div>
         </div>
 
-        @if($enseignant->count() > 0)
-            <div class="table-responsive">
-                <table class="modern-table">
-                    <thead>
-                        <tr>
-                            <th>{{ __('app.nom_complet') }}</th>
-                            <th>{{ __('app.email') }}</th>
-                            <th>{{ __('app.telephone') }}</th>
-                            <th>{{ __('app.matiere') }}</th>
-                            <th>{{ __('app.classe') }}</th>
-                            <th>{{ __('app.date_ajout') }}</th>
-                            <th class="text-center">{{ __('app.actions') }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($enseignant as $item)
+        <!-- Enseignants Table -->
+        <div class="google-table-wrapper">
+            <div class="google-table-header">
+                <h2 class="google-table-title">{{ __('app.liste_enseignants') }}</h2>
+            </div>
+
+            @if($enseignant->count() > 0)
+                <div class="google-table-container">
+                    <table class="google-table">
+                        <thead>
                             <tr>
-                                <td>
-                                    <div class="teacher-name">
-                                        <div class="teacher-avatar">
-                                            {{ substr($item->prenom, 0, 1) }}{{ substr($item->nom, 0, 1) }}
-                                        </div>
-                                        <strong>{{ $item->prenom }} {{ $item->nom }}</strong>
-                                    </div>
-                                </td>
-                                <td>
-                                    <a href="mailto:{{ $item->email }}" class="email-link">
-                                        <i class="bi bi-envelope"></i>
-                                        {{ $item->email }}
-                                    </a>
-                                </td>
-                                <td>
-                                    <a href="tel:{{ $item->telephone }}" class="phone-link">
-                                        <i class="bi bi-telephone"></i>
-                                        {{ $item->telephone }}
-                                    </a>
-                                </td>
-                                <td>
-                                    <span class="badge-matiere">{{ $item->matiere }}</span>
-                                </td>
-                                <td>
-                                    @if($item->classe)
-                                        <span class="badge-classe">{{ $item->classe->nom_classe ?? 'N/A' }}</span>
-                                    @else
-                                        <span class="text-not-assigned">{{ __('app.non_assigne') }}</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    <span class="date-badge">
-                                        <i class="bi bi-calendar3"></i>
-                                        {{ $item->created_at->format('d/m/Y') }}
-                                    </span>
-                                </td>
-                                <td class="text-center">
-                                    @include('academic.enseignants.partials.actions', ['teacher' => $item])
-                                </td>
+                                <th>{{ __('app.nom_complet') }}</th>
+                                <th>{{ __('app.email') }}</th>
+                                <th>{{ __('app.telephone') }}</th>
+                                <th>{{ __('app.matiere') }}</th>
+                                <th>{{ __('app.classe') }}</th>
+                                <th>{{ __('app.date_ajout') }}</th>
+                                <th>{{ __('app.actions') }}</th>
                             </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        @else
-            <div class="empty-state">
-                <div class="empty-icon">
-                    <i class="bi bi-person-badge"></i>
+                        </thead>
+                        <tbody>
+                            @foreach($enseignant as $item)
+                                <tr>
+                                    <td>
+                                        <div class="google-teacher-name">
+                                            <div class="google-avatar">
+                                                {{ substr($item->prenom, 0, 1) }}{{ substr($item->nom, 0, 1) }}
+                                            </div>
+                                            <span class="google-name">{{ $item->prenom }} {{ $item->nom }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <a href="mailto:{{ $item->email }}" class="google-link">{{ $item->email }}</a>
+                                    </td>
+                                    <td>
+                                        <a href="tel:{{ $item->telephone }}" class="google-link">{{ $item->telephone }}</a>
+                                    </td>
+                                    <td>
+                                        @if($item->matieres && $item->matieres->count() > 0)
+                                            <span class="google-badge">{{ __('app.' . $item->matieres->first()->code_matiere) }}</span>
+                                            @if($item->matieres->count() > 1)
+                                                <span class="google-badge google-badge-more">+{{ $item->matieres->count() - 1 }} {{ __('app.autres') }}</span>
+                                            @endif
+                                        @else
+                                            <span class="google-text-na">{{ __('app.non_assigne') }}</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($item->classes && $item->classes->count() > 0)
+                                            <span class="google-badge">{{ $item->classes->first()->nom_classe }}</span>
+                                            @if($item->classes->count() > 1)
+                                                <span class="google-badge google-badge-more">+{{ $item->classes->count() - 1 }} {{ __('app.autres') }}</span>
+                                            @endif
+                                        @else
+                                            <span class="google-text-na">{{ __('app.non_assigne') }}</span>
+                                        @endif
+                                    </td>
+                                    <td>{{ $item->created_at->format('d/m/Y') }}</td>
+                                    <td>
+                                        @include('academic.enseignants.partials.actions', ['teacher' => $item])
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
-                <h4 class="empty-title">{{ __('app.no_data') }}</h4>
-                <p class="empty-text">{{ __('app.aucun_enseignant_ajoute') }}</p>
-                @admin
-                    <a href="{{ route('enseignants.create') }}" class="btn-empty-action">
-                        <i class="bi bi-plus-circle"></i>
-                        {{ __('app.ajouter_premier_enseignant') }}
-                    </a>
-                @endadmin
-            </div>
-        @endif
+
+                @if($enseignant->hasPages())
+                    <div class="google-pagination-wrapper">
+                        {{ $enseignant->links('pagination::bootstrap-5') }}
+                    </div>
+                @endif
+            @else
+                <div class="google-empty-state">
+                    <svg class="google-empty-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <h4 class="google-empty-title">{{ __('app.no_data') }}</h4>
+                    <p class="google-empty-text">{{ __('app.aucun_enseignant_ajoute') }}</p>
+                    @admin
+                        <a href="{{ route('enseignants.create') }}" class="google-btn google-btn-primary">
+                            {{ __('app.ajouter_premier_enseignant') }}
+                        </a>
+                    @endadmin
+                </div>
+            @endif
+        </div>
     </div>
 @endsection
 
 @push('styles')
 <style>
     :root {
-        --primary-color: #0d6efd;
-        --primary-dark: #0a58ca;
-        --success-color: #198754;
-        --info-color: #0dcaf0;
-        --warning-color: #ffc107;
-        --bg-white: #ffffff;
-        --bg-light: #f8f9fa;
-        --bg-gray-50: #fafafa;
-        --text-dark: #212529;
-        --text-muted: #6c757d;
-        --text-light: #868e96;
-        --border-color: #dee2e6;
-        --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
-        --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.12);
+        --google-blue: #1a73e8;
+        --google-blue-hover: #1967d2;
+        --google-gray-50: #f8f9fa;
+        --google-gray-100: #f1f3f4;
+        --google-gray-200: #e8eaed;
+        --google-gray-300: #dadce0;
+        --google-gray-500: #9aa0a6;
+        --google-gray-600: #80868b;
+        --google-gray-700: #5f6368;
+        --google-gray-900: #202124;
+        --google-spacing-xs: 4px;
+        --google-spacing-sm: 8px;
+        --google-spacing-md: 16px;
+        --google-spacing-lg: 24px;
+        --google-spacing-xl: 32px;
+        --google-transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+    }
+
+    .google-container {
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
     }
 
     /* Stats Grid */
-    .stats-grid {
+    .google-stats-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 20px;
-        margin-bottom: 24px;
+        grid-template-columns: repeat(4, 1fr);
+        gap: var(--google-spacing-md);
+        margin-bottom: var(--google-spacing-xl);
+        padding: var(--google-spacing-lg);
     }
 
-    .stats-card {
-        background: var(--bg-white);
-        border-radius: 12px;
-        padding: 24px;
-        box-shadow: var(--shadow);
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    .google-stat-card {
+        background: white;
+        border: 1px solid var(--google-gray-300);
+        border-radius: 8px;
+        padding: var(--google-spacing-lg);
+        text-align: center;
     }
 
-    [dir="rtl"] .stats-card {
-        flex-direction: row-reverse;
+    .google-stat-label {
+        font-size: 0.75rem;
+        color: var(--google-gray-600);
+        margin-bottom: var(--google-spacing-sm);
     }
 
-    .stats-card:hover {
-        box-shadow: var(--shadow-lg);
-        transform: translateY(-3px);
+    .google-stat-value {
+        font-size: 2rem;
+        font-weight: 400;
+        color: var(--google-gray-900);
     }
 
-    .stats-icon {
-        width: 56px;
-        height: 56px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-    }
-
-    .stats-icon i {
-        font-size: 28px;
-        color: var(--bg-white);
-    }
-
-    .stats-content {
-        flex: 1;
-    }
-
-    .stats-label {
-        font-size: 13px;
-        color: var(--text-muted);
-        margin-bottom: 6px;
-        font-weight: 500;
-    }
-
-    .stats-value {
-        font-size: 28px;
-        font-weight: 700;
-        color: var(--text-dark);
-        line-height: 1;
-    }
-
-    /* Table Card */
-    .table-card {
-        background: var(--bg-white);
-        border-radius: 12px;
-        box-shadow: var(--shadow);
+    /* Table Wrapper */
+    .google-table-wrapper {
+        background: white;
+        border: 1px solid var(--google-gray-300);
+        border-radius: 8px;
         overflow: hidden;
+        margin: 0 var(--google-spacing-lg);
     }
 
-    .table-header {
-        padding: 24px;
-        border-bottom: 1px solid var(--border-color);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 16px;
+    .google-table-header {
+        padding: var(--google-spacing-lg);
+        border-bottom: 1px solid var(--google-gray-300);
     }
 
-    [dir="rtl"] .table-header {
-        flex-direction: row-reverse;
-    }
-
-    .table-title {
-        font-size: 18px;
-        font-weight: 600;
-        color: var(--text-dark);
-        margin: 0 0 4px 0;
-    }
-
-    .table-subtitle {
-        font-size: 14px;
-        color: var(--text-muted);
+    .google-table-title {
+        font-size: 1.25rem;
+        font-weight: 400;
+        color: var(--google-gray-900);
         margin: 0;
     }
 
-    /* Modern Table */
-    .modern-table {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
+    /* Table */
+    .google-table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
     }
 
-    .modern-table thead th {
-        background: var(--bg-gray-50);
-        padding: 16px 20px;
+    .google-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .google-table thead th {
+        background: var(--google-gray-50);
+        padding: var(--google-spacing-md);
         text-align: left;
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--text-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        border-bottom: 2px solid var(--border-color);
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--google-gray-700);
+        border-bottom: 1px solid var(--google-gray-300);
         white-space: nowrap;
     }
 
-    [dir="rtl"] .modern-table thead th {
-        text-align: right;
+    .google-table tbody tr {
+        transition: var(--google-transition);
+        border-bottom: 1px solid var(--google-gray-200);
     }
 
-    .modern-table tbody tr {
-        transition: all 0.2s ease;
+    .google-table tbody tr:hover {
+        background: var(--google-gray-50);
     }
 
-    .modern-table tbody tr:hover {
-        background: var(--bg-light);
-    }
-
-    .modern-table tbody td {
-        padding: 16px 20px;
-        border-bottom: 1px solid var(--border-color);
-        font-size: 14px;
-        color: var(--text-dark);
+    .google-table tbody td {
+        padding: var(--google-spacing-md);
+        font-size: 0.875rem;
+        color: var(--google-gray-900);
         vertical-align: middle;
+        white-space: nowrap;
     }
 
-    .modern-table tbody tr:last-child td {
+    .google-table tbody tr:last-child {
         border-bottom: none;
     }
 
-    /* Teacher Name with Avatar */
-    .teacher-name {
+    .google-teacher-name {
         display: flex;
         align-items: center;
         gap: 12px;
     }
 
-    [dir="rtl"] .teacher-name {
-        flex-direction: row-reverse;
-    }
-
-    .teacher-avatar {
-        width: 40px;
-        height: 40px;
+    .google-avatar {
+        width: 36px;
+        height: 36px;
         border-radius: 50%;
-        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-        color: var(--bg-white);
+        background: var(--google-blue);
+        color: white;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-weight: 600;
-        font-size: 14px;
+        font-weight: 500;
+        font-size: 0.75rem;
         flex-shrink: 0;
     }
 
-    /* Email and Phone Links */
-    .email-link,
-    .phone-link {
-        color: var(--text-dark);
+    .google-name {
+        font-weight: 400;
+        color: var(--google-gray-900);
+    }
+
+    .google-link {
+        color: var(--google-blue);
         text-decoration: none;
+        transition: var(--google-transition);
+    }
+
+    .google-link:hover {
+        color: var(--google-blue-hover);
+        text-decoration: underline;
+    }
+
+    .google-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        background: var(--google-gray-100);
+        color: var(--google-gray-700);
+        border-radius: 16px;
+        font-size: 0.75rem;
+        font-weight: 400;
+        white-space: nowrap;
+        margin: 2px;
+    }
+
+    .google-badge-more {
+        background: var(--google-gray-200);
+        color: var(--google-gray-600);
+        font-size: 0.7rem;
+    }
+
+    .google-text-na {
+        color: var(--google-gray-500);
+        font-size: 0.875rem;
+    }
+
+    /* Action Buttons */
+    .google-action-buttons {
+        display: inline-flex;
+        gap: var(--google-spacing-xs);
+        align-items: center;
+    }
+
+    .google-action-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
         display: inline-flex;
         align-items: center;
-        gap: 8px;
-        transition: color 0.2s ease;
+        justify-content: center;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        transition: var(--google-transition);
+        color: var(--google-gray-600);
     }
 
-    [dir="rtl"] .email-link,
-    [dir="rtl"] .phone-link {
-        flex-direction: row-reverse;
+    .google-action-btn:hover {
+        background: var(--google-gray-100);
+        color: var(--google-blue);
     }
 
-    .email-link:hover {
-        color: var(--primary-color);
-    }
-
-    .phone-link:hover {
-        color: var(--success-color);
-    }
-
-    .email-link i,
-    .phone-link i {
-        font-size: 14px;
-        opacity: 0.7;
-    }
-
-    /* Badges */
-    .badge-matiere {
-        display: inline-block;
-        padding: 6px 12px;
-        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-        color: var(--bg-white);
-        border-radius: 6px;
-        font-size: 12px;
-        font-weight: 500;
-        white-space: nowrap;
-    }
-
-    .badge-classe {
-        display: inline-block;
-        padding: 6px 12px;
-        background: var(--bg-light);
-        color: var(--text-dark);
-        border: 1px solid var(--border-color);
-        border-radius: 6px;
-        font-size: 12px;
-        font-weight: 500;
-        white-space: nowrap;
-    }
-
-    .text-not-assigned {
-        color: var(--text-muted);
-        font-style: italic;
-        font-size: 13px;
-    }
-
-    .date-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        color: var(--text-muted);
-        font-size: 13px;
-    }
-
-    [dir="rtl"] .date-badge {
-        flex-direction: row-reverse;
-    }
-
-    .date-badge i {
-        font-size: 14px;
+    .google-action-delete:hover {
+        background: var(--google-gray-100);
+        color: #d93025;
     }
 
     /* Empty State */
-    .empty-state {
+    .google-empty-state {
         text-align: center;
-        padding: 80px 20px;
+        padding: var(--google-spacing-2xl);
     }
 
-    .empty-icon {
-        width: 80px;
-        height: 80px;
-        margin: 0 auto 24px;
-        background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg-gray-50) 100%);
-        border-radius: 20px;
+    .google-empty-icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto var(--google-spacing-md);
+        color: var(--google-gray-400);
+    }
+
+    .google-empty-title {
+        font-size: 1rem;
+        font-weight: 400;
+        color: var(--google-gray-700);
+        margin: 0 0 var(--google-spacing-sm) 0;
+    }
+
+    .google-empty-text {
+        font-size: 0.875rem;
+        color: var(--google-gray-600);
+        margin: 0 0 var(--google-spacing-lg) 0;
+    }
+
+    /* Buttons */
+    .google-btn {
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 16px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: var(--google-transition);
+        text-decoration: none;
+    }
+
+    .google-btn-primary {
+        background: var(--google-blue);
+        color: white;
+    }
+
+    .google-btn-primary:hover {
+        background: var(--google-blue-hover);
+        box-shadow: var(--google-shadow-1);
+        color: white;
+    }
+
+    /* Pagination */
+    .google-pagination-wrapper {
+        padding: var(--google-spacing-lg);
+        border-top: 1px solid var(--google-gray-300);
+    }
+
+    .google-pagination-wrapper .pagination {
+        margin: 0;
+        justify-content: center;
+        gap: var(--google-spacing-xs);
+    }
+
+    .google-pagination-wrapper .page-link {
+        color: var(--google-gray-700);
+        background: transparent;
+        border: none;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
         display: flex;
         align-items: center;
         justify-content: center;
+        font-size: 0.875rem;
+        transition: var(--google-transition);
+        padding: 0;
     }
 
-    .empty-icon i {
-        font-size: 40px;
-        color: var(--text-light);
+    .google-pagination-wrapper .page-link:hover {
+        background: var(--google-gray-100);
+        color: var(--google-blue);
     }
 
-    .empty-title {
-        font-size: 20px;
-        font-weight: 600;
-        color: var(--text-dark);
-        margin: 0 0 8px 0;
-    }
-
-    .empty-text {
-        font-size: 14px;
-        color: var(--text-muted);
-        margin: 0 0 24px 0;
-    }
-
-    .btn-empty-action {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 12px 24px;
-        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-        color: var(--bg-white);
-        border-radius: 8px;
-        text-decoration: none;
+    .google-pagination-wrapper .page-item.active .page-link {
+        background: var(--google-blue);
+        color: white;
         font-weight: 500;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    [dir="rtl"] .btn-empty-action {
-        flex-direction: row-reverse;
-    }
-
-    .btn-empty-action:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
-        color: var(--bg-white);
+    .google-pagination-wrapper .page-item.disabled .page-link {
+        color: var(--google-gray-400);
+        background: transparent;
     }
 
     /* Responsive Design */
-    /* Extra Large Devices (≤1400px) */
-    @media (max-width: 1400px) {
-        .stats-grid {
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-        }
-    }
-
-    /* Large Devices (≤1200px) */
-    @media (max-width: 1200px) {
-        .stats-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
-        }
-        
-        .stats-card {
-            padding: 20px;
-        }
-        
-        .table-card {
-            border-radius: 10px;
-        }
-    }
-
-    /* Medium Devices (≤992px) */
     @media (max-width: 992px) {
-        .stats-grid {
+        .google-stats-grid {
             grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
-        }
-        
-        .stats-card {
-            padding: 18px;
-        }
-        
-        .stats-icon {
-            width: 52px;
-            height: 52px;
-        }
-        
-        .stats-icon i {
-            font-size: 26px;
-        }
-        
-        .stats-value {
-            font-size: 26px;
-        }
-        
-        .stats-label {
-            font-size: 12px;
-        }
-        
-        .table-header {
-            padding: 20px;
-        }
-        
-        .table-title {
-            font-size: 17px;
-        }
-        
-        .table-subtitle {
-            font-size: 13px;
-        }
-        
-        .modern-table thead th,
-        .modern-table tbody td {
-            padding: 14px 16px;
-            font-size: 13px;
         }
     }
 
-    /* Small Devices (≤768px) */
     @media (max-width: 768px) {
-        .stats-grid {
+        .google-stats-grid {
             grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
+            gap: var(--google-spacing-sm);
+            margin-bottom: var(--google-spacing-lg);
+            padding: var(--google-spacing-md);
         }
 
-        .stats-card {
-            padding: 16px;
-            gap: 12px;
+        .google-stat-card {
+            padding: var(--google-spacing-md);
         }
 
-        .stats-icon {
-            width: 48px;
-            height: 48px;
+        .google-stat-value {
+            font-size: 1.5rem;
         }
 
-        .stats-icon i {
-            font-size: 22px;
+        .google-table-wrapper {
+            border-radius: 4px;
+            margin: 0 var(--google-spacing-md);
         }
 
-        .stats-value {
-            font-size: 22px;
-        }
-        
-        .stats-label {
-            font-size: 11px;
+        .google-table-header {
+            padding: var(--google-spacing-md);
         }
 
-        .table-header {
-            padding: 16px 20px;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 8px;
+        .google-table-title {
+            font-size: 1rem;
         }
 
-        .table-title {
-            font-size: 16px;
-        }
-        
-        .table-subtitle {
-            font-size: 12px;
+        .google-table thead th,
+        .google-table tbody td {
+            padding: var(--google-spacing-sm);
+            font-size: 0.75rem;
         }
 
-        .modern-table {
-            font-size: 12px;
-        }
-
-        .modern-table thead th {
-            padding: 12px 14px;
-            font-size: 11px;
-        }
-        
-        .modern-table tbody td {
-            padding: 12px 14px;
-        }
-
-        .teacher-name {
-            gap: 10px;
-        }
-
-        .teacher-avatar {
-            width: 36px;
-            height: 36px;
-            font-size: 12px;
-        }
-
-        .badge-matiere,
-        .badge-classe {
-            font-size: 11px;
-            padding: 5px 10px;
-        }
-        
-        .date-badge {
-            font-size: 12px;
-        }
-        
-        .email-link,
-        .phone-link {
-            font-size: 12px;
-        }
-        
-        .email-link i,
-        .phone-link i {
-            font-size: 12px;
-        }
-    }
-
-    /* Extra Small Devices (≤576px) */
-    @media (max-width: 576px) {
-        .stats-grid {
-            grid-template-columns: 1fr;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-        
-        .stats-card {
-            padding: 16px;
-        }
-        
-        .stats-icon {
-            width: 44px;
-            height: 44px;
-        }
-        
-        .stats-icon i {
-            font-size: 20px;
-        }
-        
-        .stats-value {
-            font-size: 24px;
-        }
-        
-        .stats-label {
-            font-size: 12px;
-        }
-        
-        .table-card {
-            border-radius: 8px;
-        }
-        
-        .table-header {
-            padding: 16px;
-        }
-        
-        .table-title {
-            font-size: 15px;
-        }
-        
-        .table-subtitle {
-            font-size: 12px;
-        }
-        
-        .table-responsive {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .modern-table {
-            min-width: 800px;
-            font-size: 12px;
-        }
-        
-        .modern-table thead th {
-            padding: 10px 12px;
-            font-size: 10px;
-            white-space: nowrap;
-        }
-        
-        .modern-table tbody td {
-            padding: 10px 12px;
-        }
-        
-        .teacher-avatar {
+        .google-avatar {
             width: 32px;
             height: 32px;
-            font-size: 11px;
-        }
-        
-        .badge-matiere,
-        .badge-classe {
-            font-size: 10px;
-            padding: 4px 8px;
-        }
-        
-        .date-badge {
-            font-size: 11px;
+            font-size: 0.7rem;
         }
 
-        .empty-state {
-            padding: 50px 20px;
-        }
-
-        .empty-icon {
-            width: 60px;
-            height: 60px;
-            margin-bottom: 20px;
-        }
-
-        .empty-icon i {
-            font-size: 28px;
-        }
-        
-        .empty-title {
-            font-size: 18px;
-        }
-        
-        .empty-text {
-            font-size: 13px;
-            margin-bottom: 20px;
-        }
-        
-        .btn-empty-action {
-            padding: 10px 20px;
-            font-size: 13px;
+        .google-teacher-name {
+            gap: var(--google-spacing-sm);
         }
     }
 
-    /* Very Small Devices (≤400px) */
-    @media (max-width: 400px) {
-        .stats-card {
-            padding: 14px;
-            gap: 10px;
+    @media (max-width: 576px) {
+        .google-stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--google-spacing-sm);
+            padding: var(--google-spacing-sm);
         }
-        
-        .stats-icon {
-            width: 40px;
-            height: 40px;
+
+        .google-stat-card {
+            padding: var(--google-spacing-sm) var(--google-spacing-md);
         }
-        
-        .stats-icon i {
-            font-size: 18px;
+
+        .google-table-wrapper {
+            margin: 0 var(--google-spacing-sm);
         }
-        
-        .stats-value {
-            font-size: 20px;
+
+        .google-stat-label {
+            font-size: 0.7rem;
         }
-        
-        .stats-label {
-            font-size: 11px;
+
+        .google-stat-value {
+            font-size: 1.5rem;
         }
-        
-        .table-header {
-            padding: 14px;
+
+        .google-table-header {
+            padding: var(--google-spacing-sm) var(--google-spacing-md);
         }
-        
-        .table-title {
-            font-size: 14px;
+
+        .google-table-title {
+            font-size: 0.9rem;
         }
-        
-        .table-subtitle {
-            font-size: 11px;
+
+        .google-table thead th,
+        .google-table tbody td {
+            padding: var(--google-spacing-xs) var(--google-spacing-sm);
+            font-size: 0.7rem;
         }
-        
-        .modern-table {
-            min-width: 750px;
+
+        .google-avatar {
+            width: 28px;
+            height: 28px;
+            font-size: 0.65rem;
         }
-        
-        .teacher-avatar {
-            width: 30px;
-            height: 30px;
-            font-size: 10px;
+
+        .google-badge {
+            font-size: 0.65rem;
+            padding: 2px 8px;
         }
-        
-        .empty-icon {
-            width: 50px;
-            height: 50px;
+
+        .google-action-btn {
+            width: 32px;
+            height: 32px;
         }
-        
-        .empty-icon i {
-            font-size: 24px;
-        }
-        
-        .empty-title {
-            font-size: 16px;
+
+        .google-action-btn svg {
+            width: 16px;
+            height: 16px;
         }
     }
 </style>
@@ -798,12 +550,11 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
 <script type="text/javascript">
-    $('.show-alert-delete-box').click(function(event) {
+    $('.delete-enseignant').click(function(event) {
         var form = $(this).closest("form");
-        var name = $(this).data("name");
         event.preventDefault();
         swal({
-            title: "Voulez-vous vraiment supprimer cet enregistrement ?",
+            title: "Voulez-vous vraiment supprimer cet enseignant ?",
             text: "Si vous le supprimez, il disparaîtra pour toujours.",
             icon: "warning",
             type: "warning",

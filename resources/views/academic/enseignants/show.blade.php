@@ -20,138 +20,126 @@
 @endsection
 
 @section('content')
-<div class="container-fluid">
-    <div class="row">
+<div class="google-container">
+    <div class="google-detail-wrapper">
         <!-- Profile Summary -->
-        <div class="col-lg-4">
-            <div class="profile-card">
-                <div class="profile-header">
-                    <div class="profile-avatar">
+        <div class="google-detail-sidebar">
+            <div class="google-profile-card">
+                <div class="google-profile-header">
+                    <div class="google-profile-avatar">
                         {{ substr($enseignants->prenom, 0, 1) }}{{ substr($enseignants->nom, 0, 1) }}
                     </div>
-                    <h4 class="profile-name">{{ $enseignants->prenom }} {{ $enseignants->nom }}</h4>
-                    <p class="profile-role">{{ $enseignants->matiere }}</p>
-                    <span class="role-badge">{{ __('app.enseignant') }}</span>
+                    <h4 class="google-profile-name">{{ $enseignants->prenom }} {{ $enseignants->nom }}</h4>
+                    <!-- <p class="google-profile-role">
+                        @if($enseignants->matieres && $enseignants->matieres->count() > 0)
+                            {{ __('app.' . $enseignants->matieres->pluck('code_matiere')->join(', app.')) }}
+                        @else
+                            {{ __('app.aucune_matiere') }}
+                        @endif
+                    </p> -->
+                    <span class="google-role-badge">{{ __('app.enseignant') }}</span>
                 </div>
 
-                <div class="profile-stats">
-                    <div class="stat-item">
-                        <div class="stat-value">{{ $enseignants->id_enseignant }}</div>
-                        <div class="stat-label">ID Enseignant</div>
+                <div class="google-profile-stats">
+                    <div class="google-stat-item">
+                        <div class="google-stat-label">{{ __('app.id_enseignant') }}</div>
+                        <div class="google-stat-value">{{ $enseignants->id_enseignant }}</div>
                     </div>
-                    <div class="stat-divider"></div>
-                    <div class="stat-item">
-                        <div class="stat-value">{{ $enseignants->classe ? $enseignants->classe->nom_classe : 'N/A' }}</div>
-                        <div class="stat-label">Classe assignée</div>
+                    <div class="google-stat-item">
+                        <div class="google-stat-label">{{ __('app.classes_assignees') }}</div>
+                        <div class="google-stat-value">
+                            @if($enseignants->classes && $enseignants->classes->count() > 0)
+                                {{ $enseignants->classes->count() }}
+                            @else
+                                0
+                            @endif
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Detailed Information -->
-        <div class="col-lg-8">
-            <div class="info-card">
-                <div class="card-header-section">
-                    <h5 class="card-title">{{ __('app.informations_personnelles') }}</h5>
-                </div>
+        <div class="google-detail-main">
+            <div class="google-info-card">
+                <h5 class="google-section-title">{{ __('app.informations_personnelles') }}</h5>
                 
-                <div class="info-grid">
-                    <div class="info-item">
-                        <div class="info-label">{{ __('app.nom_complet') }}</div>
-                        <div class="info-value">{{ $enseignants->prenom }} {{ $enseignants->nom }}</div>
+                <div class="google-info-grid">
+                    <div class="google-info-item">
+                        <div class="google-info-label">{{ __('app.nom_complet') }}</div>
+                        <div class="google-info-value">{{ $enseignants->prenom }} {{ $enseignants->nom }}</div>
                     </div>
                     
-                    <div class="info-item">
-                        <div class="info-label">{{ __('app.email') }}</div>
-                        <div class="info-value">
-                            <a href="mailto:{{ $enseignants->email }}" class="contact-link">
-                                <i class="bi bi-envelope"></i>
+                    <div class="google-info-item">
+                        <div class="google-info-label">{{ __('app.email') }}</div>
+                        <div class="google-info-value">
+                            <a href="mailto:{{ $enseignants->email }}" class="google-link">
                                 {{ $enseignants->email }}
                             </a>
                         </div>
                     </div>
                     
-                    <div class="info-item">
-                        <div class="info-label">{{ __('app.telephone') }}</div>
-                        <div class="info-value">
-                            <a href="tel:{{ $enseignants->telephone }}" class="contact-link">
-                                <i class="bi bi-telephone"></i>
+                    <div class="google-info-item">
+                        <div class="google-info-label">{{ __('app.telephone') }}</div>
+                        <div class="google-info-value">
+                            <a href="tel:{{ $enseignants->telephone }}" class="google-link">
                                 {{ $enseignants->telephone }}
                             </a>
                         </div>
                     </div>
                     
-                    <div class="info-item">
-                        <div class="info-label">{{ __('app.matiere_enseignee') }}</div>
-                        <div class="info-value">
-                            <span class="subject-badge">{{ $enseignants->matiere }}</span>
-                        </div>
-                    </div>
-                    
-                    <div class="info-item">
-                        <div class="info-label">{{ __('app.classe_assignee') }}</div>
-                        <div class="info-value">
-                            @if($enseignants->classe)
-                                <span class="class-badge">{{ $enseignants->classe->nom_classe }}</span>
+                    <div class="google-info-item">
+                        <div class="google-info-label">{{ __('app.matieres_enseignees') }}</div>
+                        <div class="google-info-value">
+                            @if($enseignants->matieres && $enseignants->matieres->count() > 0)
+                                @foreach($enseignants->matieres as $matiere)
+                                    <span class="google-badge google-badge-blue">{{ __('app.' . $matiere->code_matiere) }}</span>
+                                @endforeach
                             @else
-                                <span class="unassigned-text">{{ __('app.aucune_classe_assignee') }}</span>
+                                <span class="google-text-na">{{ __('app.aucune_matiere') }}</span>
                             @endif
                         </div>
                     </div>
                     
-                    <div class="info-item">
-                        <div class="info-label">{{ __('app.date_ajout') }}</div>
-                        <div class="info-value">{{ $enseignants->created_at->format('d/m/Y à H:i') }}</div>
+                    <div class="google-info-item">
+                        <div class="google-info-label">{{ __('app.classes_assignees') }}</div>
+                        <div class="google-info-value">
+                            @if($enseignants->classes && $enseignants->classes->count() > 0)
+                                @foreach($enseignants->classes as $classe)
+                                    <span class="google-badge google-badge-neutral">{{ $classe->nom_classe }}</span>
+                                @endforeach
+                            @else
+                                <span class="google-text-na">{{ __('app.aucune_classe_assignee') }}</span>
+                            @endif
+                        </div>
+                    </div>
+                    
+                    <div class="google-info-item">
+                        <div class="google-info-label">{{ __('app.date_ajout') }}</div>
+                        <div class="google-info-value">{{ $enseignants->created_at->format('d/m/Y à H:i') }}</div>
                     </div>
                 </div>
             </div>
 
             <!-- Activity Card -->
-            <div class="activity-card">
-                <div class="card-header-section">
-                    <h5 class="card-title">{{ __('app.activite_pedagogique') }}</h5>
-                </div>
+            <div class="google-activity-card">
+                <h5 class="google-section-title">{{ __('app.activite_pedagogique') }}</h5>
                 
-                <div class="activity-stats">
-                    <div class="activity-stat">
-                        <div class="activity-icon" style="background: linear-gradient(135deg, #0dcaf0 0%, #0aa2c0 100%);">
-                            <i class="bi bi-book"></i>
-                        </div>
-                        <div class="activity-info">
-                            <div class="activity-value">0</div>
-                            <div class="activity-label">{{ __('app.cours_dispenses') }}</div>
-                        </div>
+                <div class="google-activity-stats">
+                    <div class="google-activity-stat">
+                        <div class="google-activity-label">{{ __('app.cours_dispenses') }}</div>
+                        <div class="google-activity-value">0</div>
                     </div>
                     
-                    <div class="activity-stat">
-                        <div class="activity-icon" style="background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);">
-                            <i class="bi bi-clipboard-check"></i>
-                        </div>
-                        <div class="activity-info">
-                            <div class="activity-value">0</div>
-                            <div class="activity-label">{{ __('app.evaluations_creees') }}</div>
-                        </div>
+                    <div class="google-activity-stat">
+                        <div class="google-activity-label">{{ __('app.evaluations_creees') }}</div>
+                        <div class="google-activity-value">0</div>
                     </div>
                     
-                    <div class="activity-stat">
-                        <div class="activity-icon" style="background: linear-gradient(135deg, #198754 0%, #146c43 100%);">
-                            <i class="bi bi-people"></i>
-                        </div>
-                        <div class="activity-info">
-                            <div class="activity-value">{{ $enseignants->classe ? $enseignants->classe->etudiants()->count() : 0 }}</div>
-                            <div class="activity-label">{{ __('app.etudiants') }}</div>
-                        </div>
+                    <div class="google-activity-stat">
+                        <div class="google-activity-label">{{ __('app.classes') }}</div>
+                        <div class="google-activity-value">{{ $enseignants->classes ? $enseignants->classes->count() : 0 }}</div>
                     </div>
-                </div>
-                
-                <div class="quote-section">
-                    <div class="quote-icon">
-                        <i class="bi bi-quote"></i>
-                    </div>
-                    <blockquote class="quote-text">
-                        <p>"{{ __('app.mission_educative_quote') }}"</p>
-                        <footer>{{ __('app.mission_educative') }}</footer>
-                    </blockquote>
                 </div>
             </div>
         </div>
@@ -162,487 +150,304 @@
 @push('styles')
 <style>
 :root {
-    --md-primary: #0d6efd;
-    --md-gray-50: #fafafa;
-    --md-gray-100: #f5f5f5;
-    --md-gray-200: #eeeeee;
-    --md-gray-300: #e0e0e0;
-    --md-gray-400: #bdbdbd;
-    --md-gray-500: #9e9e9e;
-    --md-gray-600: #757575;
-    --md-gray-700: #616161;
-    --md-gray-800: #424242;
-    --md-gray-900: #212529;
-    --md-radius: 12px;
-    --md-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    --md-shadow-lg: 0 8px 16px rgba(0,0,0,0.12);
+    --google-blue: #1a73e8;
+    --google-blue-hover: #1967d2;
+    --google-gray-50: #f8f9fa;
+    --google-gray-100: #f1f3f4;
+    --google-gray-200: #e8eaed;
+    --google-gray-300: #dadce0;
+    --google-gray-500: #9aa0a6;
+    --google-gray-600: #80868b;
+    --google-gray-700: #5f6368;
+    --google-gray-900: #202124;
+    --google-spacing-xs: 4px;
+    --google-spacing-sm: 8px;
+    --google-spacing-md: 16px;
+    --google-spacing-lg: 24px;
+    --google-spacing-xl: 32px;
+    --google-transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.google-container {
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.google-detail-wrapper {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: var(--google-spacing-lg);
+    padding: var(--google-spacing-lg);
+}
+
+.google-detail-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: var(--google-spacing-lg);
+}
+
+.google-detail-main {
+    display: flex;
+    flex-direction: column;
+    gap: var(--google-spacing-lg);
 }
 
 /* Profile Card */
-.profile-card {
+.google-profile-card {
     background: white;
-    border-radius: var(--md-radius);
-    padding: 32px;
-    box-shadow: var(--md-shadow);
-    margin-bottom: 24px;
+    border: 1px solid var(--google-gray-300);
+    border-radius: 8px;
+    padding: var(--google-spacing-lg);
 }
 
-.profile-header {
+.google-profile-header {
     text-align: center;
+    margin-bottom: var(--google-spacing-lg);
 }
 
-.profile-avatar {
-    width: 96px;
-    height: 96px;
-    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+.google-profile-avatar {
+    width: 80px;
+    height: 80px;
+    background: var(--google-blue);
     color: white;
     border-radius: 50%;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 36px;
-    font-weight: 700;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+    font-size: 2rem;
+    font-weight: 500;
+    margin-bottom: var(--google-spacing-md);
 }
 
-.profile-name {
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--md-gray-900);
-    margin-bottom: 8px;
+.google-profile-name {
+    font-size: 1.25rem;
+    font-weight: 400;
+    color: var(--google-gray-900);
+    margin: 0 0 var(--google-spacing-xs) 0;
 }
 
-.profile-role {
-    font-size: 15px;
-    color: var(--md-gray-600);
-    margin-bottom: 16px;
+.google-profile-role {
+    font-size: 0.875rem;
+    color: var(--google-gray-600);
+    margin: 0 0 var(--google-spacing-md) 0;
 }
 
-.role-badge {
-    display: inline-flex;
-    padding: 6px 16px;
-    background: rgba(13, 110, 253, 0.1);
-    color: var(--md-primary);
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 600;
+.google-role-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    background: #e8f0fe;
+    color: var(--google-blue);
+    border-radius: 16px;
+    font-size: 0.75rem;
+    font-weight: 500;
 }
 
-.profile-stats {
+.google-profile-stats {
     display: flex;
-    margin-top: 32px;
-    padding-top: 24px;
-    border-top: 1px solid var(--md-gray-200);
+    flex-direction: column;
+    gap: var(--google-spacing-md);
+    margin-top: var(--google-spacing-lg);
+    padding-top: var(--google-spacing-lg);
+    border-top: 1px solid var(--google-gray-300);
 }
 
-.stat-item {
-    flex: 1;
+.google-stat-item {
     text-align: center;
 }
 
-.stat-value {
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--md-primary);
-    margin-bottom: 4px;
+.google-stat-label {
+    font-size: 0.75rem;
+    color: var(--google-gray-600);
+    margin-bottom: var(--google-spacing-xs);
 }
 
-.stat-label {
-    font-size: 12px;
-    color: var(--md-gray-600);
-}
-
-.stat-divider {
-    width: 1px;
-    background: var(--md-gray-200);
+.google-stat-value {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--google-gray-900);
 }
 
 /* Info Card */
-.info-card {
+.google-info-card {
     background: white;
-    border-radius: var(--md-radius);
-    padding: 32px;
-    box-shadow: var(--md-shadow);
-    margin-bottom: 24px;
+    border: 1px solid var(--google-gray-300);
+    border-radius: 8px;
+    padding: var(--google-spacing-lg);
 }
 
-.card-header-section {
-    margin-bottom: 24px;
+.google-section-title {
+    font-size: 1.125rem;
+    font-weight: 400;
+    color: var(--google-gray-900);
+    margin: 0 0 var(--google-spacing-lg) 0;
 }
 
-.card-title {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--md-gray-900);
-    margin: 0;
-}
-
-.info-grid {
+.google-info-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 24px;
+    gap: var(--google-spacing-lg);
 }
 
-.info-item {
+.google-info-item {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: var(--google-spacing-xs);
 }
 
-.info-label {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--md-gray-600);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.info-value {
-    font-size: 14px;
+.google-info-label {
+    font-size: 0.75rem;
     font-weight: 500;
-    color: var(--md-gray-900);
+    color: var(--google-gray-600);
 }
 
-.contact-link {
-    color: var(--md-primary);
+.google-info-value {
+    font-size: 0.875rem;
+    color: var(--google-gray-900);
+}
+
+.google-link {
+    color: var(--google-blue);
     text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.3s;
+    transition: var(--google-transition);
 }
 
-.contact-link:hover {
-    color: var(--md-primary);
-    transform: translateX(4px);
+.google-link:hover {
+    color: var(--google-blue-hover);
+    text-decoration: underline;
 }
 
-.subject-badge {
-    display: inline-flex;
-    padding: 6px 14px;
-    background: rgba(13, 110, 253, 0.1);
-    color: var(--md-primary);
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 600;
+.google-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    font-size: 0.75rem;
+    border-radius: 16px;
+    font-weight: 500;
+    margin: 2px;
 }
 
-.class-badge {
-    display: inline-flex;
-    padding: 6px 14px;
-    background: var(--md-gray-100);
-    color: var(--md-gray-700);
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 600;
+.google-badge-blue {
+    background: #e8f0fe;
+    color: #1a73e8;
 }
 
-.unassigned-text {
-    color: var(--md-gray-500);
+.google-badge-neutral {
+    background: var(--google-gray-100);
+    color: var(--google-gray-700);
+}
+
+.google-text-na {
+    color: var(--google-gray-500);
     font-style: italic;
 }
 
 /* Activity Card */
-.activity-card {
+.google-activity-card {
     background: white;
-    border-radius: var(--md-radius);
-    padding: 32px;
-    box-shadow: var(--md-shadow);
+    border: 1px solid var(--google-gray-300);
+    border-radius: 8px;
+    padding: var(--google-spacing-lg);
 }
 
-.activity-stats {
+.google-activity-stats {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-    margin-bottom: 32px;
+    gap: var(--google-spacing-md);
 }
 
-.activity-stat {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 20px;
-    background: var(--md-gray-50);
-    border-radius: 10px;
-    transition: all 0.3s;
+.google-activity-stat {
+    text-align: center;
+    padding: var(--google-spacing-md);
+    background: var(--google-gray-50);
+    border-radius: 4px;
 }
 
-.activity-stat:hover {
-    background: white;
-    box-shadow: var(--md-shadow);
-    transform: translateY(-2px);
+.google-activity-label {
+    font-size: 0.75rem;
+    color: var(--google-gray-600);
+    margin-bottom: var(--google-spacing-xs);
 }
 
-.activity-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 20px;
-    flex-shrink: 0;
-}
-
-.activity-info {
-    flex: 1;
-}
-
-.activity-value {
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--md-gray-900);
-    margin-bottom: 2px;
-}
-
-.activity-label {
-    font-size: 11px;
-    color: var(--md-gray-600);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-/* Quote Section */
-.quote-section {
-    background: linear-gradient(135deg, rgba(13, 110, 253, 0.05) 0%, rgba(13, 110, 253, 0.02) 100%);
-    border-left: 4px solid var(--md-primary);
-    border-radius: 8px;
-    padding: 24px;
-    display: flex;
-    gap: 20px;
-}
-
-.quote-icon {
-    width: 40px;
-    height: 40px;
-    background: var(--md-primary);
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 20px;
-    flex-shrink: 0;
-}
-
-.quote-text {
-    flex: 1;
-    margin: 0;
-}
-
-.quote-text p {
-    font-size: 14px;
-    font-style: italic;
-    color: var(--md-gray-700);
-    margin-bottom: 8px;
-    line-height: 1.6;
-}
-
-.quote-text footer {
-    font-size: 12px;
-    color: var(--md-gray-600);
-    font-style: normal;
-}
-
-/* RTL Support */
-[dir="rtl"] .contact-link:hover {
-    transform: translateX(-4px);
-}
-
-[dir="rtl"] .quote-section {
-    border-left: none;
-    border-right: 4px solid var(--md-primary);
-    flex-direction: row-reverse;
-}
-
-[dir="rtl"] .activity-stat {
-    flex-direction: row-reverse;
+.google-activity-value {
+    font-size: 1.5rem;
+    font-weight: 400;
+    color: var(--google-gray-900);
 }
 
 /* Responsive Design */
-/* Large Tablets and Small Laptops (≤1200px) */
-@media (max-width: 1200px) {
-    .profile-stats {
-        gap: 20px;
-    }
-    
-    .activity-stats {
-        gap: 16px;
+@media (max-width: 1024px) {
+    .google-detail-wrapper {
+        grid-template-columns: 280px 1fr;
+        padding: var(--google-spacing-md);
     }
 }
 
-/* Tablets (≤992px) */
-@media (max-width: 992px) {
-    .info-grid {
-        grid-template-columns: 1fr;
-        gap: 16px;
-    }
-    
-    .activity-stats {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 16px;
-    }
-    
-    .profile-header {
-        flex-direction: column;
-        text-align: center;
-        gap: 20px;
-    }
-    
-    .profile-stats {
-        justify-content: center;
-    }
-}
-
-/* Small Tablets (≤768px) */
 @media (max-width: 768px) {
-    .profile-card,
-    .info-card,
-    .activity-card {
-        padding: 24px;
-        border-radius: 10px;
-    }
-    
-    .profile-avatar {
-        width: 80px;
-        height: 80px;
-        font-size: 32px;
-    }
-    
-    .profile-name {
-        font-size: 22px;
-    }
-    
-    .profile-role {
-        font-size: 14px;
-    }
-    
-    .stat-value {
-        font-size: 22px;
-    }
-    
-    .card-header h6 {
-        font-size: 16px;
-    }
-    
-    .activity-stats {
+    .google-detail-wrapper {
         grid-template-columns: 1fr;
-        gap: 12px;
+        padding: var(--google-spacing-md);
     }
-    
-    .quote-section {
-        flex-direction: column;
-        gap: 16px;
-        padding: 20px;
-    }
-    
-    .quote-icon {
-        width: 40px;
-        height: 40px;
-        font-size: 18px;
-    }
-}
 
-/* Mobile Devices (≤576px) */
-@media (max-width: 576px) {
-    .profile-card,
-    .info-card,
-    .activity-card {
-        padding: 20px;
+    .google-info-grid {
+        grid-template-columns: 1fr;
     }
-    
-    .profile-avatar {
-        width: 72px;
-        height: 72px;
-        font-size: 28px;
-    }
-    
-    .profile-name {
-        font-size: 20px;
-    }
-    
-    .profile-stats {
-        flex-direction: column;
-        gap: 12px;
-        width: 100%;
-    }
-    
-    .stat-item {
-        width: 100%;
-        text-align: center;
-        padding: 12px;
-        background: var(--md-gray-50);
-        border-radius: 8px;
-    }
-    
-    .stat-divider {
-        display: none;
-    }
-    
-    .info-item {
-        gap: 8px;
-    }
-    
-    .info-label {
-        font-size: 12px;
-    }
-    
-    .info-value {
-        font-size: 14px;
-    }
-    
-    .card-header {
-        padding: 16px 20px;
-        gap: 12px;
-    }
-    
-    .card-icon {
-        width: 36px;
-        height: 36px;
-        font-size: 16px;
-    }
-    
-    .card-header h6 {
-        font-size: 15px;
-    }
-    
-    .activity-stat-icon {
-        width: 44px;
-        height: 44px;
-        font-size: 20px;
-    }
-    
-    .activity-stat-value {
-        font-size: 20px;
-    }
-    
-    .activity-stat-label {
-        font-size: 12px;
-    }
-}
 
-/* Extra Small Devices (≤400px) */
-@media (max-width: 400px) {
-    .profile-card,
-    .info-card,
-    .activity-card {
-        padding: 16px;
+    .google-activity-stats {
+        grid-template-columns: repeat(3, 1fr);
     }
-    
-    .profile-name {
-        font-size: 18px;
+
+    .google-profile-card,
+    .google-info-card,
+    .google-activity-card {
+        padding: var(--google-spacing-md);
     }
-    
-    .profile-avatar {
+
+    .google-profile-avatar {
         width: 64px;
         height: 64px;
-        font-size: 24px;
+        font-size: 1.5rem;
     }
-    
-    .card-header h6 {
-        font-size: 14px;
+
+    .google-profile-name {
+        font-size: 1.125rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .google-detail-wrapper {
+        padding: var(--google-spacing-sm);
+    }
+
+    .google-profile-card,
+    .google-info-card,
+    .google-activity-card {
+        padding: var(--google-spacing-sm);
+    }
+
+    .google-profile-avatar {
+        width: 56px;
+        height: 56px;
+        font-size: 1.25rem;
+    }
+
+    .google-section-title {
+        font-size: 1rem;
+    }
+
+    .google-activity-stats {
+        gap: var(--google-spacing-sm);
+    }
+
+    .google-activity-stat {
+        padding: var(--google-spacing-sm);
+    }
+
+    .google-activity-label {
+        font-size: 0.625rem;
+    }
+
+    .google-activity-value {
+        font-size: 1.125rem;
     }
 }
 </style>

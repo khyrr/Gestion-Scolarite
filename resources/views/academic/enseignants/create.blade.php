@@ -15,114 +15,107 @@
 @endsection
 
 @section('content')
-<div class="container-fluid">
-    <div class="row justify-content-center">
-        <div class="col-lg-9">
-            <div class="form-card">
-                <div class="form-header">
-                    <div class="form-icon-wrapper">
-                        <i class="bi bi-person-plus"></i>
+<div class="google-container">
+    <div class="google-form-wrapper">
+        <div class="google-form-card">
+            <div class="google-form-header">
+                <h1 class="google-form-title">{{ __('app.ajouter_enseignant') }}</h1>
+                <p class="google-form-subtitle">Remplissez les informations de l'enseignant</p>
+            </div>
+
+        <form method="POST" action="{{ route('enseignants.store') }}">
+            @csrf
+            
+            <div class="google-form-section">
+                <div class="google-form-row">
+                    <div class="google-form-group">
+                        <label class="google-label">{{ __('app.nom') }} <span class="google-required">*</span></label>
+                        <input type="text" class="google-input @error('nom') is-invalid @enderror" 
+                               id="nom" name="nom" value="{{ old('nom') }}" required 
+                               placeholder="{{ __('app.nom_famille') }}">
+                        @error('nom')
+                            <span class="google-error">{{ $message }}</span>
+                        @enderror
                     </div>
-                    <div>
-                        <h5 class="form-title">{{ __('app.ajouter_enseignant') }}</h5>
-                        <p class="form-subtitle">Remplissez les informations de l'enseignant</p>
+                    
+                    <div class="google-form-group">
+                        <label class="google-label">{{ __('app.prenom') }} <span class="google-required">*</span></label>
+                        <input type="text" class="google-input @error('prenom') is-invalid @enderror" 
+                               id="prenom" name="prenom" value="{{ old('prenom') }}" required 
+                               placeholder="{{ __('app.prenom') }}">
+                        @error('prenom')
+                            <span class="google-error">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="google-form-group">
+                        <label class="google-label">{{ __('app.email') }} <span class="google-required">*</span></label>
+                        <input type="email" class="google-input @error('email') is-invalid @enderror" 
+                               id="email" name="email" value="{{ old('email') }}" required 
+                               placeholder="exemple@ecole.com">
+                        @error('email')
+                            <span class="google-error">{{ $message }}</span>
+                        @enderror
+                    </div>
+                    
+                    <div class="google-form-group">
+                        <label class="google-label">{{ __('app.telephone') }} <span class="google-required">*</span></label>
+                        <input type="tel" class="google-input @error('telephone') is-invalid @enderror" 
+                               id="telephone" name="telephone" value="{{ old('telephone') }}" required 
+                               placeholder="+222 XX XX XX XX">
+                        @error('telephone')
+                            <span class="google-error">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="google-form-group">
+                        <label class="google-label">{{ __('app.classe_assignee') }} <span class="google-required">*</span></label>
+                        <select class="google-input @error('id_classe') is-invalid @enderror" 
+                                id="id_classe" name="id_classe" required>
+                            <option value="">{{ __('app.selectionner_classe') }}</option>
+                            @foreach ($classes as $classe)
+                                <option value="{{ $classe->id_classe }}" {{ old('id_classe') == $classe->id_classe ? 'selected' : '' }}>
+                                    {{ $classe->nom_classe }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('id_classe')
+                            <span class="google-error">{{ $message }}</span>
+                        @enderror
+                    </div>
+                    
+                    <div class="google-form-group">
+                        <label class="google-label">{{ __('app.matiere_enseignee') }} <span class="google-required">*</span></label>
+                        <select class="google-input @error('matiere') is-invalid @enderror" 
+                                id="matiere" name="matiere" required>
+                            <option value="">{{ __('app.selectionner_matiere') }}</option>
+                            <option value="Mathématiques" {{ old('matiere') == 'Mathématiques' ? 'selected' : '' }}>Mathématiques</option>
+                            <option value="Français" {{ old('matiere') == 'Français' ? 'selected' : '' }}>Français</option>
+                            <option value="Anglais" {{ old('matiere') == 'Anglais' ? 'selected' : '' }}>Anglais</option>
+                            <option value="Sciences Physiques" {{ old('matiere') == 'Sciences Physiques' ? 'selected' : '' }}>Sciences Physiques</option>
+                            <option value="Biologie" {{ old('matiere') == 'Biologie' ? 'selected' : '' }}>Biologie</option>
+                            <option value="Histoire-Géographie" {{ old('matiere') == 'Histoire-Géographie' ? 'selected' : '' }}>Histoire-Géographie</option>
+                            <option value="اللغة العربية" {{ old('matiere') == 'اللغة العربية' ? 'selected' : '' }}>اللغة العربية</option>
+                            <option value="التربية الإسلامية" {{ old('matiere') == 'التربية الإسلامية' ? 'selected' : '' }}>التربية الإسلامية</option>
+                            <option value="التربية المدنية" {{ old('matiere') == 'التربية المدنية' ? 'selected' : '' }}>التربية المدنية</option>
+                            <option value="التربية البدنية" {{ old('matiere') == 'التربية البدنية' ? 'selected' : '' }}>التربية البدنية</option>
+                        </select>
+                        @error('matiere')
+                            <span class="google-error">{{ $message }}</span>
+                        @enderror
                     </div>
                 </div>
-
-                <form method="POST" action="{{ route('enseignants.store') }}">
-                    @csrf
-                    
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label class="form-label-md">{{ __('app.nom') }} <span class="required">*</span></label>
-                            <input type="text" class="form-control-md @error('nom') is-invalid @enderror" 
-                                   id="nom" name="nom" value="{{ old('nom') }}" required 
-                                   placeholder="{{ __('app.nom_famille') }}">
-                            @error('nom')
-                                <span class="error-message">{{ $message }}</span>
-                            @enderror
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label-md">{{ __('app.prenom') }} <span class="required">*</span></label>
-                            <input type="text" class="form-control-md @error('prenom') is-invalid @enderror" 
-                                   id="prenom" name="prenom" value="{{ old('prenom') }}" required 
-                                   placeholder="{{ __('app.prenom') }}">
-                            @error('prenom')
-                                <span class="error-message">{{ $message }}</span>
-                            @enderror
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label-md">{{ __('app.email') }} <span class="required">*</span></label>
-                            <input type="email" class="form-control-md @error('email') is-invalid @enderror" 
-                                   id="email" name="email" value="{{ old('email') }}" required 
-                                   placeholder="exemple@ecole.com">
-                            @error('email')
-                                <span class="error-message">{{ $message }}</span>
-                            @enderror
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label-md">{{ __('app.telephone') }} <span class="required">*</span></label>
-                            <input type="tel" class="form-control-md @error('telephone') is-invalid @enderror" 
-                                   id="telephone" name="telephone" value="{{ old('telephone') }}" required 
-                                   placeholder="+222 XX XX XX XX">
-                            @error('telephone')
-                                <span class="error-message">{{ $message }}</span>
-                            @enderror
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label-md">{{ __('app.classe_assignee') }} <span class="required">*</span></label>
-                            <select class="form-control-md @error('id_classe') is-invalid @enderror" 
-                                    id="id_classe" name="id_classe" required>
-                                <option value="">{{ __('app.selectionner_classe') }}</option>
-                                @foreach ($classes as $classe)
-                                    <option value="{{ $classe->id_classe }}" {{ old('id_classe') == $classe->id_classe ? 'selected' : '' }}>
-                                        {{ $classe->nom_classe }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('id_classe')
-                                <span class="error-message">{{ $message }}</span>
-                            @enderror
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label-md">{{ __('app.matiere_enseignee') }} <span class="required">*</span></label>
-                            <select class="form-control-md @error('matiere') is-invalid @enderror" 
-                                    id="matiere" name="matiere" required>
-                                <option value="">{{ __('app.selectionner_matiere') }}</option>
-                                <option value="Mathématiques" {{ old('matiere') == 'Mathématiques' ? 'selected' : '' }}>Mathématiques</option>
-                                <option value="Français" {{ old('matiere') == 'Français' ? 'selected' : '' }}>Français</option>
-                                <option value="Anglais" {{ old('matiere') == 'Anglais' ? 'selected' : '' }}>Anglais</option>
-                                <option value="Sciences Physiques" {{ old('matiere') == 'Sciences Physiques' ? 'selected' : '' }}>Sciences Physiques</option>
-                                <option value="Biologie" {{ old('matiere') == 'Biologie' ? 'selected' : '' }}>Biologie</option>
-                                <option value="Histoire-Géographie" {{ old('matiere') == 'Histoire-Géographie' ? 'selected' : '' }}>Histoire-Géographie</option>
-                                <option value="اللغة العربية" {{ old('matiere') == 'اللغة العربية' ? 'selected' : '' }}>اللغة العربية</option>
-                                <option value="التربية الإسلامية" {{ old('matiere') == 'التربية الإسلامية' ? 'selected' : '' }}>التربية الإسلامية</option>
-                                <option value="التربية المدنية" {{ old('matiere') == 'التربية المدنية' ? 'selected' : '' }}>التربية المدنية</option>
-                                <option value="التربية البدنية" {{ old('matiere') == 'التربية البدنية' ? 'selected' : '' }}>التربية البدنية</option>
-                            </select>
-                            @error('matiere')
-                                <span class="error-message">{{ $message }}</span>
-                            @enderror
-                        </div>
-                    </div>
-
-                    <div class="form-actions">
-                        <a href="{{ route('enseignants.index') }}" class="btn-md btn-secondary">
-                            <i class="bi bi-x-circle"></i>
-                            {{ __('app.annuler') }}
-                        </a>
-                        <button type="submit" class="btn-md btn-primary">
-                            <i class="bi bi-check-circle"></i>
-                            {{ __('app.enregistrer') }}
-                        </button>
-                    </div>
-                </form>
             </div>
+
+            <div class="google-form-actions">
+                <a href="{{ route('enseignants.index') }}" class="google-button google-button-text">
+                    {{ __('app.annuler') }}
+                </a>
+                <button type="submit" class="google-button google-button-primary">
+                    {{ __('app.enregistrer') }}
+                </button>
+            </div>
+        </form>
         </div>
     </div>
 </div>
@@ -204,187 +197,208 @@
 @push('styles')
 <style>
 :root {
-    --md-primary: #0d6efd;
-    --md-primary-dark: #0a58ca;
-    --md-gray-50: #fafafa;
-    --md-gray-100: #f5f5f5;
-    --md-gray-200: #eeeeee;
-    --md-gray-300: #e0e0e0;
-    --md-gray-600: #757575;
-    --md-gray-700: #616161;
-    --md-gray-800: #424242;
-    --md-gray-900: #212529;
-    --md-radius: 12px;
-    --md-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    --google-blue: #1a73e8;
+    --google-blue-hover: #1967d2;
+    --google-blue-light: #e8f0fe;
+    --google-gray-50: #f8f9fa;
+    --google-gray-100: #f1f3f4;
+    --google-gray-200: #e8eaed;
+    --google-gray-300: #dadce0;
+    --google-gray-400: #bdc1c6;
+    --google-gray-500: #9aa0a6;
+    --google-gray-600: #80868b;
+    --google-gray-700: #5f6368;
+    --google-gray-800: #3c4043;
+    --google-gray-900: #202124;
+    --google-spacing-xs: 4px;
+    --google-spacing-sm: 8px;
+    --google-spacing-md: 16px;
+    --google-spacing-lg: 24px;
+    --google-spacing-xl: 32px;
+    --google-spacing-2xl: 48px;
+    --google-shadow-1: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+    --google-shadow-2: 0 1px 3px 0 rgba(60, 64, 67, 0.3), 0 4px 8px 3px rgba(60, 64, 67, 0.15);
+    --google-transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
 }
 
-.form-card {
+/* Container */
+.google-container {
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+/* Form Wrapper */
+.google-form-wrapper {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: var(--google-spacing-lg);
+}
+
+.google-form-card {
     background: white;
-    border-radius: var(--md-radius);
-    padding: 36px;
-    box-shadow: var(--md-shadow);
+    border: 1px solid var(--google-gray-300);
+    border-radius: 8px;
+    padding: var(--google-spacing-xl);
 }
 
-.form-header {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    margin-bottom: 32px;
-    padding-bottom: 24px;
-    border-bottom: 2px solid var(--md-gray-200);
+.google-form-header {
+    margin-bottom: var(--google-spacing-xl);
 }
 
-.form-icon-wrapper {
-    width: 56px;
-    height: 56px;
-    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 24px;
-    flex-shrink: 0;
+.google-form-title {
+    font-size: 2rem;
+    font-weight: 400;
+    color: var(--google-gray-900);
+    margin: 0 0 var(--google-spacing-xs) 0;
 }
 
-.form-title {
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--md-gray-900);
+.google-form-subtitle {
+    font-size: 0.875rem;
+    color: var(--google-gray-600);
     margin: 0;
 }
 
-.form-subtitle {
-    font-size: 14px;
-    color: var(--md-gray-600);
-    margin: 4px 0 0 0;
+.google-form-section {
+    margin-bottom: var(--google-spacing-lg);
 }
 
-.form-grid {
+.google-form-row {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 24px;
-    margin-bottom: 32px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--google-spacing-lg);
 }
 
-.form-group {
+.google-form-group {
     display: flex;
     flex-direction: column;
 }
 
-.form-label-md {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--md-gray-700);
-    margin-bottom: 8px;
+.google-label {
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: var(--google-gray-700);
+    margin-bottom: var(--google-spacing-sm);
 }
 
-.required {
-    color: #dc3545;
+.google-required {
+    color: #d93025;
 }
 
-.form-control-md {
-    padding: 12px 16px;
-    border: 1px solid var(--md-gray-300);
-    border-radius: 8px;
-    font-size: 14px;
-    color: var(--md-gray-900);
-    transition: all 0.3s;
+.google-input {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 0.875rem;
+    color: var(--google-gray-900);
     background: white;
+    border: 1px solid var(--google-gray-300);
+    border-radius: 4px;
+    transition: var(--google-transition);
 }
 
-.form-control-md:focus {
+.google-input:focus {
     outline: none;
-    border-color: var(--md-primary);
-    box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1);
+    border-color: var(--google-blue);
+    box-shadow: 0 0 0 1px var(--google-blue);
 }
 
-.form-control-md.is-invalid {
-    border-color: #dc3545;
+.google-input.is-invalid {
+    border-color: #d93025;
 }
 
-.error-message {
-    color: #dc3545;
-    font-size: 12px;
-    margin-top: 6px;
-    display: block;
+.google-input.is-invalid:focus {
+    box-shadow: 0 0 0 1px #d93025;
 }
 
-.form-actions {
+.google-error {
+    font-size: 0.75rem;
+    color: #d93025;
+    margin-top: var(--google-spacing-xs);
+}
+
+.google-form-actions {
     display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    padding-top: 24px;
-    border-top: 1px solid var(--md-gray-200);
+    justify-content: space-between;
+    align-items: center;
+    padding-top: var(--google-spacing-lg);
+    border-top: 1px solid var(--google-gray-300);
+    gap: var(--google-spacing-sm);
 }
 
-.btn-md {
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+/* Buttons */
+.google-button {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    padding: 8px 16px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: var(--google-transition);
     text-decoration: none;
 }
 
-.btn-primary {
-    background: linear-gradient(135deg, var(--md-primary) 0%, var(--md-primary-dark) 100%);
+.google-button-text {
+    background: transparent;
+    color: var(--google-blue);
+}
+
+.google-button-text:hover {
+    background: var(--google-blue-light);
+    color: var(--google-blue-hover);
+}
+
+.google-button-primary {
+    background: var(--google-blue);
     color: white;
 }
 
-.btn-primary:hover {
-    box-shadow: 0 6px 20px rgba(13, 110, 253, 0.4);
-    transform: translateY(-2px);
+.google-button-primary:hover {
+    background: var(--google-blue-hover);
+    box-shadow: var(--google-shadow-1);
     color: white;
 }
 
-.btn-secondary {
-    background: var(--md-gray-200);
-    color: var(--md-gray-700);
-}
+/* Responsive Design */
 
-.btn-secondary:hover {
-    background: var(--md-gray-300);
-    color: var(--md-gray-800);
-}
-
-[dir="rtl"] .form-header {
-    flex-direction: row-reverse;
-}
-
-[dir="rtl"] .form-actions {
-    justify-content: flex-start;
-}
-
-[dir="rtl"] .btn-md {
-    flex-direction: row-reverse;
-}
-
-@media (max-width: 767px) {
-    .form-card {
-        padding: 24px;
+@media (max-width: 768px) {
+    .google-form-wrapper {
+        padding: var(--google-spacing-md);
     }
-    
-    .form-grid {
+
+    .google-form-card {
+        padding: var(--google-spacing-lg);
+    }
+
+    .google-form-title {
+        font-size: 1.5rem;
+    }
+
+    .google-form-row {
         grid-template-columns: 1fr;
-        gap: 20px;
+        gap: var(--google-spacing-md);
     }
-    
-    .form-header {
-        flex-direction: column;
-        align-items: flex-start;
+}
+
+@media (max-width: 480px) {
+    .google-form-wrapper {
+        padding: var(--google-spacing-sm);
     }
-    
-    .form-actions {
-        flex-direction: column;
+
+    .google-form-card {
+        padding: var(--google-spacing-md);
     }
-    
-    .btn-md {
+
+    .google-form-title {
+        font-size: 1.25rem;
+    }
+
+    .google-form-actions {
+        flex-direction: column-reverse;
+    }
+
+    .google-button {
         width: 100%;
         justify-content: center;
     }

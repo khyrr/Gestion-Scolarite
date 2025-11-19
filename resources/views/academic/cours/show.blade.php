@@ -25,484 +25,439 @@
 @endsection
 
 @section('content')
-    <div class="row">
+<div class="google-container">
+    <!-- Page Header -->
+    <div class="google-page-header">
+        <div>
+            <h1 class="google-page-title">{{ $cours->nom_cours }}</h1>
+            <div class="google-page-meta">
+                <span class="google-meta-badge">{{ ucfirst($cours->jour) }}</span>
+                @if($cours->date_debut && $cours->date_fin)
+                    <span class="google-meta-text">{{ \Carbon\Carbon::parse($cours->date_debut)->format('H:i') }} - {{ \Carbon\Carbon::parse($cours->date_fin)->format('H:i') }}</span>
+                @endif
+            </div>
+        </div>
+        <div class="google-header-actions">
+            <a href="{{ route('cours.index') }}" class="google-btn google-btn-text">
+                {{ __('app.retour') }}
+            </a>
+            @admin
+                <a href="{{ route('cours.edit', $cours) }}" class="google-btn google-btn-text">
+                    {{ __('app.modifier') }}
+                </a>
+                <button type="button" class="google-btn google-btn-text" data-bs-toggle="modal" data-bs-target="#deleteModal" style="color: #d93025;">
+                    {{ __('app.supprimer') }}
+                </button>
+            @endadmin
+        </div>
+    </div>
+
+    <div class="google-layout">
         <!-- Course Details -->
-        <div class="col-lg-4">
-            <div class="detail-card">
-                <div class="detail-header">
-                    <div class="detail-icon" style="background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);">
-                        <i class="fas fa-book-open"></i>
-                    </div>
-                    <h5 class="detail-title">{{ __('app.details_cours') }}</h5>
+        <div class="google-sidebar">
+            <div class="google-detail-card">
+                <div class="google-section-title">{{ __('app.details_cours') }}</div>
+                
+                <div class="google-detail-item">
+                    <div class="google-detail-label">{{ __('app.matiere') }}</div>
+                    <div class="google-detail-value">{{ $cours->matiere->nom_matiere ?? 'N/A' }}</div>
                 </div>
                 
-                <div class="detail-item">
-                    <div class="detail-label">{{ __('app.nom_cours') }}</div>
-                    <div class="detail-value">{{ $cours->nom_cours }}</div>
+                <div class="google-detail-item">
+                    <div class="google-detail-label">{{ __('app.classe') }}</div>
+                    <div class="google-detail-value">{{ $cours->classe->nom_classe ?? 'N/A' }}</div>
                 </div>
                 
-                <div class="detail-item">
-                    <div class="detail-label">{{ __('app.matiere') }}</div>
-                    <div class="detail-value">{{ $cours->matiere->nom_matiere ?? 'N/A' }}</div>
+                <div class="google-detail-item">
+                    <div class="google-detail-label">{{ __('app.enseignant') }}</div>
+                    <div class="google-detail-value">{{ $cours->enseignant->prenom ?? '' }} {{ $cours->enseignant->nom ?? 'Non assigné' }}</div>
                 </div>
                 
-                <div class="detail-item">
-                    <div class="detail-label">{{ __('app.classe') }}</div>
-                    <div class="detail-value">{{ $cours->classe->nom_classe ?? 'N/A' }}</div>
-                </div>
-                
-                <div class="detail-item">
-                    <div class="detail-label">{{ __('app.enseignant') }}</div>
-                    <div class="detail-value">{{ $cours->enseignant->prenom ?? '' }} {{ $cours->enseignant->nom ?? 'Non assigné' }}</div>
-                </div>
-                
-                <div class="detail-item">
-                    <div class="detail-label">{{ __('app.jour') }}</div>
-                    <div class="detail-value"><span class="day-badge">{{ ucfirst($cours->jour) }}</span></div>
-                </div>
-                
-                <div class="detail-item">
-                    <div class="detail-label">{{ __('app.horaire') }}</div>
-                    <div class="detail-value time-range">
+                <div class="google-detail-item">
+                    <div class="google-detail-label">{{ __('app.horaire') }}</div>
+                    <div class="google-detail-value">
                         @if($cours->date_debut && $cours->date_fin)
-                            <span class="time-start">{{ \Carbon\Carbon::parse($cours->date_debut)->format('H:i') }}</span>
-                            <span class="time-separator">→</span>
-                            <span class="time-end">{{ \Carbon\Carbon::parse($cours->date_fin)->format('H:i') }}</span>
+                            {{ \Carbon\Carbon::parse($cours->date_debut)->format('H:i') }} - {{ \Carbon\Carbon::parse($cours->date_fin)->format('H:i') }}
                         @else
                             N/A
                         @endif
                     </div>
                 </div>
                 
-                <div class="detail-item">
-                    <div class="detail-label">{{ __('app.duree') }}</div>
-                    <div class="detail-value">
+                <div class="google-detail-item">
+                    <div class="google-detail-label">{{ __('app.duree') }}</div>
+                    <div class="google-detail-value">
                         @if($cours->date_debut && $cours->date_fin)
-                            <span class="duration-badge">{{ \Carbon\Carbon::parse($cours->date_debut)->diffInMinutes(\Carbon\Carbon::parse($cours->date_fin)) }} {{ __('app.minutes') }}</span>
+                            {{ \Carbon\Carbon::parse($cours->date_debut)->diffInMinutes(\Carbon\Carbon::parse($cours->date_fin)) }} {{ __('app.minutes') }}
                         @else
                             N/A
                         @endif
                     </div>
                 </div>
                 
-                <div class="detail-item">
-                    <div class="detail-label">{{ __('app.salle') }}</div>
-                    <div class="detail-value">{{ $cours->salle ?? 'N/A' }}</div>
+                <div class="google-detail-item">
+                    <div class="google-detail-label">{{ __('app.salle') }}</div>
+                    <div class="google-detail-value">{{ $cours->salle ?? 'N/A' }}</div>
                 </div>
             </div>
 
             <!-- Quick Links -->
-            <div class="quick-links-card">
-                <h6 class="quick-links-title">{{ __('app.liens_rapides') }}</h6>
-                <div class="quick-links-grid">
+            <div class="google-quick-links">
+                <div class="google-section-title">{{ __('app.liens_rapides') }}</div>
+                <div class="google-links-list">
                     @if($cours->classe)
-                        <a href="{{ route('classes.show', $cours->classe) }}" class="quick-link">
-                            <i class="fas fa-users"></i>
-                            <span>{{ __('app.voir_classe') }}</span>
+                        <a href="{{ route('classes.show', $cours->classe) }}" class="google-link-item">
+                            {{ __('app.voir_classe') }}
                         </a>
                     @endif
                     @if($cours->enseignant)
-                        <a href="{{ route('enseignants.show', $cours->enseignant) }}" class="quick-link">
-                            <i class="fas fa-chalkboard-teacher"></i>
-                            <span>{{ __('app.voir_enseignant') }}</span>
+                        <a href="{{ route('enseignants.show', $cours->enseignant) }}" class="google-link-item">
+                            {{ __('app.voir_enseignant') }}
                         </a>
                     @endif
-                    <a href="{{ route('cours.spectacle') }}?classe={{ $cours->id_classe }}" class="quick-link">
-                        <i class="fas fa-calendar-alt"></i>
-                        <span>{{ __('app.voir_emploi_temps') }}</span>
+                    <a href="{{ route('cours.spectacle') }}?classe={{ $cours->id_classe }}" class="google-link-item">
+                        {{ __('app.voir_emploi_temps') }}
                     </a>
                 </div>
             </div>
         </div>
 
         <!-- Course Description & Summary -->
-        <div class="col-lg-8">
-            <div class="description-card">
-                <div class="card-header-section">
-                    <h5 class="card-title">{{ __('app.description') }}</h5>
-                </div>
+        <div class="google-main">
+            <div class="google-content-card">
+                <div class="google-section-title">{{ __('app.description') }}</div>
                 
                 @if($cours->description)
-                    <p class="description-text">{{ $cours->description }}</p>
+                    <p class="google-description-text">{{ $cours->description }}</p>
                 @else
-                    <div class="empty-description">
-                        <div class="empty-icon">
-                            <i class="fas fa-file-alt"></i>
-                        </div>
-                        <p class="empty-text">{{ __('app.aucune_description') }}</p>
+                    <div class="google-empty-state">
+                        <svg class="google-empty-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M14 2V8H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <p class="google-empty-text">{{ __('app.aucune_description') }}</p>
                     </div>
                 @endif
             </div>
 
             <!-- Course Information Summary -->
-            <div class="summary-card">
-                <div class="card-header-section">
-                    <h5 class="card-title">{{ __('app.resume') }}</h5>
-                </div>
+            <div class="google-content-card">
+                <div class="google-section-title">{{ __('app.resume') }}</div>
                 
-                <div class="summary-grid">
-                    <div class="summary-item">
-                        <div class="summary-icon" style="background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);">
-                            <i class="fas fa-book"></i>
-                        </div>
-                        <div class="summary-content">
-                            <div class="summary-label">{{ __('app.matiere') }}</div>
-                            <div class="summary-value">{{ $cours->matiere->nom_matiere ?? 'N/A' }}</div>
-                        </div>
+                <div class="google-summary-grid">
+                    <div class="google-summary-item">
+                        <div class="google-summary-label">{{ __('app.matiere') }}</div>
+                        <div class="google-summary-value">{{ $cours->matiere->nom_matiere ?? 'N/A' }}</div>
                     </div>
                     
-                    <div class="summary-item">
-                        <div class="summary-icon" style="background: linear-gradient(135deg, #198754 0%, #146c43 100%);">
-                            <i class="fas fa-users"></i>
-                        </div>
-                        <div class="summary-content">
-                            <div class="summary-label">{{ __('app.classe') }}</div>
-                            <div class="summary-value">{{ $cours->classe->nom_classe ?? 'N/A' }}</div>
-                            <div class="summary-meta">{{ $cours->classe->etudiants->count() ?? 0 }} {{ __('app.etudiants') }}</div>
-                        </div>
+                    <div class="google-summary-item">
+                        <div class="google-summary-label">{{ __('app.classe') }}</div>
+                        <div class="google-summary-value">{{ $cours->classe->nom_classe ?? 'N/A' }}</div>
+                        <div class="google-summary-meta">{{ $cours->classe->etudiants->count() ?? 0 }} {{ __('app.etudiants') }}</div>
                     </div>
                     
-                    <div class="summary-item">
-                        <div class="summary-icon" style="background: linear-gradient(135deg, #0dcaf0 0%, #0aa2c0 100%);">
-                            <i class="fas fa-chalkboard-teacher"></i>
-                        </div>
-                        <div class="summary-content">
-                            <div class="summary-label">{{ __('app.enseignant') }}</div>
-                            <div class="summary-value">{{ $cours->enseignant->prenom ?? '' }} {{ $cours->enseignant->nom ?? 'Non assigné' }}</div>
-                        </div>
+                    <div class="google-summary-item">
+                        <div class="google-summary-label">{{ __('app.enseignant') }}</div>
+                        <div class="google-summary-value">{{ $cours->enseignant->prenom ?? '' }} {{ $cours->enseignant->nom ?? 'Non assigné' }}</div>
                     </div>
                     
-                    <div class="summary-item">
-                        <div class="summary-icon" style="background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);">
-                            <i class="fas fa-calendar-alt"></i>
-                        </div>
-                        <div class="summary-content">
-                            <div class="summary-label">{{ __('app.planning') }}</div>
-                            <div class="summary-value text-capitalize">{{ $cours->jour }}</div>
-                            <div class="summary-meta">
-                                @if($cours->date_debut && $cours->date_fin)
-                                    {{ \Carbon\Carbon::parse($cours->date_debut)->format('H:i') }} - {{ \Carbon\Carbon::parse($cours->date_fin)->format('H:i') }}
-                                @endif
-                            </div>
+                    <div class="google-summary-item">
+                        <div class="google-summary-label">{{ __('app.planning') }}</div>
+                        <div class="google-summary-value text-capitalize">{{ $cours->jour }}</div>
+                        <div class="google-summary-meta">
+                            @if($cours->date_debut && $cours->date_fin)
+                                {{ \Carbon\Carbon::parse($cours->date_debut)->format('H:i') }} - {{ \Carbon\Carbon::parse($cours->date_fin)->format('H:i') }}
+                            @endif
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 @endsection
 
 @push('styles')
 <style>
 :root {
-    --md-primary: #0d6efd;
-    --md-gray-50: #fafafa;
-    --md-gray-100: #f5f5f5;
-    --md-gray-200: #eeeeee;
-    --md-gray-300: #e0e0e0;
-    --md-gray-400: #bdbdbd;
-    --md-gray-500: #9e9e9e;
-    --md-gray-600: #757575;
-    --md-gray-700: #616161;
-    --md-gray-800: #424242;
-    --md-gray-900: #212529;
-    --md-radius: 12px;
-    --md-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    --md-shadow-lg: 0 8px 16px rgba(0,0,0,0.12);
+    --google-blue: #1a73e8;
+    --google-blue-hover: #1967d2;
+    --google-blue-light: #e8f0fe;
+    --google-gray-50: #f8f9fa;
+    --google-gray-100: #f1f3f4;
+    --google-gray-200: #e8eaed;
+    --google-gray-300: #dadce0;
+    --google-gray-400: #bdc1c6;
+    --google-gray-500: #9aa0a6;
+    --google-gray-600: #80868b;
+    --google-gray-700: #5f6368;
+    --google-gray-800: #3c4043;
+    --google-gray-900: #202124;
+    --google-spacing-xs: 4px;
+    --google-spacing-sm: 8px;
+    --google-spacing-md: 16px;
+    --google-spacing-lg: 24px;
+    --google-spacing-xl: 32px;
+    --google-spacing-2xl: 48px;
+    --google-shadow-1: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+    --google-shadow-2: 0 1px 3px 0 rgba(60, 64, 67, 0.3), 0 4px 8px 3px rgba(60, 64, 67, 0.15);
+    --google-transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+/* Container */
+.google-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: var(--google-spacing-lg);
+}
+
+/* Page Header */
+.google-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--google-spacing-xl);
+}
+
+.google-page-title {
+    font-size: 2rem;
+    font-weight: 400;
+    color: var(--google-gray-900);
+    margin: 0 0 var(--google-spacing-sm) 0;
+}
+
+.google-page-meta {
+    display: flex;
+    gap: var(--google-spacing-md);
+    align-items: center;
+}
+
+.google-meta-badge {
+    display: inline-flex;
+    padding: 4px 12px;
+    background: var(--google-gray-100);
+    color: var(--google-gray-700);
+    border-radius: 16px;
+    font-size: 0.875rem;
+    font-weight: 400;
+}
+
+.google-meta-text {
+    font-size: 0.875rem;
+    color: var(--google-gray-600);
+}
+
+.google-header-actions {
+    display: flex;
+    gap: var(--google-spacing-sm);
+}
+
+/* Layout */
+.google-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: var(--google-spacing-xl);
+}
+
+/* Sidebar */
+.google-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: var(--google-spacing-lg);
 }
 
 /* Detail Card */
-.detail-card {
+.google-detail-card {
     background: white;
-    border-radius: var(--md-radius);
-    padding: 28px;
-    box-shadow: var(--md-shadow);
-    margin-bottom: 24px;
+    border: 1px solid var(--google-gray-300);
+    border-radius: 8px;
+    padding: var(--google-spacing-lg);
 }
 
-.detail-header {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 28px;
-    padding-bottom: 20px;
-    border-bottom: 2px solid var(--md-gray-200);
+.google-section-title {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--google-gray-900);
+    margin-bottom: var(--google-spacing-md);
 }
 
-.detail-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 20px;
+.google-detail-item {
+    padding: var(--google-spacing-md) 0;
+    border-bottom: 1px solid var(--google-gray-200);
 }
 
-.detail-title {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--md-gray-900);
-    margin: 0;
-}
-
-.detail-item {
-    padding: 16px 0;
-    border-bottom: 1px solid var(--md-gray-200);
-}
-
-.detail-item:last-child {
+.google-detail-item:last-child {
     border-bottom: none;
 }
 
-.detail-label {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--md-gray-600);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 6px;
+.google-detail-label {
+    font-size: 0.75rem;
+    color: var(--google-gray-600);
+    margin-bottom: var(--google-spacing-xs);
 }
 
-.detail-value {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--md-gray-900);
+.google-detail-value {
+    font-size: 0.875rem;
+    color: var(--google-gray-900);
 }
 
-.time-range {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.time-start {
-    color: #198754;
-    font-weight: 600;
-}
-
-.time-separator {
-    color: var(--md-gray-400);
-}
-
-.time-end {
-    color: #dc3545;
-    font-weight: 600;
-}
-
-.day-badge {
-    display: inline-flex;
-    padding: 6px 14px;
-    background: rgba(108, 117, 125, 0.1);
-    color: var(--md-gray-700);
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 500;
-}
-
-.duration-badge {
-    display: inline-flex;
-    padding: 6px 14px;
-    background: rgba(13, 110, 253, 0.1);
-    color: var(--md-primary);
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 600;
-}
-
-/* Quick Links Card */
-.quick-links-card {
+/* Quick Links */
+.google-quick-links {
     background: white;
-    border-radius: var(--md-radius);
-    padding: 24px;
-    box-shadow: var(--md-shadow);
+    border: 1px solid var(--google-gray-300);
+    border-radius: 8px;
+    padding: var(--google-spacing-lg);
 }
 
-.quick-links-title {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--md-gray-900);
-    margin-bottom: 16px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.quick-links-grid {
+.google-links-list {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: var(--google-spacing-xs);
 }
 
-.quick-link {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
-    background: var(--md-gray-50);
-    border-radius: 8px;
+.google-link-item {
+    display: block;
+    padding: var(--google-spacing-sm) var(--google-spacing-md);
+    color: var(--google-blue);
     text-decoration: none;
-    color: var(--md-gray-800);
-    font-size: 14px;
-    font-weight: 500;
-    transition: all 0.3s;
+    font-size: 0.875rem;
+    border-radius: 4px;
+    transition: var(--google-transition);
 }
 
-.quick-link:hover {
-    background: var(--md-primary);
-    color: white;
-    transform: translateX(4px);
-    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.2);
+.google-link-item:hover {
+    background: var(--google-gray-100);
+    color: var(--google-blue-hover);
 }
 
-.quick-link i {
-    font-size: 16px;
+/* Main Content */
+.google-main {
+    display: flex;
+    flex-direction: column;
+    gap: var(--google-spacing-lg);
 }
 
-/* Description Card */
-.description-card {
+.google-content-card {
     background: white;
-    border-radius: var(--md-radius);
-    padding: 32px;
-    box-shadow: var(--md-shadow);
-    margin-bottom: 24px;
+    border: 1px solid var(--google-gray-300);
+    border-radius: 8px;
+    padding: var(--google-spacing-xl);
 }
 
-.card-header-section {
-    margin-bottom: 20px;
-}
-
-.card-title {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--md-gray-900);
+.google-description-text {
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: var(--google-gray-700);
     margin: 0;
 }
 
-.description-text {
-    font-size: 14px;
-    line-height: 1.8;
-    color: var(--md-gray-700);
-}
-
-.empty-description {
+.google-empty-state {
     text-align: center;
-    padding: 48px 24px;
+    padding: var(--google-spacing-2xl) var(--google-spacing-lg);
 }
 
-.empty-icon {
-    width: 60px;
-    height: 60px;
-    margin: 0 auto 16px;
-    background: var(--md-gray-100);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.empty-icon i {
-    font-size: 24px;
-    color: var(--md-gray-400);
-}
-
-.empty-text {
-    font-size: 14px;
-    color: var(--md-gray-600);
-    margin: 0;
-}
-
-/* Summary Card */
-.summary-card {
-    background: white;
-    border-radius: var(--md-radius);
-    padding: 32px;
-    box-shadow: var(--md-shadow);
-}
-
-.summary-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 24px;
-}
-
-.summary-item {
-    display: flex;
-    gap: 16px;
-}
-
-.summary-icon {
+.google-empty-icon {
     width: 48px;
     height: 48px;
-    border-radius: 10px;
-    display: flex;
+    margin: 0 auto var(--google-spacing-md);
+    color: var(--google-gray-400);
+}
+
+.google-empty-text {
+    font-size: 0.875rem;
+    color: var(--google-gray-600);
+    margin: 0;
+}
+
+/* Summary Grid */
+.google-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--google-spacing-xl);
+}
+
+.google-summary-item {
+    padding: var(--google-spacing-lg);
+    background: var(--google-gray-50);
+    border-radius: 8px;
+}
+
+.google-summary-label {
+    font-size: 0.75rem;
+    color: var(--google-gray-600);
+    margin-bottom: var(--google-spacing-xs);
+}
+
+.google-summary-value {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--google-gray-900);
+    margin-bottom: var(--google-spacing-xs);
+}
+
+.google-summary-meta {
+    font-size: 0.75rem;
+    color: var(--google-gray-600);
+}
+
+/* Buttons */
+.google-btn {
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 20px;
-    flex-shrink: 0;
+    padding: 8px 16px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: var(--google-transition);
+    text-decoration: none;
 }
 
-.summary-content {
-    flex: 1;
+.google-btn-text {
+    background: transparent;
+    color: var(--google-blue);
 }
 
-.summary-label {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--md-gray-600);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 4px;
-}
-
-.summary-value {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--md-gray-900);
-    margin-bottom: 2px;
-}
-
-.summary-meta {
-    font-size: 12px;
-    color: var(--md-gray-600);
-}
-
-/* RTL Support */
-[dir="rtl"] .detail-header,
-[dir="rtl"] .summary-item,
-[dir="rtl"] .quick-link {
-    flex-direction: row-reverse;
-}
-
-[dir="rtl"] .time-range {
-    flex-direction: row-reverse;
-}
-
-[dir="rtl"] .time-separator {
-    transform: scaleX(-1);
-}
-
-[dir="rtl"] .quick-link:hover {
-    transform: translateX(-4px);
+.google-btn-text:hover {
+    background: var(--google-blue-light);
+    color: var(--google-blue-hover);
 }
 
 /* Responsive */
-@media (max-width: 991px) {
-    .summary-grid {
+@media (max-width: 768px) {
+    .google-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .google-page-header {
+        flex-direction: column;
+        gap: var(--google-spacing-md);
+    }
+
+    .google-header-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .google-summary-grid {
         grid-template-columns: 1fr;
     }
 }
 
-@media (max-width: 767px) {
-    .detail-card,
-    .description-card,
-    .summary-card {
-        padding: 20px;
+@media (max-width: 480px) {
+    .google-container {
+        padding: var(--google-spacing-md);
     }
-    
-    .quick-links-card {
-        padding: 20px;
+
+    .google-content-card {
+        padding: var(--google-spacing-lg);
+    }
+
+    .google-page-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--google-spacing-sm);
     }
 }
 </style>

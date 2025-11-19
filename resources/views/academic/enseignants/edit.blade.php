@@ -18,150 +18,122 @@
 @endsection
 
 @section('content')
-<div class="container-fluid">
-    <div class="row justify-content-center">
-        <div class="col-lg-9">
-            <!-- Mini Stats -->
-            <div class="mini-stats-grid">
-                <div class="stat-card-mini">
-                    <div class="stat-icon-mini" style="background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);">
-                        <i class="bi bi-person-badge"></i>
-                    </div>
-                    <div class="stat-info-mini">
-                        <div class="stat-label-mini">Enseignant</div>
-                        <div class="stat-value-mini">{{ $enseignant->prenom }} {{ $enseignant->nom }}</div>
-                    </div>
-                </div>
-                <div class="stat-card-mini">
-                    <div class="stat-icon-mini" style="background: linear-gradient(135deg, #198754 0%, #146c43 100%);">
-                        <i class="bi bi-book"></i>
-                    </div>
-                    <div class="stat-info-mini">
-                        <div class="stat-label-mini">Matière</div>
-                        <div class="stat-value-mini">{{ $enseignant->matiere }}</div>
-                    </div>
-                </div>
-                <div class="stat-card-mini">
-                    <div class="stat-icon-mini" style="background: linear-gradient(135deg, #0dcaf0 0%, #0aa2c0 100%);">
-                        <i class="bi bi-door-open"></i>
-                    </div>
-                    <div class="stat-info-mini">
-                        <div class="stat-label-mini">Classe</div>
-                        <div class="stat-value-mini">{{ $enseignant->classe ? $enseignant->classe->nom_classe : 'N/A' }}</div>
-                    </div>
+<div class="google-container">
+    <div class="google-form-wrapper">
+        <!-- Mini Stats -->
+        <div class="google-mini-stats">
+            <div class="google-mini-stat">
+                <div class="google-mini-stat-label">Enseignant</div>
+                <div class="google-mini-stat-value">{{ $enseignant->prenom }} {{ $enseignant->nom }}</div>
+            </div>
+            <div class="google-mini-stat">
+                <div class="google-mini-stat-label">{{ __('app.matieres') }}</div>
+                <div class="google-mini-stat-value">
+                    @if($enseignant->matieres && $enseignant->matieres->count() > 0)
+                        {{ $enseignant->matieres->first()->nom_matiere }}
+                        @if($enseignant->matieres->count() > 1)
+                            <small>(+{{ $enseignant->matieres->count() - 1 }})</small>
+                        @endif
+                    @else
+                        N/A
+                    @endif
                 </div>
             </div>
-
-            <div class="form-card">
-                <div class="form-header">
-                    <div class="form-icon-wrapper">
-                        <i class="bi bi-pencil-square"></i>
-                    </div>
-                    <div>
-                        <h5 class="form-title">{{ __('app.modifier_enseignant') }}</h5>
-                        <p class="form-subtitle">Modifiez les informations de l'enseignant</p>
-                    </div>
+            <div class="google-mini-stat">
+                <div class="google-mini-stat-label">{{ __('app.classes') }}</div>
+                <div class="google-mini-stat-value">
+                    @if($enseignant->classes && $enseignant->classes->count() > 0)
+                        {{ $enseignant->classes->first()->nom_classe }}
+                        @if($enseignant->classes->count() > 1)
+                            <small>(+{{ $enseignant->classes->count() - 1 }})</small>
+                        @endif
+                    @else
+                        N/A
+                    @endif
                 </div>
+            </div>
+        </div>
 
-                <form method="POST" action="{{ route('enseignants.update', $enseignant->id_enseignant) }}">
-                    @csrf
-                    @method('PUT')
+        <div class="google-form-card">
+            <div class="google-form-header">
+                <h5 class="google-form-title">{{ __('app.modifier_enseignant') }}</h5>
+                <p class="google-form-subtitle">Modifiez les informations de l'enseignant</p>
+            </div>
 
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label class="form-label-md">{{ __('app.nom') }} <span class="required">*</span></label>
-                            <input type="text" class="form-control-md @error('nom') is-invalid @enderror" 
+            <form method="POST" action="{{ route('enseignants.update', $enseignant->id_enseignant) }}">
+                @csrf
+                @method('PUT')
+
+                <div class="google-form-section">
+                    <div class="google-form-row">
+                        <div class="google-form-group">
+                            <label class="google-label">{{ __('app.nom') }} <span class="google-required">*</span></label>
+                            <input type="text" class="google-input @error('nom') is-invalid @enderror" 
                                    id="nom" name="nom" value="{{ old('nom', $enseignant->nom) }}" required 
                                    placeholder="{{ __('app.nom_famille') }}">
                             @error('nom')
-                                <span class="error-message">{{ $message }}</span>
+                                <span class="google-error">{{ $message }}</span>
                             @enderror
                         </div>
                         
-                        <div class="form-group">
-                            <label class="form-label-md">{{ __('app.prenom') }} <span class="required">*</span></label>
-                            <input type="text" class="form-control-md @error('prenom') is-invalid @enderror" 
+                        <div class="google-form-group">
+                            <label class="google-label">{{ __('app.prenom') }} <span class="google-required">*</span></label>
+                            <input type="text" class="google-input @error('prenom') is-invalid @enderror" 
                                    id="prenom" name="prenom" value="{{ old('prenom', $enseignant->prenom) }}" required 
                                    placeholder="{{ __('app.prenom') }}">
                             @error('prenom')
-                                <span class="error-message">{{ $message }}</span>
+                                <span class="google-error">{{ $message }}</span>
                             @enderror
                         </div>
+                    </div>
 
-                        <div class="form-group">
-                            <label class="form-label-md">{{ __('app.email') }} <span class="required">*</span></label>
-                            <input type="email" class="form-control-md @error('email') is-invalid @enderror" 
+                    <div class="google-form-row">
+                        <div class="google-form-group">
+                            <label class="google-label">{{ __('app.email') }} <span class="google-required">*</span></label>
+                            <input type="email" class="google-input @error('email') is-invalid @enderror" 
                                    id="email" name="email" value="{{ old('email', $enseignant->email) }}" required 
                                    placeholder="exemple@ecole.com">
                             @error('email')
-                                <span class="error-message">{{ $message }}</span>
+                                <span class="google-error">{{ $message }}</span>
                             @enderror
                         </div>
                         
-                        <div class="form-group">
-                            <label class="form-label-md">{{ __('app.telephone') }} <span class="required">*</span></label>
-                            <input type="tel" class="form-control-md @error('telephone') is-invalid @enderror" 
+                        <div class="google-form-group">
+                            <label class="google-label">{{ __('app.telephone') }} <span class="google-required">*</span></label>
+                            <input type="tel" class="google-input @error('telephone') is-invalid @enderror" 
                                    id="telephone" name="telephone" value="{{ old('telephone', $enseignant->telephone) }}" required 
                                    placeholder="+222 XX XX XX XX">
                             @error('telephone')
-                                <span class="error-message">{{ $message }}</span>
-                            @enderror
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label-md">{{ __('app.classe_assignee') }} <span class="required">*</span></label>
-                            <select class="form-control-md @error('id_classe') is-invalid @enderror" 
-                                    id="id_classe" name="id_classe" required>
-                                <option value="">{{ __('app.selectionner_classe') }}</option>
-                                @foreach ($classes as $classe)
-                                    <option value="{{ $classe->id_classe }}" {{ old('id_classe', $enseignant->id_classe) == $classe->id_classe ? 'selected' : '' }}>
-                                        {{ $classe->nom_classe }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('id_classe')
-                                <span class="error-message">{{ $message }}</span>
-                            @enderror
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label-md">{{ __('app.matiere_enseignee') }} <span class="required">*</span></label>
-                            <select class="form-control-md @error('matiere') is-invalid @enderror" 
-                                    id="matiere" name="matiere" required>
-                                <option value="">{{ __('app.selectionner_matiere') }}</option>
-                                <option value="Mathématiques" {{ old('matiere', $enseignant->matiere) == 'Mathématiques' ? 'selected' : '' }}>Mathématiques</option>
-                                <option value="Français" {{ old('matiere', $enseignant->matiere) == 'Français' ? 'selected' : '' }}>Français</option>
-                                <option value="Anglais" {{ old('matiere', $enseignant->matiere) == 'Anglais' ? 'selected' : '' }}>Anglais</option>
-                                <option value="Sciences Physiques" {{ old('matiere', $enseignant->matiere) == 'Sciences Physiques' ? 'selected' : '' }}>Sciences Physiques</option>
-                                <option value="Biologie" {{ old('matiere', $enseignant->matiere) == 'Biologie' ? 'selected' : '' }}>Biologie</option>
-                                <option value="Histoire-Géographie" {{ old('matiere', $enseignant->matiere) == 'Histoire-Géographie' ? 'selected' : '' }}>Histoire-Géographie</option>
-                                <option value="اللغة العربية" {{ old('matiere', $enseignant->matiere) == 'اللغة العربية' ? 'selected' : '' }}>اللغة العربية</option>
-                                <option value="التربية الإسلامية" {{ old('matiere', $enseignant->matiere) == 'التربية الإسلامية' ? 'selected' : '' }}>التربية الإسلامية</option>
-                                <option value="التربية المدنية" {{ old('matiere', $enseignant->matiere) == 'التربية المدنية' ? 'selected' : '' }}>التربية المدنية</option>
-                                <option value="التربية البدنية" {{ old('matiere', $enseignant->matiere) == 'التربية البدنية' ? 'selected' : '' }}>التربية البدنية</option>
-                            </select>
-                            @error('matiere')
-                                <span class="error-message">{{ $message }}</span>
+                                <span class="google-error">{{ $message }}</span>
                             @enderror
                         </div>
                     </div>
 
-                    <div class="form-actions">
-                        <a href="{{ route('enseignants.index') }}" class="btn-md btn-secondary">
-                            <i class="bi bi-x-circle"></i>
+                    <!-- Note: Classes and Matieres are now managed through the pivot table (enseignant_matiere_classe) -->
+                    <!-- This form only handles basic enseignant information -->
+                    <!-- To manage class and matiere assignments, use the dedicated assignment interface -->
+                </div>
+
+                <div class="google-form-actions">
+                    <div class="google-button-group-left">
+                        <form method="POST" action="{{ route('enseignants.destroy', $enseignant->id_enseignant) }}" style="display: inline;">
+                            @csrf
+                            @method('DELETE')
+                            <button type="button" class="google-button-danger delete-enseignant" data-enseignant-id="{{ $enseignant->id_enseignant }}">
+                                {{ __('app.supprimer') }}
+                            </button>
+                        </form>
+                    </div>
+                    <div class="google-button-group-right">
+                        <a href="{{ route('enseignants.index') }}" class="google-button-secondary">
                             {{ __('app.annuler') }}
                         </a>
-                        <a href="{{ route('enseignants.show', $enseignant->id_enseignant) }}" class="btn-md btn-info">
-                            <i class="bi bi-eye"></i>
-                            {{ __('app.voir') }}
-                        </a>
-                        <button type="submit" class="btn-md btn-primary">
-                            <i class="bi bi-check-circle"></i>
+                        <button type="submit" class="google-button-primary">
                             {{ __('app.sauvegarder') }}
                         </button>
                     </div>
-                </form>
-            </div>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -169,444 +141,288 @@
 @push('styles')
 <style>
     :root {
-        --primary-color: #0d6efd;
-        --primary-dark: #0a58ca;
-        --success-color: #198754;
-        --success-dark: #146c43;
-        --info-color: #0dcaf0;
-        --info-dark: #0aa2c0;
-        --secondary-color: #6c757d;
-        --danger-color: #dc3545;
-        --bg-white: #ffffff;
-        --bg-light: #f8f9fa;
-        --text-dark: #212529;
-        --text-muted: #6c757d;
-        --border-color: #dee2e6;
-        --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
-        --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.12);
+        --google-blue: #1a73e8;
+        --google-blue-hover: #1967d2;
+        --google-red: #d93025;
+        --google-red-hover: #c5221f;
+        --google-gray-50: #f8f9fa;
+        --google-gray-100: #f1f3f4;
+        --google-gray-200: #e8eaed;
+        --google-gray-300: #dadce0;
+        --google-gray-500: #9aa0a6;
+        --google-gray-600: #80868b;
+        --google-gray-700: #5f6368;
+        --google-gray-900: #202124;
+        --google-spacing-xs: 4px;
+        --google-spacing-sm: 8px;
+        --google-spacing-md: 16px;
+        --google-spacing-lg: 24px;
+        --google-spacing-xl: 32px;
+        --google-transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
     }
 
-    /* Mini Stats Grid */
-    .mini-stats-grid {
+    .google-container {
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+
+    .google-form-wrapper {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: var(--google-spacing-lg);
+    }
+
+    /* Mini Stats */
+    .google-mini-stats {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-        gap: 20px;
-        margin-bottom: 24px;
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--google-spacing-md);
+        margin-bottom: var(--google-spacing-lg);
     }
 
-    .stat-card-mini {
-        background: var(--bg-white);
-        border-radius: 12px;
-        padding: 20px;
-        box-shadow: var(--shadow);
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    .google-mini-stat {
+        background: white;
+        border: 1px solid var(--google-gray-300);
+        border-radius: 8px;
+        padding: var(--google-spacing-md);
+        text-align: center;
     }
 
-    [dir="rtl"] .stat-card-mini {
-        flex-direction: row-reverse;
+    .google-mini-stat-label {
+        font-size: 0.75rem;
+        color: var(--google-gray-600);
+        margin-bottom: var(--google-spacing-xs);
     }
 
-    .stat-card-mini:hover {
-        box-shadow: var(--shadow-lg);
-        transform: translateY(-2px);
-    }
-
-    .stat-icon-mini {
-        width: 48px;
-        height: 48px;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-    }
-
-    .stat-icon-mini i {
-        font-size: 24px;
-        color: var(--bg-white);
-    }
-
-    .stat-info-mini {
-        flex: 1;
-        min-width: 0;
-    }
-
-    .stat-label-mini {
-        font-size: 13px;
-        color: var(--text-muted);
-        margin-bottom: 4px;
+    .google-mini-stat-value {
+        font-size: 1rem;
         font-weight: 500;
-    }
-
-    .stat-value-mini {
-        font-size: 16px;
-        font-weight: 600;
-        color: var(--text-dark);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        color: var(--google-gray-900);
     }
 
     /* Form Card */
-    .form-card {
-        background: var(--bg-white);
-        border-radius: 12px;
-        box-shadow: var(--shadow);
-        padding: 36px;
-        margin-bottom: 24px;
+    .google-form-card {
+        background: white;
+        border: 1px solid var(--google-gray-300);
+        border-radius: 8px;
+        padding: var(--google-spacing-xl);
     }
 
-    .form-header {
-        display: flex;
-        align-items: center;
-        gap: 20px;
-        margin-bottom: 32px;
-        padding-bottom: 24px;
-        border-bottom: 1px solid var(--border-color);
+    .google-form-header {
+        margin-bottom: var(--google-spacing-xl);
     }
 
-    [dir="rtl"] .form-header {
-        flex-direction: row-reverse;
+    .google-form-title {
+        font-size: 2rem;
+        font-weight: 400;
+        color: var(--google-gray-900);
+        margin: 0 0 var(--google-spacing-xs) 0;
     }
 
-    .form-icon-wrapper {
-        width: 56px;
-        height: 56px;
-        border-radius: 12px;
-        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-    }
-
-    .form-icon-wrapper i {
-        font-size: 28px;
-        color: var(--bg-white);
-    }
-
-    .form-title {
-        font-size: 22px;
-        font-weight: 600;
-        color: var(--text-dark);
-        margin: 0 0 4px 0;
-    }
-
-    .form-subtitle {
-        font-size: 14px;
-        color: var(--text-muted);
+    .google-form-subtitle {
+        font-size: 0.875rem;
+        color: var(--google-gray-600);
         margin: 0;
     }
 
-    /* Form Grid */
-    .form-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 24px;
-        margin-bottom: 32px;
+    /* Form Section */
+    .google-form-section {
+        display: flex;
+        flex-direction: column;
+        gap: var(--google-spacing-md);
     }
 
-    .form-group {
+    .google-form-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: var(--google-spacing-md);
+    }
+
+    .google-form-group {
         display: flex;
         flex-direction: column;
     }
 
-    .form-label-md {
-        font-size: 14px;
-        font-weight: 500;
-        color: var(--text-dark);
-        margin-bottom: 8px;
-        display: block;
+    .google-label {
+        font-size: 0.875rem;
+        font-weight: 400;
+        color: var(--google-gray-700);
+        margin-bottom: var(--google-spacing-sm);
     }
 
-    .required {
-        color: var(--danger-color);
-        margin-left: 2px;
+    .google-required {
+        color: var(--google-red);
     }
 
-    [dir="rtl"] .required {
-        margin-left: 0;
-        margin-right: 2px;
-    }
-
-    /* Form Controls */
-    .form-control-md {
+    .google-input {
         width: 100%;
-        padding: 12px 16px;
-        font-size: 14px;
-        line-height: 1.5;
-        color: var(--text-dark);
-        background-color: var(--bg-white);
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        padding: 8px 12px;
+        font-size: 0.875rem;
+        color: var(--google-gray-900);
+        background: white;
+        border: 1px solid var(--google-gray-300);
+        border-radius: 4px;
+        transition: var(--google-transition);
     }
 
-    .form-control-md:focus {
+    .google-input:focus {
         outline: none;
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1);
+        border-color: var(--google-blue);
+        box-shadow: 0 0 0 1px var(--google-blue);
     }
 
-    .form-control-md.is-invalid {
-        border-color: var(--danger-color);
+    .google-input.is-invalid {
+        border-color: var(--google-red);
     }
 
-    .form-control-md.is-invalid:focus {
-        box-shadow: 0 0 0 4px rgba(220, 53, 69, 0.1);
-    }
-
-    .error-message {
-        font-size: 13px;
-        color: var(--danger-color);
-        margin-top: 6px;
-        display: block;
+    .google-error {
+        font-size: 0.75rem;
+        color: #d93025;
+        margin-top: var(--google-spacing-xs);
     }
 
     /* Form Actions */
-    .form-actions {
+    .google-form-actions {
         display: flex;
-        gap: 12px;
-        justify-content: flex-end;
-        padding-top: 24px;
-        border-top: 1px solid var(--border-color);
+        justify-content: space-between;
+        align-items: center;
+        padding-top: var(--google-spacing-lg);
+        border-top: 1px solid var(--google-gray-300);
     }
 
-    [dir="rtl"] .form-actions {
-        flex-direction: row-reverse;
-        justify-content: flex-start;
+    .google-button-group-left,
+    .google-button-group-right {
+        display: flex;
+        gap: var(--google-spacing-sm);
     }
 
-    /* Buttons */
-    .btn-md {
-        padding: 12px 24px;
-        font-size: 14px;
+    .google-button-primary,
+    .google-button-secondary,
+    .google-button-danger {
+        padding: 8px 16px;
+        font-size: 0.875rem;
         font-weight: 500;
-        border-radius: 8px;
+        border-radius: 4px;
         border: none;
         cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         text-decoration: none;
+        transition: var(--google-transition);
     }
 
-    [dir="rtl"] .btn-md {
-        flex-direction: row-reverse;
+    .google-button-primary {
+        background: var(--google-blue);
+        color: white;
     }
 
-    .btn-md i {
-        font-size: 16px;
+    .google-button-primary:hover {
+        background: var(--google-blue-hover);
     }
 
-    .btn-primary {
-        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-        color: var(--bg-white);
+    .google-button-secondary {
+        background: white;
+        color: var(--google-gray-700);
+        border: 1px solid var(--google-gray-300);
     }
 
-    .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+    .google-button-secondary:hover {
+        background: var(--google-gray-50);
     }
 
-    .btn-secondary {
-        background: var(--secondary-color);
-        color: var(--bg-white);
+    .google-button-danger {
+        background: white;
+        color: var(--google-red);
+        border: 1px solid var(--google-gray-300);
     }
 
-    .btn-secondary:hover {
-        background: #5a6268;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
-    }
-
-    .btn-info {
-        background: linear-gradient(135deg, var(--info-color) 0%, var(--info-dark) 100%);
-        color: var(--bg-white);
-    }
-
-    .btn-info:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(13, 202, 240, 0.3);
+    .google-button-danger:hover {
+        background: #fce8e6;
+        border-color: var(--google-red);
     }
 
     /* Responsive Design */
-    @media (max-width: 1400px) {
-        .mini-stats-grid {
-            grid-template-columns: repeat(3, 1fr);
-        }
-    }
-
-    @media (max-width: 992px) {
-        .mini-stats-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-        
-        .form-grid {
-            grid-template-columns: 1fr;
-            gap: 20px;
-        }
-    }
-
     @media (max-width: 768px) {
-        .form-card {
-            padding: 24px;
+        .google-form-wrapper {
+            padding: var(--google-spacing-md);
         }
 
-        .form-header {
-            gap: 16px;
-            margin-bottom: 24px;
+        .google-mini-stats {
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--google-spacing-sm);
         }
 
-        .form-icon-wrapper {
-            width: 48px;
-            height: 48px;
+        .google-mini-stat:first-child {
+            grid-column: 1 / -1;
         }
 
-        .form-icon-wrapper i {
-            font-size: 24px;
+        .google-form-card {
+            padding: var(--google-spacing-md);
         }
 
-        .form-title {
-            font-size: 18px;
+        .google-form-row {
+            grid-template-columns: 1fr;
         }
 
-        .stat-card-mini {
-            padding: 16px;
+        .google-form-actions {
+            flex-wrap: wrap;
+            gap: var(--google-spacing-sm);
         }
 
-        .stat-icon-mini {
-            width: 40px;
-            height: 40px;
+        .google-button-group-left,
+        .google-button-group-right {
+            display: flex;
+            gap: var(--google-spacing-sm);
         }
 
-        .stat-icon-mini i {
-            font-size: 20px;
-        }
-
-        .stat-value-mini {
-            font-size: 14px;
+        .google-button-primary,
+        .google-button-secondary,
+        .google-button-danger {
+            flex: 1;
+            min-width: 0;
+            white-space: nowrap;
         }
     }
 
-    @media (max-width: 576px) {
-        .mini-stats-grid {
-            grid-template-columns: 1fr;
-            gap: 16px;
+    @media (max-width: 480px) {
+        .google-form-wrapper {
+            padding: var(--google-spacing-sm);
         }
 
-        .form-actions {
-            flex-direction: column;
+        .google-mini-stat-value {
+            font-size: 0.875rem;
         }
 
-        .btn-md {
-            width: 100%;
-            justify-content: center;
+        .google-form-title {
+            font-size: 1rem;
         }
     }
 </style>
 @endpush
 
-    <script>
-        const classeSelect = document.getElementById("id_classe");
-        const matiereSelect = document.getElementById("matiere");
-
-        function enableMatiereOptions() {
-            matiereSelect.removeAttribute("disabled");
-        }
-        const matiereOptions = {
-            1: ["اللغة العربية", "Calcule", "التربية الإسلامية"],
-            2: ["اللغة العربية", "Calcule", "Français", "Sciences naturelles", "التربية الإسلامية", "التربية المدنية",
-                "التاريخ و الجغرافيا"
-            ],
-            3: ["اللغة العربية", "Calcule", "Français", "Sciences naturelles", "التربية الإسلامية", "التربية المدنية",
-                "التاريخ و الجغرافيا"
-            ],
-            4: ["اللغة العربية", "Calcule", "Français", "Sciences naturelles", "التربية الإسلامية", "التربية المدنية",
-                "التاريخ و الجغرافيا"
-            ],
-            5: ["اللغة العربية", "Calcule", "Français", "Sciences naturelles", "التربية الإسلامية", "التربية المدنية",
-                "التاريخ و الجغرافيا"
-            ],
-            6: ["Mathématiques", "اللغة العربية", "Français", "Sciences naturelles", "التربية الإسلامية",
-                "التربية المدنية",
-                "التاريخ و الجغرافيا"
-            ],
-            7: ["Mathématiques", "Français", "Anglais", "التربية الإسلامية", "اللغة العربية", "Physique Chimie",
-                "Sciences naturelles",
-                "التاريخ و الجغرافيا", "التربية المدنية"
-            ],
-            8: ["Mathématiques", "Français", "Anglais", "التربية الإسلامية", "اللغة العربية", "Physique Chimie",
-                "Sciences naturelles",
-                "التاريخ و الجغرافيا", "التربية المدنية"
-            ],
-            9: ["Mathématiques", "Français", "Anglais", "التربية الإسلامية", "اللغة العربية", "Physique Chimie",
-                "Sciences naturelles",
-                "التاريخ و الجغرافيا", "التربية المدنية"
-            ],
-            10: ["Mathématiques", "Français", "Anglais", "التربية الإسلامية", "اللغة العربية", "Physique Chimie",
-                "Sciences naturelles",
-                "التاريخ و الجغرافيا", "التربية المدنية"
-            ],
-            11: ["Mathématiques", "Français", "Anglais", "التربية الإسلامية", "التربية المدنية", "اللغة العربية",
-                "Physique Chimie", "Sciences naturelles"
-            ],
-            12: ["Mathématiques", "Français", "Anglais", "التربية الإسلامية", "التربية المدنية", "اللغة العربية",
-                "Physique Chimie", "Sciences naturelles"
-            ],
-            13: ["Mathématiques", "Français", "Anglais", "التربية الإسلامية", "اللغة العربية", "Physique Chimie",
-                "Sciences naturelles"
-            ],
-            14: ["Mathématiques", "Français", "Anglais", "التربية الإسلامية", "اللغة العربية", "Physique Chimie",
-                "Sciences naturelles"
-            ],
-        };
-
-        // Function to update the matiere select options
-        function updateMatiereOptions() {
-            const selectedClasse = classeSelect.value;
-            const matiereOptionsForClasse = matiereOptions[selectedClasse];
-
-            // Clear the matiere select options
-            matiereSelect.innerHTML = "";
-
-            const defaultOption = document.createElement("option");
-            defaultOption.text = "select matiere";
-            matiereSelect.appendChild(defaultOption);
-
-            // Add new options to the matiere select
-            matiereOptionsForClasse.forEach(matiere => {
-                const option = document.createElement("option");
-                option.text = matiere;
-                matiereSelect.appendChild(option);
-                defaultOption.remove();
-            });
-            enableMatiereOptions();
-        }
-
-        // Listen for changes in the classe select and update matiere options
-        classeSelect.addEventListener("change", updateMatiereOptions);
-
-        // Initial update to set matiere options based on the default selected classe
-        updateMatiereOptions();
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const matiereSelect = document.getElementById("matiere");
-            const selectedMatiereValue =
-                "{{ $enseignant->matiere }}"; // Assuming you pass the selected matiere value to the view
-
-            // Find the option with the selected matiere value and set it as selected
-            const selectedOption = Array.from(matiereSelect.options).find(option => option.value ===
-                selectedMatiereValue);
-            if (selectedOption) {
-                selectedOption.selected = true;
-            }
-        });
-    </script>
     <script src="{{ asset('js/regexEnse.js') }}"></script>
 @endsection
+
+@push('scripts')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
+<script type="text/javascript">
+    $('.delete-enseignant').click(function(event) {
+        var form = $(this).closest("form");
+        event.preventDefault();
+        swal({
+            title: "Voulez-vous vraiment supprimer cet enseignant ?",
+            text: "Si vous le supprimez, il disparaîtra pour toujours.",
+            icon: "warning",
+            type: "warning",
+            buttons: ["Annuler", "Oui!"],
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((willDelete) => {
+            if (willDelete) {
+                form.submit();
+            }
+        });
+    });
+</script>
+@endpush

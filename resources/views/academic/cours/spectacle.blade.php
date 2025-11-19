@@ -24,15 +24,15 @@
 @endsection
 
 @section('content')
-<div class="container-fluid">
+<div class="google-container">
     <!-- Header Section -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="google-page-header">
         <div>
-            <h4 class="fw-bold mb-1">{{ __('app.emploi_du_temps') }}</h4>
-            <p class="text-muted small mb-0">{{ __('app.consulter_emploi_temps') }}</p>
+            <h1 class="google-page-title">{{ __('app.emploi_du_temps') }}</h1>
+            <p class="google-page-subtitle">{{ __('app.consulter_emploi_temps') }}</p>
         </div>
-        <div style="min-width: 250px;">
-            <select id="classeSelect" class="form-select">
+        <div class="google-header-controls">
+            <select id="classeSelect" class="google-select">
                 @foreach ($classes as $classe)
                     <option value="{{ $classe->id_classe }}" {{ request('classe') == $classe->id_classe ? 'selected' : '' }}>
                         {{ $classe->nom_classe }}
@@ -42,19 +42,18 @@
         </div>
     </div>
 
-    <!-- Timetable Card -->
-    <div class="card border-0 shadow-sm">
-        <div class="card-body p-0">
-            <div class="table-responsive" id="timetableContainer">
-                <table class="table mb-0 timetable-custom">
+    <!-- Timetable -->
+    <div class="google-timetable-wrapper">
+        <div id="timetableContainer">
+            <table class="google-timetable">
                     <thead>
                         <tr>
-                            <th class="time-column">{{ __('app.horaire') }}</th>
-                            <th>{{ __('app.lundi') }}</th>
-                            <th>{{ __('app.mardi') }}</th>
-                            <th>{{ __('app.mercredi') }}</th>
-                            <th>{{ __('app.jeudi') }}</th>
-                            <th>{{ __('app.vendredi') }}</th>
+                            <th class="google-time-column">{{ __('app.horaire') }}</th>
+                            <th class="google-day-column">{{ __('app.lundi') }}</th>
+                            <th class="google-day-column">{{ __('app.mardi') }}</th>
+                            <th class="google-day-column">{{ __('app.mercredi') }}</th>
+                            <th class="google-day-column">{{ __('app.jeudi') }}</th>
+                            <th class="google-day-column">{{ __('app.vendredi') }}</th>
                         </tr>
                     </thead>
                     <tbody id="scheduleTableBody">
@@ -62,12 +61,18 @@
                 </table>
             </div>
 
-            <!-- Empty State -->
-            <div id="emptyState" class="text-center py-5" style="display: none;">
-                <i class="bi bi-calendar-x text-muted mb-3" style="font-size: 3rem;"></i>
-                <h5 class="text-muted mb-2">{{ __('app.aucun_cours_trouve') }}</h5>
-                <p class="text-muted small">{{ __('app.aucun_cours_pour_cette_classe') }}</p>
-            </div>
+        <!-- Empty State -->
+        <div id="emptyState" class="google-empty-state" style="display: none;">
+            <svg class="google-empty-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <line x1="7" y1="14" x2="17" y2="14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <line x1="12" y1="14" x2="12" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <h5 class="google-empty-title">{{ __('app.aucun_cours_trouve') }}</h5>
+            <p class="google-empty-text">{{ __('app.aucun_cours_pour_cette_classe') }}</p>
         </div>
     </div>
 </div>
@@ -75,99 +80,164 @@
 
 @push('styles')
 <style>
-/* Timetable Custom Styles */
-.timetable-custom {
-    border-collapse: separate;
-    border-spacing: 0;
+:root {
+    --google-blue: #1a73e8;
+    --google-blue-hover: #1967d2;
+    --google-blue-light: #e8f0fe;
+    --google-gray-50: #f8f9fa;
+    --google-gray-100: #f1f3f4;
+    --google-gray-200: #e8eaed;
+    --google-gray-300: #dadce0;
+    --google-gray-400: #bdc1c6;
+    --google-gray-500: #9aa0a6;
+    --google-gray-600: #80868b;
+    --google-gray-700: #5f6368;
+    --google-gray-800: #3c4043;
+    --google-gray-900: #202124;
+    --google-spacing-xs: 4px;
+    --google-spacing-sm: 8px;
+    --google-spacing-md: 16px;
+    --google-spacing-lg: 24px;
+    --google-spacing-xl: 32px;
+    --google-spacing-2xl: 48px;
+    --google-shadow-1: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+    --google-shadow-2: 0 1px 3px 0 rgba(60, 64, 67, 0.3), 0 4px 8px 3px rgba(60, 64, 67, 0.15);
+    --google-transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
 }
 
-.timetable-custom thead {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+/* Container */
+.google-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: var(--google-spacing-lg);
 }
 
-.timetable-custom thead th {
-    color: white;
-    font-weight: 600;
-    padding: 1rem;
-    border: none;
-    text-align: center;
-    vertical-align: middle;
-    font-size: 0.95rem;
+/* Page Header */
+.google-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--google-spacing-xl);
 }
 
-.time-column {
-    width: 120px;
+.google-page-title {
+    font-size: 2rem;
+    font-weight: 400;
+    color: var(--google-gray-900);
+    margin: 0 0 var(--google-spacing-xs) 0;
 }
 
-.timetable-custom tbody td {
-    padding: 1.25rem 1rem;
-    vertical-align: middle;
-    border: 1px solid #dee2e6;
-    text-align: center;
+.google-page-subtitle {
+    font-size: 0.875rem;
+    color: var(--google-gray-600);
+    margin: 0;
 }
 
-.timetable-custom tbody td:first-child {
-    background-color: #f8f9fa;
-    font-weight: 600;
-    color: #495057;
-    font-size: 0.9rem;
+.google-header-controls {
+    min-width: 250px;
 }
 
-.timetable-custom tbody tr:hover td:first-child {
-    background-color: #e9ecef;
-}
-
-.timetable-custom tbody td:not(:first-child) {
+.google-select {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 0.875rem;
+    color: var(--google-gray-900);
+    border: 1px solid var(--google-gray-300);
+    border-radius: 4px;
     background: white;
-    transition: background-color 0.2s ease;
+    transition: var(--google-transition);
 }
 
-.timetable-custom tbody td:not(:first-child):hover {
-    background-color: #f8f9fa;
+.google-select:focus {
+    outline: none;
+    border-color: var(--google-blue);
+    box-shadow: 0 0 0 1px var(--google-blue);
 }
 
-.timetable-custom tbody tr:nth-child(even) td:not(:first-child) {
-    background: #fafbfc;
+/* Timetable Wrapper */
+.google-timetable-wrapper {
+    background: white;
+    border: 1px solid var(--google-gray-300);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* Timetable */
+.google-timetable {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.google-timetable thead {
+    background: var(--google-gray-50);
+    border-bottom: 1px solid var(--google-gray-300);
+}
+
+.google-timetable thead th {
+    padding: var(--google-spacing-md);
+    text-align: center;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--google-gray-900);
+}
+
+.google-time-column {
+    width: 120px;
+    background: var(--google-gray-100);
+}
+
+.google-day-column {
+    min-width: 150px;
+}
+
+.google-timetable tbody td {
+    padding: var(--google-spacing-md);
+    vertical-align: top;
+    border: 1px solid var(--google-gray-200);
+    text-align: center;
+}
+
+.google-timetable tbody td:first-child {
+    background: var(--google-gray-50);
+    font-weight: 500;
+    color: var(--google-gray-700);
+    font-size: 0.875rem;
 }
 
 /* Course Cell */
 .course-cell {
     display: block;
-    padding: 0.85rem 1rem;
-    background: #f8f9fa;
-    border: 2px solid #667eea;
-    color: #2d3748;
+    padding: var(--google-spacing-md);
+    background: var(--google-blue-light);
+    border: 1px solid var(--google-blue);
+    color: var(--google-gray-900);
     text-decoration: none;
-    border-radius: 8px;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    border-radius: 4px;
+    transition: var(--google-transition);
 }
 
 .course-cell:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
-    background: #ffffff;
-    border-color: #764ba2;
-    color: #2d3748;
+    background: var(--google-blue);
+    color: white;
+    box-shadow: var(--google-shadow-1);
     text-decoration: none;
 }
 
 .course-matiere {
-    font-weight: 700;
-    font-size: 1rem;
-    margin-bottom: 0.4rem;
-    color: #667eea;
+    font-weight: 500;
+    font-size: 0.875rem;
+    margin-bottom: var(--google-spacing-xs);
+    color: inherit;
 }
 
 .course-enseignant {
-    font-size: 0.85rem;
-    color: #6b7280;
-    font-weight: 500;
+    font-size: 0.75rem;
+    color: inherit;
+    opacity: 0.8;
 }
 
 .empty-cell {
-    color: #cbd5e0;
+    color: var(--google-gray-300);
     font-size: 1.5rem;
 }
 
@@ -177,56 +247,112 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 1rem;
-    color: #9ca3af;
+    padding: var(--google-spacing-md);
+    color: var(--google-gray-500);
     text-decoration: none;
-    border: 2px dashed #e5e7eb;
-    border-radius: 8px;
-    transition: all 0.3s ease;
+    border: 2px dashed var(--google-gray-300);
+    border-radius: 4px;
+    transition: var(--google-transition);
     min-height: 80px;
 }
 
 .empty-cell-clickable:hover {
-    color: #667eea;
-    border-color: #667eea;
-    background: #f0f4ff;
+    color: var(--google-blue);
+    border-color: var(--google-blue);
+    background: var(--google-blue-light);
     text-decoration: none;
-    transform: scale(1.02);
 }
 
 .empty-cell-clickable i {
     font-size: 1.5rem;
-    margin-bottom: 0.25rem;
+    margin-bottom: var(--google-spacing-xs);
 }
 
 .empty-cell-clickable small {
     font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    font-weight: 500;
+}
+
+/* Empty State */
+.google-empty-state {
+    text-align: center;
+    padding: var(--google-spacing-2xl);
+}
+
+.google-empty-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto var(--google-spacing-md);
+    color: var(--google-gray-400);
+}
+
+.google-empty-title {
+    font-size: 1rem;
+    font-weight: 400;
+    color: var(--google-gray-700);
+    margin: 0 0 var(--google-spacing-sm) 0;
+}
+
+.google-empty-text {
+    font-size: 0.875rem;
+    color: var(--google-gray-600);
+    margin: 0;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-    .timetable-custom thead th {
-        padding: 0.75rem 0.5rem;
-        font-size: 0.85rem;
+    .google-page-header {
+        flex-direction: column;
+        gap: var(--google-spacing-md);
+    }
+
+    .google-header-controls {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .google-timetable thead th {
+        padding: var(--google-spacing-sm);
+        font-size: 0.75rem;
     }
     
-    .timetable-custom tbody td {
-        padding: 1rem 0.5rem;
+    .google-timetable tbody td {
+        padding: var(--google-spacing-sm);
     }
     
     .course-cell {
-        padding: 0.6rem 0.75rem;
+        padding: var(--google-spacing-sm);
     }
     
     .course-matiere {
-        font-size: 0.85rem;
+        font-size: 0.75rem;
     }
     
     .course-enseignant {
-        font-size: 0.75rem;
+        font-size: 0.7rem;
+    }
+
+    .empty-cell-clickable {
+        min-height: 60px;
+        padding: var(--google-spacing-sm);
+    }
+}
+
+@media (max-width: 480px) {
+    .google-container {
+        padding: var(--google-spacing-md);
+    }
+
+    .google-page-title {
+        font-size: 1.5rem;
+    }
+
+    .google-day-column {
+        min-width: 100px;
+    }
+
+    .google-time-column {
+        width: 80px;
     }
 }
 </style>

@@ -9,104 +9,74 @@
 @endsection
 
 @section('content')
-    <div class="container-fluid px-4">
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <!-- Header -->
-                <div class="d-flex align-items-center mb-4">
-                    <div class="form-icon-wrapper me-3">
-                        <i class="fas fa-plus-circle"></i>
-                    </div>
-                    <div>
-                        <h4 class="mb-1">{{ __('app.creer_nouvelle_classe') }}</h4>
-                        <p class="text-muted mb-0 small">{{ __('app.remplissez_informations_nouvelle_classe') }}</p>
-                    </div>
-                </div>
+    <div class="google-container">
+        <div class="google-form-wrapper">
+            <!-- Header -->
+            <div class="google-form-header">
+                <h1 class="google-form-title">{{ __('app.creer_nouvelle_classe') }}</h1>
+                <p class="google-form-subtitle">{{ __('app.remplissez_informations_nouvelle_classe') }}</p>
+            </div>
 
-                <!-- Form Card -->
-                <div class="form-card">
-                    <form action="{{ route('classes.store') }}" method="POST">
-                        @csrf
-                        
-                        <!-- Form Fields -->
-                        <div class="form-section">
-                            <h6 class="form-section-title">{{ __('app.informations_base') }}</h6>
+            <!-- Form Card -->
+            <div class="google-form-card">
+                <form action="{{ route('classes.store') }}" method="POST">
+                    @csrf
+                    
+                    <!-- Form Fields -->
+                    <div class="google-form-section">
+                        <div class="google-form-row">
+                            <div class="google-form-group">
+                                <label class="google-label" for="nom_classe">
+                                    {{ __('app.nom_classe') }}
+                                </label>
+                                <input 
+                                    type="text" 
+                                    class="google-input @error('nom_classe') google-input-error @enderror" 
+                                    id="nom_classe"
+                                    name="nom_classe"
+                                    placeholder="{{ __('app.exemple_classe') }}"
+                                    value="{{ old('nom_classe') }}"
+                                    required
+                                    autofocus
+                                >
+                                @error('nom_classe')
+                                    <span class="google-error-text">{{ $message }}</span>
+                                @enderror
+                            </div>
                             
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-group-md">
-                                        <label class="form-label-md" for="nom_classe">
-                                            {{ __('app.nom_classe') }}
-                                            <span class="text-danger">*</span>
-                                        </label>
-                                        <input 
-                                            type="text" 
-                                            class="form-control-md @error('nom_classe') is-invalid @enderror" 
-                                            id="nom_classe"
-                                            name="nom_classe"
-                                            placeholder="{{ __('app.exemple_classe') }}"
-                                            value="{{ old('nom_classe') }}"
-                                            required
-                                            autofocus
-                                        >
-                                        <small class="form-help-text">{{ __('app.aide_nom_classe') }}</small>
-                                        @error('nom_classe')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                </div>
-                                
-                                <div class="col-md-6">
-                                    <div class="form-group-md">
-                                        <label class="form-label-md" for="niveau">
-                                            {{ __('app.niveau') }}
-                                            <span class="text-danger">*</span>
-                                        </label>
-                                        <input 
-                                            type="number" 
-                                            class="form-control-md @error('niveau') is-invalid @enderror" 
-                                            id="niveau"
-                                            name="niveau"
-                                            placeholder="1, 2, 3..."
-                                            value="{{ old('niveau') }}"
-                                            required
-                                            min="1"
-                                            max="12"
-                                        >
-                                        <small class="form-help-text">{{ __('app.aide_niveau_classe') }}</small>
-                                        @error('niveau')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                </div>
+                            <div class="google-form-group">
+                                <label class="google-label" for="niveau">
+                                    {{ __('app.niveau') }}
+                                </label>
+                                <input 
+                                    type="number" 
+                                    class="google-input @error('niveau') google-input-error @enderror" 
+                                    id="niveau"
+                                    name="niveau"
+                                    placeholder="1, 2, 3..."
+                                    value="{{ old('niveau') }}"
+                                    required
+                                    min="1"
+                                    max="12"
+                                >
+                                @error('niveau')
+                                    <span class="google-error-text">{{ $message }}</span>
+                                @enderror
                             </div>
                         </div>
-
-                        <!-- Info Box -->
-                        <div class="info-box">
-                            <div class="info-box-icon">
-                                <i class="fas fa-info-circle"></i>
-                            </div>
-                            <div>
-                                <h6 class="mb-1">{{ __('app.conseil_creation') }}</h6>
-                                <p class="mb-0 small">{{ __('app.vous_pourrez_ajouter_etudiants_cours_apres_creation') }}</p>
-                            </div>
-                        </div>
+                    </div>
+                    
+                    <!-- Form Actions -->
+                    <div class="google-form-actions">
+                        <a href="{{ route('classes.index') }}" class="google-btn google-btn-text">
+                            {{ __('app.annuler') }}
+                        </a>
                         
-                        <!-- Form Actions -->
-                        <div class="form-actions">
-                            <a href="{{ route('classes.index') }}" class="btn-md btn-secondary">
-                                <i class="fas fa-times {{ app()->getLocale() === 'ar' ? 'ms-2' : 'me-2' }}"></i>
-                                {{ __('app.annuler') }}
-                            </a>
-                            
-                            <button type="submit" class="btn-md btn-primary">
-                                <i class="fas fa-save {{ app()->getLocale() === 'ar' ? 'ms-2' : 'me-2' }}"></i>
-                                {{ __('app.creer_classe') }}
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                        <button type="submit" class="google-btn google-btn-primary">
+                            {{ __('app.creer_classe') }}
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -114,293 +84,225 @@
 
 @push('styles')
 <style>
-    /* Material Design Variables */
+    /* Google Design Variables */
     :root {
-        --md-primary: #0d6efd;
-        --md-primary-hover: #0b5ed7;
-        --md-gray-50: #f8f9fa;
-        --md-gray-100: #f1f3f5;
-        --md-gray-200: #e9ecef;
-        --md-gray-300: #dee2e6;
-        --md-gray-400: #ced4da;
-        --md-gray-500: #adb5bd;
-        --md-gray-600: #6c757d;
-        --md-gray-700: #495057;
-        --md-gray-800: #343a40;
-        --md-gray-900: #212529;
-        --md-radius: 12px;
-        --md-radius-sm: 8px;
-        --md-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
-        --md-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
-        --md-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
-        --md-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        --google-blue: #1a73e8;
+        --google-blue-hover: #1967d2;
+        --google-blue-light: #e8f0fe;
+        
+        --google-white: #ffffff;
+        --google-gray-50: #f8f9fa;
+        --google-gray-100: #f1f3f4;
+        --google-gray-200: #e8eaed;
+        --google-gray-300: #dadce0;
+        --google-gray-400: #bdc1c6;
+        --google-gray-500: #9aa0a6;
+        --google-gray-600: #80868b;
+        --google-gray-700: #5f6368;
+        --google-gray-800: #3c4043;
+        --google-gray-900: #202124;
+        
+        --google-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        
+        --google-spacing-xs: 4px;
+        --google-spacing-sm: 8px;
+        --google-spacing-md: 16px;
+        --google-spacing-lg: 24px;
+        --google-spacing-xl: 32px;
+        --google-spacing-2xl: 48px;
+        
+        --google-radius: 8px;
+        --google-radius-sm: 4px;
+        
+        --google-shadow-1: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+        --google-shadow-2: 0 1px 3px 0 rgba(60, 64, 67, 0.3), 0 4px 8px 3px rgba(60, 64, 67, 0.15);
+        
+        --google-transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
     }
 
     /* Container */
-    .container-fluid {
-        max-width: 1400px;
+    .google-container {
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
     }
 
-    /* Header Icon */
-    .form-icon-wrapper {
-        width: 56px;
-        height: 56px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, var(--md-primary), var(--md-primary-hover));
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 24px;
-        box-shadow: var(--md-shadow);
+    /* Form Wrapper */
+    .google-form-wrapper {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: var(--google-spacing-lg);
+    }
+
+    /* Form Header */
+    .google-form-header {
+        margin-bottom: var(--google-spacing-xl);
+    }
+
+    .google-form-title {
+        font-size: 2rem;
+        font-weight: 400;
+        color: var(--google-gray-900);
+        margin: 0 0 var(--google-spacing-xs) 0;
+    }
+
+    .google-form-subtitle {
+        font-size: 0.875rem;
+        color: var(--google-gray-600);
+        margin: 0;
     }
 
     /* Form Card */
-    .form-card {
+    .google-form-card {
         background: white;
-        border-radius: var(--md-radius);
-        box-shadow: var(--md-shadow-sm);
-        border: 1px solid var(--md-gray-200);
-        overflow: hidden;
-        transition: var(--md-transition);
-    }
-
-    .form-card form {
-        padding: 32px;
+        border: 1px solid var(--google-gray-300);
+        border-radius: 8px;
+        padding: var(--google-spacing-xl);
     }
 
     /* Form Section */
-    .form-section {
-        margin-bottom: 32px;
-        padding-bottom: 32px;
-        border-bottom: 1px solid var(--md-gray-200);
+    .google-form-section {
+        margin-bottom: var(--google-spacing-xl);
     }
 
-    .form-section:last-of-type {
-        margin-bottom: 24px;
-        padding-bottom: 0;
-        border-bottom: none;
+    .google-form-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: var(--google-spacing-lg);
     }
 
-    .form-section-title {
-        font-size: 14px;
-        font-weight: 600;
-        color: var(--md-gray-700);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 20px;
+    /* Form Group */
+    .google-form-group {
+        display: flex;
+        flex-direction: column;
     }
 
-    /* Form Groups */
-    .form-group-md {
-        margin-bottom: 24px;
+    /* Form Label */
+    .google-label {
+        font-size: 0.875rem;
+        font-weight: 400;
+        color: var(--google-gray-700);
+        margin-bottom: var(--google-spacing-sm);
     }
 
-    .form-group-md:last-child {
-        margin-bottom: 0;
-    }
-
-    /* Form Labels */
-    .form-label-md {
-        display: block;
-        font-size: 14px;
-        font-weight: 500;
-        color: var(--md-gray-700);
-        margin-bottom: 8px;
-    }
-
-    /* Form Controls */
-    .form-control-md {
+    /* Form Input */
+    .google-input {
         width: 100%;
-        padding: 12px 16px;
-        font-size: 15px;
-        line-height: 1.5;
-        color: var(--md-gray-900);
-        background-color: var(--md-gray-50);
-        border: 2px solid var(--md-gray-300);
-        border-radius: var(--md-radius-sm);
-        transition: var(--md-transition);
+        padding: 8px 12px;
+        font-size: 0.875rem;
+        color: var(--google-gray-900);
+        background: white;
+        border: 1px solid var(--google-gray-300);
+        border-radius: 4px;
+        transition: var(--google-transition);
     }
 
-    .form-control-md:focus {
+    .google-input:focus {
         outline: none;
-        background-color: white;
-        border-color: var(--md-primary);
-        box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1);
+        border-color: var(--google-blue);
+        box-shadow: 0 0 0 1px var(--google-blue);
     }
 
-    .form-control-md::placeholder {
-        color: var(--md-gray-500);
+    .google-input-error {
+        border-color: #d93025;
     }
 
-    .form-control-md.is-invalid {
-        border-color: #dc3545;
-        background-color: #fff5f5;
+    .google-input-error:focus {
+        box-shadow: 0 0 0 1px #d93025;
     }
 
-    .form-control-md.is-invalid:focus {
-        box-shadow: 0 0 0 4px rgba(220, 53, 69, 0.1);
-    }
-
-    /* Help Text */
-    .form-help-text {
-        display: block;
-        margin-top: 6px;
-        font-size: 13px;
-        color: var(--md-gray-600);
-    }
-
-    /* Invalid Feedback */
-    .invalid-feedback {
-        display: block;
-        margin-top: 6px;
-        font-size: 13px;
-        color: #dc3545;
-    }
-
-    /* Info Box */
-    .info-box {
-        display: flex;
-        align-items: flex-start;
-        gap: 16px;
-        padding: 16px 20px;
-        background: linear-gradient(135deg, #e3f2fd, #f0f7ff);
-        border: 1px solid #bbdefb;
-        border-radius: var(--md-radius-sm);
-        margin-bottom: 32px;
-    }
-
-    .info-box-icon {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        background: var(--md-primary);
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        font-size: 16px;
-    }
-
-    .info-box h6 {
-        font-size: 14px;
-        font-weight: 600;
-        color: var(--md-gray-800);
-    }
-
-    .info-box p {
-        color: var(--md-gray-700);
+    /* Error Text */
+    .google-error-text {
+        font-size: 0.75rem;
+        color: #d93025;
+        margin-top: var(--google-spacing-xs);
     }
 
     /* Form Actions */
-    .form-actions {
+    .google-form-actions {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        gap: 12px;
-        padding-top: 24px;
-        border-top: 1px solid var(--md-gray-200);
+        padding-top: var(--google-spacing-lg);
+        border-top: 1px solid var(--google-gray-300);
+        gap: var(--google-spacing-sm);
     }
 
-    /* Material Buttons */
-    .btn-md {
+    /* Buttons */
+    .google-btn {
         display: inline-flex;
         align-items: center;
-        justify-content: center;
-        padding: 12px 24px;
-        font-size: 15px;
+        padding: 8px 16px;
+        font-size: 0.875rem;
         font-weight: 500;
-        line-height: 1.5;
-        border-radius: var(--md-radius-sm);
+        text-decoration: none;
+        border-radius: 4px;
         border: none;
         cursor: pointer;
-        transition: var(--md-transition);
-        text-decoration: none;
-        min-height: 44px;
+        transition: var(--google-transition);
     }
 
-    .btn-md.btn-primary {
-        background: linear-gradient(135deg, var(--md-primary), var(--md-primary-hover));
+    .google-btn-primary {
+        background: var(--google-blue);
         color: white;
-        box-shadow: var(--md-shadow-sm);
     }
 
-    .btn-md.btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--md-shadow);
+    .google-btn-primary:hover {
+        background: var(--google-blue-hover);
+        box-shadow: var(--google-shadow-1);
+        color: white;
     }
 
-    .btn-md.btn-primary:active {
-        transform: translateY(0);
+    .google-btn-text {
+        background: transparent;
+        color: var(--google-blue);
     }
 
-    .btn-md.btn-secondary {
-        background: white;
-        color: var(--md-gray-700);
-        border: 2px solid var(--md-gray-300);
-    }
-
-    .btn-md.btn-secondary:hover {
-        background: var(--md-gray-50);
-        border-color: var(--md-gray-400);
-    }
-
-    /* RTL Support */
-    [dir="rtl"] .form-icon-wrapper {
-        margin-right: 0;
-        margin-left: 1rem;
-    }
-
-    [dir="rtl"] .info-box {
-        text-align: right;
+    .google-btn-text:hover {
+        background: var(--google-blue-light);
+        color: var(--google-blue-hover);
     }
 
     /* Responsive Design */
-    @media (max-width: 767.98px) {
-        .form-card form {
-            padding: 24px 20px;
+    @media (max-width: 768px) {
+        .google-form-wrapper {
+            padding: var(--google-spacing-md);
         }
 
-        .form-section {
-            margin-bottom: 24px;
-            padding-bottom: 24px;
+        .google-form-card {
+            padding: var(--google-spacing-lg);
         }
 
-        .form-actions {
-            flex-direction: column-reverse;
-            gap: 12px;
+        .google-form-title {
+            font-size: 1.5rem;
         }
 
-        .btn-md {
-            width: 100%;
-        }
-
-        .form-icon-wrapper {
-            width: 48px;
-            height: 48px;
-            font-size: 20px;
-        }
-
-        .info-box {
-            padding: 14px 16px;
-        }
-
-        .info-box-icon {
-            width: 32px;
-            height: 32px;
-            font-size: 14px;
+        .google-form-row {
+            grid-template-columns: 1fr;
+            gap: var(--google-spacing-md);
         }
     }
 
-    @media (max-width: 575.98px) {
-        .container-fluid {
-            padding-left: 16px;
-            padding-right: 16px;
+    @media (max-width: 480px) {
+        .google-form-wrapper {
+            padding: var(--google-spacing-sm);
         }
 
-        .form-card form {
-            padding: 20px 16px;
+        .google-form-card {
+            padding: var(--google-spacing-md);
+        }
+
+        .google-form-title {
+            font-size: 1.25rem;
+        }
+
+        .google-form-actions {
+            flex-direction: column-reverse;
+        }
+
+        .google-btn {
+            width: 100%;
+            justify-content: center;
         }
     }
 </style>

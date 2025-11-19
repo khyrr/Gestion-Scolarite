@@ -13,7 +13,7 @@ class EnseignantController extends Controller
      */
     public function index()
     {
-        $enseignant=Enseignant::all();
+        $enseignant = Enseignant::latest()->paginate(10);
         return view('academic.enseignants.index')->with('enseignant',$enseignant);
     }
 

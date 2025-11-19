@@ -16,617 +16,912 @@
 @endsection
 
 @section('content')
-<div class="container-fluid">
-    <!-- Statistics Overview -->
-    <div class="stats-grid">
-        <div class="stats-card">
-            <div class="icon-wrapper" style="background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);">
-                <i class="fas fa-book-open"></i>
-            </div>
-            <div class="stats-content">
-                <div class="stats-label">{{ __('app.total_cours') }}</div>
-                <div class="stats-value">{{ $cours->count() }}</div>
-            </div>
-        </div>
-        
-        <div class="stats-card">
-            <div class="icon-wrapper" style="background: linear-gradient(135deg, #198754 0%, #146c43 100%);">
-                <i class="fas fa-book"></i>
-            </div>
-            <div class="stats-content">
-                <div class="stats-label">{{ __('app.matieres') }}</div>
-                <div class="stats-value">{{ $cours->pluck('matiere')->unique()->count() }}</div>
-            </div>
-        </div>
-        
-        <div class="stats-card">
-            <div class="icon-wrapper" style="background: linear-gradient(135deg, #0dcaf0 0%, #0aa2c0 100%);">
-                <i class="fas fa-calendar-day"></i>
-            </div>
-            <div class="stats-content">
-                <div class="stats-label">{{ __('app.aujourdhui') }}</div>
-                <div class="stats-value">{{ $cours->where('jour', strtolower(now()->locale('fr_FR')->dayName))->count() }}</div>
-            </div>
-        </div>
-        
-        <div class="stats-card timetable-card">
-            <div class="icon-wrapper">
-                <i class="fas fa-calendar-alt"></i>
-            </div>
-            <div class="stats-content">
-                <div class="stats-label">{{ __('app.emploi_du_temps') }}</div>
-                <div class="stats-value">{{ __('app.voir_emploi_temps') }}</div>
-            </div>
-            <a href="{{ route('cours.spectacle') }}" class="timetable-link">
-                <i class="fas fa-arrow-right"></i>
-            </a>
+<div class="google-container">
+    <!-- Page Header -->
+    <div class="google-page-header">
+        <h1 class="google-page-title">{{ __('app.cours') }}</h1>
+        <div class="google-header-actions">
+            @if($cours->count() > 0)
+                <input type="text" class="google-search-input" id="searchInput" placeholder="{{ __('app.rechercher') }}...">
+            @endif
+            
         </div>
     </div>
 
-    <!-- Courses Table -->
-    <div class="content-card">
-        <div class="card-header-section">
-            <div>
-                <h5 class="card-title">{{ __('app.liste_cours') }}</h5>
-                <p class="card-subtitle">{{ __('app.gestion_academique') }}</p>
-            </div>
+    <!-- Statistics Overview -->
+    <div class="google-stats-grid">
+        <div class="google-stat-item">
+            <div class="google-stat-value">{{ $cours->count() }}</div>
+            <div class="google-stat-label">{{ __('app.total_cours') }}</div>
         </div>
-
-        <!-- Filters -->
-        <div class="filters-grid">
-            <div class="filter-group">
-                <label class="filter-label">{{ __('app.rechercher') }}</label>
-                <input type="text" class="form-control-md" id="searchInput" placeholder="{{ __('app.rechercher') }}...">
-            </div>
-            <div class="filter-group">
-                <label class="filter-label">{{ __('app.jour') }}</label>
-                <select class="form-control-md" id="dayFilter">
-                    <option value="">{{ __('app.tous_les_jours') }}</option>
-                    <option value="lundi">{{ __('app.lundi') }}</option>
-                    <option value="mardi">{{ __('app.mardi') }}</option>
-                    <option value="mercredi">{{ __('app.mercredi') }}</option>
-                    <option value="jeudi">{{ __('app.jeudi') }}</option>
-                    <option value="vendredi">{{ __('app.vendredi') }}</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label class="filter-label">{{ __('app.classe') }}</label>
-                <select class="form-control-md" id="classeFilter">
-                    <option value="">{{ __('app.toutes_les_classes') }}</option>
-                    @foreach($cours->pluck('classe')->unique()->filter() as $classe)
-                        <option value="{{ $classe->nom_classe }}">{{ $classe->nom_classe }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="filter-group">
-                <label class="filter-label">{{ __('app.matiere') }}</label>
-                <select class="form-control-md" id="matiereFilter">
-                    <option value="">{{ __('app.toutes_les_matieres') }}</option>
-                    @foreach($cours->pluck('matiere')->unique() as $matiere)
-                        <option value="{{ $matiere->code_matiere }}">{{ $matiere->code_matiere }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="filter-group">
-                <label class="filter-label">{{ __('app.enseignant') }}</label>
-                <select class="form-control-md" id="enseignantFilter">
-                    <option value="">{{ __('app.tous_les_enseignants') }}</option>
-                    @foreach($cours->pluck('enseignant')->unique()->filter() as $enseignant)
-                        <option value="{{ $enseignant->prenom }} {{ $enseignant->nom }}">
-                            {{ $enseignant->prenom }} {{ $enseignant->nom }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
+        
+        <div class="google-stat-item">
+            <div class="google-stat-value">{{ $cours->pluck('matiere')->unique()->count() }}</div>
+            <div class="google-stat-label">{{ __('app.matieres') }}</div>
         </div>
+        
+        <div class="google-stat-item">
+            <div class="google-stat-value">{{ $cours->where('jour', strtolower(now()->locale('fr_FR')->dayName))->count() }}</div>
+            <div class="google-stat-label">{{ __('app.aujourdhui') }}</div>
+        </div>
+        
+        <a href="{{ route('cours.spectacle') }}" class="google-stat-item google-stat-link">
+            <div class="google-stat-value" style="font-size: 0.875rem; font-weight: 500;">{{ __('app.voir_emploi_temps') }}</div>
+            <div class="google-stat-label">{{ __('app.emploi_du_temps') }}</div>
+        </a>
+    </div>
 
-        @if($cours->count() > 0)
-            <div class="table-responsive">
-                <table class="modern-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 60px;">#</th>
-                            <th>{{ __('app.matiere') }}</th>
-                            <th>{{ __('app.classe') }}</th>
-                            <th>{{ __('app.enseignant') }}</th>
-                            <th class="text-center">{{ __('app.jour') }}</th>
-                            <th class="text-center">{{ __('app.horaire') }}</th>
-                            <th class="text-center" style="width: 120px;">{{ __('app.actions') }}</th>
-                        </tr>
-                    </thead>
-                    <tbody id="coursTableBody">
-                        @foreach($cours as $course)
-                        <tr>
-                            <td><span class="id-badge">#{{ $course->id_cours }}</span></td>
-                            <td>
-                                <div class="matiere-cell">
-                                    <span class="matiere-code">{{ $course->matiere->code_matiere }}</span>
-                                    <span class="matiere-name">{{ $course->matiere->nom_matiere ?? $course->matiere->code_matiere }}</span>
-                                </div>
-                            </td>
-                            <td>
-                                @if($course->classe)
-                                    <span class="level-badge">{{ $course->classe->nom_classe }}</span>
-                                @else
-                                    <span class="text-muted">—</span>
-                                @endif
-                            </td>
-                            <td>
-                                @if($course->enseignant)
-                                    <span>{{ $course->enseignant->prenom }} {{ $course->enseignant->nom }}</span>
-                                @else
-                                    <span class="unassigned-text">{{ __('app.non_assigne') }}</span>
-                                @endif
-                            </td>
-                            <td class="text-center">
-                                <span class="day-badge">{{ ucfirst($course->jour) }}</span>
-                            </td>
-                            <td>
-                                <div class="time-cell">
-                                    <span class="time-start">{{ \Carbon\Carbon::parse($course->date_debut)->format('H:i') }}</span>
-                                    <span class="time-separator">→</span>
-                                    <span class="time-end">{{ \Carbon\Carbon::parse($course->date_fin)->format('H:i') }}</span>
-                                </div>
-                            </td>
-                            <td class="text-center">
-                                @include('academic.cours.partials.actions', ['course' => $course])
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-            
-            <!-- No Results Message -->
-            <div id="noResultsMessage" class="empty-state" style="display: none;">
-                <div class="empty-icon">
-                    <i class="bi bi-search"></i>
-                </div>
-                <h5 class="empty-title">{{ __('app.aucun_resultat') }}</h5>
-                <p class="empty-text">{{ __('app.essayez_autres_filtres') }}</p>
-                <button class="btn-md btn-secondary" onclick="resetFilters()">
-                    <i class="bi bi-arrow-clockwise"></i>
-                    {{ __('app.reinitialiser_filtres') }}
+    <!-- Filters -->
+    @if($cours->count() > 0)
+        <div class="google-filter-wrapper">
+            <!-- Mobile Filter Button -->
+            <div class="google-filter-mobile-toggle">
+                <button class="google-filter-btn" id="filterToggleBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4 7H20M7 12H17M10 17H14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span>{{ __('app.filtres') }}</span>
+                    <span class="google-filter-badge" id="filterBadge" style="display: none;">0</span>
                 </button>
             </div>
-        @else
-            <div class="empty-state">
-                <div class="empty-icon">
-                    <i class="bi bi-calendar-x"></i>
+
+            <!-- Filters Container -->
+            <div class="google-filters" id="filtersContainer">
+                <div class="google-filters-header">
+                <h3 class="google-filters-title">{{ __('app.filtres') }}</h3>
+                <button class="google-filter-close" id="filterCloseBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
                 </div>
-                <h5 class="empty-title">{{ __('app.aucun_cours_trouve') }}</h5>
-                <p class="empty-text">{{ __('app.no_data') }}</p>
-                @admin
-                    <a href="{{ route('cours.create') }}" class="btn-md btn-primary">
-                        <i class="bi bi-plus-circle"></i>
-                        {{ __('app.ajouter_cours') }}
-                    </a>
-                @endadmin
+                <div class="google-filters-content">
+                <div class="google-filter-group">
+                    <label class="google-filter-label">{{ __('app.jour') }}</label>
+                    <input type="text" class="google-filter-input" id="dayFilter" list="dayList" placeholder="{{ __('app.tous_les_jours') }}">
+                    <datalist id="dayList">
+                        <option value="lundi">{{ __('app.lundi') }}</option>
+                        <option value="mardi">{{ __('app.mardi') }}</option>
+                        <option value="mercredi">{{ __('app.mercredi') }}</option>
+                        <option value="jeudi">{{ __('app.jeudi') }}</option>
+                        <option value="vendredi">{{ __('app.vendredi') }}</option>
+                    </datalist>
+                </div>
+
+                <div class="google-filter-group">
+                    <label class="google-filter-label">{{ __('app.classe') }}</label>
+                    <input type="text" class="google-filter-input" id="classeFilter" list="classeList" placeholder="{{ __('app.toutes_les_classes') }}">
+                    <datalist id="classeList">
+                        @foreach($cours->pluck('classe')->unique()->filter() as $classe)
+                            <option value="{{ $classe->nom_classe }}">{{ $classe->nom_classe }}</option>
+                        @endforeach
+                    </datalist>
+                </div>
+
+                <div class="google-filter-group">
+                    <label class="google-filter-label">{{ __('app.matiere') }}</label>
+                    <input type="text" class="google-filter-input" id="matiereFilter" list="matiereList" placeholder="{{ __('app.toutes_les_matieres') }}">
+                    <datalist id="matiereList">
+                        @foreach($cours->pluck('matiere')->unique() as $matiere)
+                            <option value="{{ $matiere->code_matiere }}">{{ $matiere->nom_matiere ?? $matiere->code_matiere }}</option>
+                        @endforeach
+                    </datalist>
+                </div>
+
+                <div class="google-filter-group">
+                    <label class="google-filter-label">{{ __('app.enseignant') }}</label>
+                    <input type="text" class="google-filter-input" id="enseignantFilter" list="enseignantList" placeholder="{{ __('app.tous_les_enseignants') }}">
+                    <datalist id="enseignantList">
+                        @foreach($cours->pluck('enseignant')->unique()->filter() as $enseignant)
+                            <option value="{{ $enseignant->prenom }} {{ $enseignant->nom }}">{{ $enseignant->prenom }} {{ $enseignant->nom }}</option>
+                        @endforeach
+                    </datalist>
+                </div>
+                </div>
+                <div class="google-filters-actions">
+                    <button class="google-btn google-btn-text" onclick="resetFilters()">{{ __('app.reinitialiser') }}</button>
+                    <button class="google-btn google-btn-primary" id="applyFiltersBtn">{{ __('app.appliquer_filtres') }}</button>
+                </div>
             </div>
-        @endif
-    </div>
+
+            <!-- Filter Overlay -->
+            <div class="google-filter-overlay" id="filterOverlay"></div>
+        </div>
+
+        <!-- Courses List -->
+        <div class="google-list-container" id="coursListContainer">
+            @foreach($cours as $course)
+                <div class="google-list-item" data-matiere="{{ $course->matiere->code_matiere }}" data-classe="{{ $course->classe->nom_classe ?? '' }}" data-enseignant="{{ $course->enseignant ? $course->enseignant->prenom . ' ' . $course->enseignant->nom : '' }}" data-jour="{{ $course->jour }}">
+                    <div class="google-list-main">
+                        <div class="google-list-title">
+                            <span class="google-matiere-code">{{ $course->matiere->code_matiere }}</span>
+                            <span class="google-matiere-name">{{ $course->matiere->nom_matiere ?? $course->matiere->code_matiere }}</span>
+                        </div>
+                        <div class="google-list-meta">
+                            @if($course->classe)
+                                <span class="google-meta-item">{{ $course->classe->nom_classe }}</span>
+                            @endif
+                            @if($course->enseignant)
+                                <span class="google-meta-item">{{ $course->enseignant->prenom }} {{ $course->enseignant->nom }}</span>
+                            @else
+                                <span class="google-meta-item google-text-muted">{{ __('app.non_assigne') }}</span>
+                            @endif
+                            <span class="google-meta-item">{{ ucfirst($course->jour) }}</span>
+                            <span class="google-meta-item">
+                                {{ \Carbon\Carbon::parse($course->date_debut)->format('H:i') }} - {{ \Carbon\Carbon::parse($course->date_fin)->format('H:i') }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="google-list-actions">
+                        @include('academic.cours.partials.actions', ['course' => $course])
+                    </div>
+                </div>
+            @endforeach
+        </div>
+        
+        <!-- No Results Message -->
+        <div id="noResultsMessage" class="google-empty-state" style="display: none;">
+            <svg class="google-empty-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <h3 class="google-empty-title">{{ __('app.aucun_resultat') }}</h3>
+            <p class="google-empty-text">{{ __('app.essayez_autres_filtres') }}</p>
+            <button class="google-btn google-btn-text" onclick="resetFilters()">
+                {{ __('app.reinitialiser_filtres') }}
+            </button>
+        </div>
+    @else
+        <div class="google-empty-state">
+            <svg class="google-empty-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M19 4H5C3.89543 4 3 4.89543 3 6V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V6C21 4.89543 20.1046 4 19 4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M16 2V6M8 2V6M3 10H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M8 14L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <h3 class="google-empty-title">{{ __('app.aucun_cours_trouve') }}</h3>
+            <p class="google-empty-text">{{ __('app.no_data') }}</p>
+            @admin
+                <a href="{{ route('cours.create') }}" class="google-btn google-btn-primary">
+                    {{ __('app.ajouter_cours') }}
+                </a>
+            @endadmin
+        </div>
+    @endif
 </div>
 
 @push('styles')
 <style>
 :root {
-    --md-primary: #0d6efd;
-    --md-primary-dark: #0a58ca;
-    --md-gray-50: #fafafa;
-    --md-gray-100: #f5f5f5;
-    --md-gray-200: #eeeeee;
-    --md-gray-300: #e0e0e0;
-    --md-gray-400: #bdbdbd;
-    --md-gray-500: #9e9e9e;
-    --md-gray-600: #757575;
-    --md-gray-700: #616161;
-    --md-gray-800: #424242;
-    --md-gray-900: #212529;
-    --md-radius: 12px;
-    --md-shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
-    --md-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    --md-shadow-lg: 0 8px 16px rgba(0,0,0,0.12);
+    --google-blue: #1a73e8;
+    --google-blue-hover: #1967d2;
+    --google-blue-light: #e8f0fe;
+    
+    --google-white: #ffffff;
+    --google-gray-50: #f8f9fa;
+    --google-gray-100: #f1f3f4;
+    --google-gray-200: #e8eaed;
+    --google-gray-300: #dadce0;
+    --google-gray-400: #bdc1c6;
+    --google-gray-500: #9aa0a6;
+    --google-gray-600: #80868b;
+    --google-gray-700: #5f6368;
+    --google-gray-800: #3c4043;
+    --google-gray-900: #202124;
+    
+    --google-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    
+    --google-spacing-xs: 4px;
+    --google-spacing-sm: 8px;
+    --google-spacing-md: 16px;
+    --google-spacing-lg: 24px;
+    --google-spacing-xl: 32px;
+    --google-spacing-2xl: 48px;
+    
+    --google-radius: 8px;
+    --google-radius-sm: 4px;
+    
+    --google-shadow-1: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+    --google-shadow-2: 0 1px 3px 0 rgba(60, 64, 67, 0.3), 0 4px 8px 3px rgba(60, 64, 67, 0.15);
+    
+    --google-transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
 }
 
-/* Stats Grid */
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 24px;
-    margin-bottom: 32px;
+/* Container */
+.google-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--google-spacing-2xl) var(--google-spacing-md);
 }
 
-.stats-card {
-    background: white;
-    border-radius: var(--md-radius);
-    padding: 24px;
-    box-shadow: var(--md-shadow);
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-}
-
-.stats-card:hover {
-    box-shadow: var(--md-shadow-lg);
-    transform: translateY(-4px);
-}
-
-.stats-card .icon-wrapper {
-    width: 56px;
-    height: 56px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 24px;
-    flex-shrink: 0;
-}
-
-.stats-content {
-    flex: 1;
-}
-
-.stats-label {
-    font-size: 13px;
-    color: var(--md-gray-600);
-    margin-bottom: 4px;
-    font-weight: 500;
-}
-
-.stats-value {
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--md-gray-900);
-}
-
-.timetable-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-}
-
-.timetable-card .icon-wrapper {
-    background: rgba(255,255,255,0.2);
-}
-
-.timetable-card .stats-label,
-.timetable-card .stats-value {
-    color: white;
-}
-
-.timetable-card .stats-value {
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.timetable-link {
-    width: 40px;
-    height: 40px;
-    background: white;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #667eea;
-    text-decoration: none;
-    transition: all 0.3s;
-}
-
-.timetable-link:hover {
-    transform: scale(1.1);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-
-/* Content Card */
-.content-card {
-    background: white;
-    border-radius: var(--md-radius);
-    padding: 32px;
-    box-shadow: var(--md-shadow);
-}
-
-.card-header-section {
+/* Page Header */
+.google-page-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 28px;
+    margin-bottom: var(--google-spacing-xl);
+    gap: var(--google-spacing-md);
 }
 
-.card-title {
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--md-gray-900);
+.google-page-title {
+    font-family: var(--google-font);
+    font-size: 2rem;
+    font-weight: 400;
+    color: var(--google-gray-900);
     margin: 0;
+    letter-spacing: -0.5px;
 }
 
-.card-subtitle {
-    font-size: 13px;
-    color: var(--md-gray-600);
-    margin: 4px 0 0 0;
+.google-header-actions {
+    display: flex;
+    gap: var(--google-spacing-md);
+    align-items: center;
+}
+
+.google-search-input {
+    width: 300px;
+    padding: 10px 16px;
+    font-family: var(--google-font);
+    font-size: 0.875rem;
+    color: var(--google-gray-900);
+    background: var(--google-white);
+    border: 1px solid var(--google-gray-300);
+    border-radius: 24px;
+    outline: none;
+    transition: var(--google-transition);
+}
+
+.google-search-input:hover {
+    border-color: var(--google-gray-400);
+}
+
+.google-search-input:focus {
+    border-color: var(--google-blue);
+    box-shadow: 0 0 0 2px var(--google-blue-light);
+}
+
+/* Stats Grid */
+.google-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--google-spacing-md);
+    margin-bottom: var(--google-spacing-xl);
+}
+
+.google-stat-item {
+    background: var(--google-white);
+    border: 1px solid var(--google-gray-200);
+    border-radius: var(--google-radius);
+    padding: var(--google-spacing-lg);
+    text-align: center;
+}
+
+.google-stat-link {
+    text-decoration: none;
+    cursor: pointer;
+    transition: var(--google-transition);
+}
+
+.google-stat-link:hover {
+    border-color: var(--google-blue);
+    box-shadow: var(--google-shadow-1);
+}
+
+.google-stat-value {
+    font-family: var(--google-font);
+    font-size: 2rem;
+    font-weight: 400;
+    color: var(--google-gray-900);
+    margin-bottom: var(--google-spacing-xs);
+}
+
+.google-stat-label {
+    font-family: var(--google-font);
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--google-gray-600);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Mobile Filter Toggle */
+.google-filter-mobile-toggle {
+    display: none;
+    margin-bottom: var(--google-spacing-lg);
+}
+
+.google-filter-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--google-spacing-sm);
+    padding: 10px 16px;
+    font-family: var(--google-font);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--google-gray-700);
+    background: var(--google-white);
+    border: 2px solid var(--google-gray-300);
+    border-radius: var(--google-radius-sm);
+    cursor: pointer;
+    transition: var(--google-transition);
+    position: relative;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.google-filter-btn:hover {
+    background: var(--google-gray-50);
+    border-color: var(--google-blue);
+}
+
+.google-filter-btn:active {
+    background: var(--google-gray-100);
+}
+
+.google-filter-btn svg {
+    flex-shrink: 0;
+}
+
+.google-filter-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--google-white);
+    background: var(--google-blue);
+    border-radius: 10px;
+}
+
+/* Filter Overlay */
+.google-filter-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: transparent;
+    z-index: 998;
+}
+
+.google-filter-overlay.active {
+    display: block;
 }
 
 /* Filters */
-.filters-grid {
+.google-filters {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    margin-bottom: 28px;
+    gap: var(--google-spacing-md);
+    margin-bottom: var(--google-spacing-lg);
+    background: var(--google-white);
+    border: 1px solid var(--google-gray-200);
+    border-radius: var(--google-radius);
+    padding: var(--google-spacing-lg);
 }
 
-.filter-group {
+.google-filters-header {
+    display: none;
+}
+
+.google-filters-content {
+    display: contents;
+}
+
+.google-filters-actions {
+    display: none;
+}
+
+.google-filter-group {
     display: flex;
     flex-direction: column;
 }
 
-.filter-label {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--md-gray-700);
-    margin-bottom: 8px;
+.google-filter-label {
+    font-family: var(--google-font);
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--google-gray-700);
+    margin-bottom: 6px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
-.form-control-md {
-    padding: 12px 16px;
-    border: 1px solid var(--md-gray-300);
-    border-radius: 8px;
-    font-size: 14px;
-    transition: all 0.3s;
-    background: white;
-    color: var(--md-gray-900);
-}
-
-.form-control-md:focus {
+.google-filter-input {
+    padding: 10px 12px;
+    font-family: var(--google-font);
+    font-size: 0.875rem;
+    color: var(--google-gray-900);
+    background: var(--google-white);
+    border: 1px solid var(--google-gray-300);
+    border-radius: var(--google-radius-sm);
     outline: none;
-    border-color: var(--md-primary);
-    box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1);
+    cursor: text;
+    transition: var(--google-transition);
 }
 
-/* Modern Table */
-.modern-table {
-    width: 100%;
-    border-collapse: collapse;
+.google-filter-input:hover {
+    border-color: var(--google-gray-400);
+    background: var(--google-gray-50);
 }
 
-.modern-table thead th {
-    padding: 14px 16px;
-    text-align: left;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--md-gray-700);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border-bottom: 2px solid var(--md-gray-200);
-    background: var(--md-gray-50);
+.google-filter-input:focus {
+    border-color: var(--google-blue);
+    background: var(--google-white);
+    box-shadow: 0 0 0 2px var(--google-blue-light);
 }
 
-.modern-table tbody tr {
-    border-bottom: 1px solid var(--md-gray-200);
-    transition: background 0.2s;
-}
-
-.modern-table tbody tr:hover {
-    background: var(--md-gray-50);
-}
-
-.modern-table tbody td {
-    padding: 16px;
-    font-size: 14px;
-    color: var(--md-gray-800);
-}
-
-.id-badge {
-    color: var(--md-gray-600);
-    font-weight: 500;
-    font-size: 13px;
-}
-
-.matiere-cell {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.matiere-code {
-    background: rgba(13, 110, 253, 0.1);
-    color: var(--md-primary);
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-weight: 600;
-    font-size: 12px;
-}
-
-.matiere-name {
-    color: var(--md-gray-800);
-    font-weight: 500;
-}
-
-.level-badge {
-    display: inline-flex;
-    padding: 6px 12px;
-    background: var(--md-gray-100);
-    color: var(--md-gray-700);
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 500;
-}
-
-.unassigned-text {
-    color: var(--md-gray-500);
+.google-filter-input::placeholder {
+    color: var(--google-gray-500);
     font-style: italic;
-    font-size: 13px;
 }
 
-.day-badge {
-    display: inline-flex;
-    padding: 6px 14px;
-    background: rgba(108, 117, 125, 0.1);
-    color: var(--md-gray-700);
-    border-radius: 20px;
-    font-size: 13px;
+/* List Container */
+.google-list-container {
+    background: var(--google-white);
+    border: 1px solid var(--google-gray-200);
+    border-radius: var(--google-radius);
+    overflow: hidden;
+}
+
+.google-list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--google-spacing-md) var(--google-spacing-lg);
+    border-bottom: 1px solid var(--google-gray-200);
+    transition: var(--google-transition);
+    gap: var(--google-spacing-md);
+}
+
+.google-list-item:last-child {
+    border-bottom: none;
+}
+
+.google-list-item:hover {
+    background: var(--google-gray-50);
+}
+
+.google-list-main {
+    flex: 1;
+    min-width: 0;
+}
+
+.google-list-title {
+    display: flex;
+    align-items: center;
+    gap: var(--google-spacing-md);
+    margin-bottom: var(--google-spacing-xs);
+    flex-wrap: wrap;
+}
+
+.google-matiere-code {
+    font-family: var(--google-font);
+    font-size: 0.875rem;
     font-weight: 500;
+    color: var(--google-blue);
+    background: var(--google-blue-light);
+    padding: 4px 10px;
+    border-radius: var(--google-radius-sm);
 }
 
-.time-cell {
+.google-matiere-name {
+    font-family: var(--google-font);
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: var(--google-gray-900);
+}
+
+.google-list-meta {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
+    gap: var(--google-spacing-md);
+    flex-wrap: wrap;
 }
 
-.time-start {
-    color: #198754;
-    font-weight: 600;
-    font-size: 13px;
+.google-meta-item {
+    font-family: var(--google-font);
+    font-size: 0.75rem;
+    color: var(--google-gray-600);
 }
 
-.time-separator {
-    color: var(--md-gray-400);
-    font-size: 12px;
+.google-text-muted {
+    font-style: italic;
+    color: var(--google-gray-500);
 }
 
-.time-end {
-    color: #dc3545;
-    font-weight: 600;
-    font-size: 13px;
-}
-
-/* Empty State */
-.empty-state {
-    text-align: center;
-    padding: 64px 24px;
-}
-
-.empty-icon {
-    width: 80px;
-    height: 80px;
-    margin: 0 auto 20px;
-    background: var(--md-gray-100);
-    border-radius: 50%;
+.google-list-actions {
     display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.empty-icon i {
-    font-size: 36px;
-    color: var(--md-gray-400);
-}
-
-.empty-title {
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--md-gray-700);
-    margin-bottom: 8px;
-}
-
-.empty-text {
-    font-size: 14px;
-    color: var(--md-gray-600);
-    margin-bottom: 24px;
+    gap: var(--google-spacing-sm);
+    flex-shrink: 0;
 }
 
 /* Buttons */
-.btn-md {
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+.google-btn {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    justify-content: center;
+    padding: 10px 24px;
+    font-family: var(--google-font);
+    font-size: 0.875rem;
+    font-weight: 500;
     text-decoration: none;
+    border-radius: var(--google-radius-sm);
+    border: none;
+    cursor: pointer;
+    transition: var(--google-transition);
+    letter-spacing: 0.25px;
+    white-space: nowrap;
 }
 
-.btn-primary {
-    background: var(--md-primary);
-    color: white;
+.google-btn-primary {
+    background: var(--google-blue);
+    color: var(--google-white);
 }
 
-.btn-primary:hover {
-    background: var(--md-primary-dark);
-    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
-    transform: translateY(-2px);
-    color: white;
+.google-btn-primary:hover {
+    background: var(--google-blue-hover);
+    color: var(--google-white);
+    box-shadow: var(--google-shadow-1);
 }
 
-.btn-secondary {
-    background: var(--md-gray-200);
-    color: var(--md-gray-700);
+.google-btn-text {
+    background: transparent;
+    color: var(--google-blue);
 }
 
-.btn-secondary:hover {
-    background: var(--md-gray-300);
-    color: var(--md-gray-800);
+.google-btn-text:hover {
+    background: var(--google-blue-light);
+    color: var(--google-blue-hover);
 }
 
-/* RTL Support */
-[dir="rtl"] .stats-card {
-    flex-direction: row-reverse;
+/* Empty State */
+.google-empty-state {
+    text-align: center;
+    padding: var(--google-spacing-2xl);
+    background: var(--google-white);
+    border: 1px solid var(--google-gray-200);
+    border-radius: var(--google-radius);
 }
 
-[dir="rtl"] .matiere-cell {
-    flex-direction: row-reverse;
+.google-empty-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto var(--google-spacing-md);
+    color: var(--google-gray-400);
 }
 
-[dir="rtl"] .time-separator {
-    transform: scaleX(-1);
+.google-empty-title {
+    font-family: var(--google-font);
+    font-size: 1.25rem;
+    font-weight: 400;
+    color: var(--google-gray-900);
+    margin: 0 0 var(--google-spacing-sm) 0;
 }
 
-[dir="rtl"] .btn-md {
-    flex-direction: row-reverse;
+.google-empty-text {
+    font-family: var(--google-font);
+    font-size: 0.875rem;
+    color: var(--google-gray-600);
+    margin: 0 0 var(--google-spacing-lg) 0;
 }
 
 /* Responsive */
-@media (max-width: 1199px) {
-    .stats-grid {
+@media (max-width: 1024px) {
+    .google-container {
+        padding: var(--google-spacing-xl) var(--google-spacing-md);
+    }
+
+    .google-search-input {
+        width: 250px;
+    }
+
+    .google-stats-grid {
         grid-template-columns: repeat(2, 1fr);
     }
 }
 
-@media (max-width: 767px) {
-    .stats-grid {
-        grid-template-columns: 1fr;
-        gap: 16px;
+@media (max-width: 768px) {
+    .google-container {
+        padding: var(--google-spacing-lg) var(--google-spacing-md);
     }
-    
-    .content-card {
-        padding: 20px;
+
+    .google-page-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--google-spacing-md);
     }
-    
-    .filters-grid {
-        grid-template-columns: 1fr;
-        gap: 16px;
+
+    .google-page-title {
+        font-size: 1.75rem;
     }
-    
-    .modern-table {
-        font-size: 13px;
+
+    .google-header-actions {
+        width: 100%;
+        flex-direction: row;
+        gap: var(--google-spacing-sm);
     }
-    
-    .modern-table tbody td {
-        padding: 12px 8px;
+
+    .google-search-input {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .google-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--google-spacing-sm);
+    }
+
+    .google-stat-item {
+        padding: var(--google-spacing-md);
+    }
+
+    .google-stat-value {
+        font-size: 1.5rem;
+    }
+
+    .google-stat-label {
+        font-size: 0.6875rem;
+    }
+
+    /* Filter wrapper for positioning context */
+    .google-filter-wrapper {
+        position: relative;
+        margin-bottom: var(--google-spacing-lg);
+    }
+
+    /* Show mobile filter toggle */
+    .google-filter-mobile-toggle {
+        display: block !important;
+    }
+
+    /* Hide desktop filters, show as dropdown on mobile */
+    .google-filters {
+        display: none !important;
+    }
+
+    .google-filters.active {
+        display: block !important;
+        position: absolute;
+        top: calc(100% + 8px);
+        left: 0;
+        right: 0;
+        width: 100%;
+        background: white;
+        z-index: 999;
+        border-radius: var(--google-radius);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--google-gray-200);
+        padding: 0;
+        animation: slideDown 0.25s cubic-bezier(0.4, 0.0, 0.2, 1);
+        overflow: hidden;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-12px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .google-filters-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--google-gray-200);
+        background: var(--google-white);
+    }
+
+    .google-filters-title {
+        font-size: 0.8125rem;
+        font-weight: 500;
+        color: var(--google-gray-900);
+        margin: 0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .google-filter-close {
+        width: 28px;
+        height: 28px;
+        background: transparent;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--google-gray-600);
+        transition: var(--google-transition);
+    }
+
+    .google-filter-close svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .google-filter-close:hover {
+        background: var(--google-gray-100);
+        color: var(--google-gray-900);
+    }
+
+    .google-filter-close:active {
+        background: var(--google-gray-200);
+    }
+
+    .google-filters-content {
+        display: block;
+        padding: 12px;
+        max-height: 40vh;
+        overflow-y: auto;
+    }
+
+    .google-filter-group {
+        margin-bottom: 10px;
+    }
+
+    .google-filter-group:last-child {
+        margin-bottom: 0;
+    }
+
+    .google-filter-label {
+        display: block;
+        font-size: 0.625rem;
+        font-weight: 500;
+        color: var(--google-gray-700);
+        margin-bottom: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .google-filter-input {
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid var(--google-gray-300);
+        border-radius: 4px;
+        font-size: 0.8125rem;
+        background: white;
+        font-family: var(--google-font);
+        color: var(--google-gray-900);
+        transition: var(--google-transition);
+    }
+
+    .google-filter-input:hover {
+        border-color: var(--google-gray-400);
+        background: var(--google-gray-50);
+    }
+
+    .google-filter-input:focus {
+        outline: none;
+        border-color: var(--google-blue);
+        background: white;
+        box-shadow: 0 0 0 3px var(--google-blue-light);
+    }
+
+    .google-filter-input::placeholder {
+        color: var(--google-gray-500);
+        font-style: italic;
+    }
+
+    .google-filters-actions {
+        display: flex;
+        gap: 8px;
+        padding: 10px 12px;
+        border-top: 1px solid var(--google-gray-200);
+        background: var(--google-gray-50);
+    }
+
+    .google-filters-actions .google-btn {
+        flex: 1;
+        padding: 8px 12px;
+        font-size: 0.8125rem;
+        font-weight: 500;
+    }
+
+    .google-list-item {
+        flex-direction: column;
+        align-items: stretch;
+        padding: var(--google-spacing-md);
+        gap: var(--google-spacing-md);
+    }
+
+    .google-list-title {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--google-spacing-xs);
+    }
+
+    .google-list-meta {
+        flex-direction: column;
+        gap: var(--google-spacing-xs);
+    }
+
+    .google-list-actions {
+        width: 100%;
+        justify-content: flex-start;
+        padding-top: var(--google-spacing-sm);
+        border-top: 1px solid var(--google-gray-200);
     }
 }
 
-@media (max-width: 575px) {
-    .stats-card {
-        padding: 20px;
+@media (max-width: 480px) {
+    .google-container {
+        padding: var(--google-spacing-md) var(--google-spacing-sm);
     }
-    
-    .stats-card .icon-wrapper {
+
+    .google-page-header {
+        margin-bottom: var(--google-spacing-lg);
+    }
+
+    .google-page-title {
+        font-size: 1.5rem;
+    }
+
+    .google-stats-grid {
+        grid-template-columns: 1fr;
+        gap: var(--google-spacing-sm);
+        margin-bottom: var(--google-spacing-lg);
+    }
+
+    .google-stat-item {
+        padding: var(--google-spacing-sm) var(--google-spacing-md);
+    }
+
+    .google-stat-value {
+        font-size: 1.25rem;
+    }
+
+    .google-stat-label {
+        font-size: 0.625rem;
+    }
+
+    .google-filters {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .google-filter-select {
+        padding: 10px 12px;
+        font-size: 0.8125rem;
+    }
+
+    .google-list-item {
+        padding: var(--google-spacing-sm);
+    }
+
+    .google-matiere-code {
+        font-size: 0.8125rem;
+        padding: 3px 8px;
+    }
+
+    .google-matiere-name {
+        font-size: 0.8125rem;
+    }
+
+    .google-meta-item {
+        font-size: 0.6875rem;
+    }
+
+    .google-empty-state {
+        padding: var(--google-spacing-xl) var(--google-spacing-md);
+    }
+
+    .google-empty-icon {
         width: 48px;
         height: 48px;
-        font-size: 20px;
     }
-    
-    .stats-value {
-        font-size: 24px;
+
+    .google-empty-title {
+        font-size: 1.125rem;
+    }
+
+    .google-empty-text {
+        font-size: 0.8125rem;
     }
 }
 </style>
@@ -641,65 +936,161 @@ const classeFilter = document.getElementById('classeFilter');
 const matiereFilter = document.getElementById('matiereFilter');
 const enseignantFilter = document.getElementById('enseignantFilter');
 const noResultsMessage = document.getElementById('noResultsMessage');
-const tableContainer = document.querySelector('.table-responsive');
+const listContainer = document.getElementById('coursListContainer');
 
-function filterTable() {
-    const searchTerm = searchInput.value.toLowerCase();
-    const selectedDay = dayFilter.value.toLowerCase();
-    const selectedClasse = classeFilter.value.toLowerCase();
-    const selectedMatiere = matiereFilter.value.toLowerCase();
-    const selectedEnseignant = enseignantFilter.value.toLowerCase();
+// Mobile filter panel elements
+const filterToggleBtn = document.getElementById('filterToggleBtn');
+const filterCloseBtn = document.getElementById('filterCloseBtn');
+const applyFiltersBtn = document.getElementById('applyFiltersBtn');
+const filtersContainer = document.getElementById('filtersContainer');
+const filterOverlay = document.getElementById('filterOverlay');
+const filterBadge = document.getElementById('filterBadge');
+
+function filterList() {
+    const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
+    const selectedDay = dayFilter ? dayFilter.value.toLowerCase().trim() : '';
+    const selectedClasse = classeFilter ? classeFilter.value.toLowerCase().trim() : '';
+    const selectedMatiere = matiereFilter ? matiereFilter.value.toLowerCase().trim() : '';
+    const selectedEnseignant = enseignantFilter ? enseignantFilter.value.toLowerCase().trim() : '';
     
-    const rows = document.querySelectorAll('#coursTableBody tr');
+    const items = document.querySelectorAll('.google-list-item');
     let visibleCount = 0;
     
-    rows.forEach(row => {
-        const matiere = row.cells[1].textContent.toLowerCase();
-        const classe = row.cells[2].textContent.toLowerCase();
-        const enseignant = row.cells[3].textContent.toLowerCase();
-        const jour = row.cells[4].textContent.toLowerCase();
-        const rowText = row.textContent.toLowerCase();
+    items.forEach(item => {
+        const matiere = item.getAttribute('data-matiere').toLowerCase();
+        const classe = item.getAttribute('data-classe').toLowerCase();
+        const enseignant = item.getAttribute('data-enseignant').toLowerCase();
+        const jour = item.getAttribute('data-jour').toLowerCase();
+        const itemText = item.textContent.toLowerCase();
         
-        const matchesSearch = searchTerm === '' || rowText.includes(searchTerm);
+        const matchesSearch = searchTerm === '' || itemText.includes(searchTerm);
         const matchesDay = selectedDay === '' || jour.includes(selectedDay);
         const matchesClasse = selectedClasse === '' || classe.includes(selectedClasse);
         const matchesMatiere = selectedMatiere === '' || matiere.includes(selectedMatiere);
         const matchesEnseignant = selectedEnseignant === '' || enseignant.includes(selectedEnseignant);
         
         if (matchesSearch && matchesDay && matchesClasse && matchesMatiere && matchesEnseignant) {
-            row.style.display = '';
+            item.style.display = '';
             visibleCount++;
         } else {
-            row.style.display = 'none';
+            item.style.display = 'none';
         }
     });
     
     // Show/hide no results message
-    if (visibleCount === 0) {
-        tableContainer.style.display = 'none';
-        noResultsMessage.style.display = 'block';
-    } else {
-        tableContainer.style.display = 'block';
-        noResultsMessage.style.display = 'none';
+    if (listContainer && noResultsMessage) {
+        if (visibleCount === 0) {
+            listContainer.style.display = 'none';
+            noResultsMessage.style.display = 'block';
+        } else {
+            listContainer.style.display = 'block';
+            noResultsMessage.style.display = 'none';
+        }
     }
+    
+    // Update filter badge
+    updateFilterBadge();
+}
+
+// Update filter badge count
+function updateFilterBadge() {
+    let activeFilters = 0;
+    if (dayFilter && dayFilter.value) activeFilters++;
+    if (classeFilter && classeFilter.value) activeFilters++;
+    if (matiereFilter && matiereFilter.value) activeFilters++;
+    if (enseignantFilter && enseignantFilter.value) activeFilters++;
+    
+    if (filterBadge) {
+        if (activeFilters > 0) {
+            filterBadge.textContent = activeFilters;
+            filterBadge.style.display = 'inline-flex';
+        } else {
+            filterBadge.style.display = 'none';
+        }
+    }
+}
+
+// Open mobile filter panel
+function openFilterPanel() {
+    console.log('Opening filter panel');
+    console.log('filtersContainer:', filtersContainer);
+    if (filtersContainer) {
+        filtersContainer.classList.add('active');
+        console.log('Added active class');
+    }
+    if (filterOverlay) {
+        filterOverlay.classList.add('active');
+    }
+}
+
+// Close mobile filter panel
+function closeFilterPanel() {
+    console.log('Closing filter panel');
+    if (filtersContainer) {
+        filtersContainer.classList.remove('active');
+    }
+    if (filterOverlay) {
+        filterOverlay.classList.remove('active');
+    }
+}
+
+// Apply filters and close panel (mobile)
+function applyFilters() {
+    filterList();
+    closeFilterPanel();
 }
 
 // Reset all filters
 function resetFilters() {
-    searchInput.value = '';
-    dayFilter.value = '';
-    classeFilter.value = '';
-    matiereFilter.value = '';
-    enseignantFilter.value = '';
-    filterTable();
+    if (searchInput) searchInput.value = '';
+    if (dayFilter) dayFilter.value = '';
+    if (classeFilter) classeFilter.value = '';
+    if (matiereFilter) matiereFilter.value = '';
+    if (enseignantFilter) enseignantFilter.value = '';
+    filterList();
 }
 
-// Add event listeners
-searchInput.addEventListener('keyup', filterTable);
-dayFilter.addEventListener('change', filterTable);
-classeFilter.addEventListener('change', filterTable);
-matiereFilter.addEventListener('change', filterTable);
-enseignantFilter.addEventListener('change', filterTable);
+// Event listeners for desktop (real-time filtering)
+if (searchInput) searchInput.addEventListener('keyup', filterList);
+if (window.innerWidth > 768) {
+    if (dayFilter) {
+        dayFilter.addEventListener('input', filterList);
+        dayFilter.addEventListener('change', filterList);
+    }
+    if (classeFilter) {
+        classeFilter.addEventListener('input', filterList);
+        classeFilter.addEventListener('change', filterList);
+    }
+    if (matiereFilter) {
+        matiereFilter.addEventListener('input', filterList);
+        matiereFilter.addEventListener('change', filterList);
+    }
+    if (enseignantFilter) {
+        enseignantFilter.addEventListener('input', filterList);
+        enseignantFilter.addEventListener('change', filterList);
+    }
+}
+
+// Event listeners for mobile filter panel
+console.log('Setting up event listeners');
+console.log('filterToggleBtn:', filterToggleBtn);
+console.log('filterCloseBtn:', filterCloseBtn);
+
+if (filterToggleBtn) {
+    filterToggleBtn.addEventListener('click', function(e) {
+        console.log('Filter button clicked!');
+        e.preventDefault();
+        e.stopPropagation();
+        openFilterPanel();
+    });
+}
+
+if (filterCloseBtn) filterCloseBtn.addEventListener('click', closeFilterPanel);
+if (applyFiltersBtn) applyFiltersBtn.addEventListener('click', applyFilters);
+if (filterOverlay) filterOverlay.addEventListener('click', closeFilterPanel);
+
+// Update badge on load
+updateFilterBadge();
 </script>
 @endpush
 @endsection

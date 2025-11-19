@@ -37,6 +37,7 @@
             display: flex;
             min-height: 100vh;
             position: relative;
+            overflow-x: hidden;
         }
         
         /* Mobile Header */
@@ -88,6 +89,7 @@
             flex: 1;
             min-height: 100vh;
             transition: margin-left 0.3s ease, margin-right 0.3s ease;
+            overflow-x: hidden;
         }
         [dir="ltr"] .main-content {
             margin-left: var(--sidebar-width);
@@ -137,6 +139,14 @@
         
         .content-body {
             padding: 0 1.5rem 1.5rem;
+            overflow-x: hidden;
+        }
+        
+        /* Responsive table fix - Allow tables to scroll horizontally on mobile */
+        .table-responsive {
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch;
+            display: block !important;
         }
         
         .page-title {
@@ -410,6 +420,24 @@
                 padding: 0 0.75rem 0.75rem;
             }
             
+            /* Make tables scrollable on mobile */
+            .table-responsive {
+                margin-left: -0.75rem !important;
+                margin-right: -0.75rem !important;
+                padding-left: 0.75rem !important;
+                padding-right: 0.75rem !important;
+                width: calc(100% + 1.5rem) !important;
+                overflow-x: auto !important;
+                overflow-y: visible !important;
+                -webkit-overflow-scrolling: touch !important;
+                display: block !important;
+            }
+            
+            .table-responsive table {
+                min-width: 800px !important;
+                display: table !important;
+            }
+            
             .page-title {
                 font-size: 1.25rem;
             }
@@ -491,6 +519,24 @@
             
             .content-body {
                 padding: 0 0.5rem 0.5rem;
+            }
+            
+            /* Enhanced mobile table scrolling */
+            .table-responsive {
+                margin-left: -0.5rem !important;
+                margin-right: -0.5rem !important;
+                padding-left: 0.5rem !important;
+                padding-right: 0.5rem !important;
+                width: calc(100% + 1rem) !important;
+                overflow-x: auto !important;
+                overflow-y: visible !important;
+                -webkit-overflow-scrolling: touch !important;
+                display: block !important;
+            }
+            
+            .table-responsive table {
+                min-width: 900px !important;
+                display: table !important;
             }
             
             .page-title {

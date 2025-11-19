@@ -7,171 +7,145 @@
     <li class="breadcrumb-item active">{{ __('app.classes') }}</li>
 @endsection
 
-
-
 @section('header-actions')
     @admin
-        <a href="{{ route('classes.create') }}" class="btn btn-primary">
-            {{ __('app.add_class') }}
+        <a href="{{ route('classes.create') }}" class="google-btn google-btn-primary">
+            {{ __('app.ajouter_classe') }}
         </a>
     @endadmin
 @endsection
 
 @section('content')
-    <!-- Statistics Cards - Material Design -->
-    <div class="row g-4 mb-5">
-        <div class="col-xl-3 col-md-6">
-            <div class="stats-card">
-                <div class="stats-icon-wrapper bg-primary-subtle">
-                    <i class="fas fa-school stats-icon text-primary"></i>
-                </div>
-                <div class="stats-content">
-                    <p class="stats-label">{{ __('app.total_classes') }}</p>
-                    <h3 class="stats-value">{{ $classes->count() }}</h3>
-                </div>
+    <!-- Page Header with Search -->
+    <div class="google-page-header">
+        <div class="google-header-content">
+            <div class="google-header-text">
+                <h1 class="google-page-title">{{ __('app.classes') }}</h1>
+                <p class="google-page-subtitle">{{ __('app.liste_classes') }}</p>
             </div>
-        </div>
-        
-        <div class="col-xl-3 col-md-6">
-            <div class="stats-card">
-                <div class="stats-icon-wrapper bg-success-subtle">
-                    <i class="fas fa-user-graduate stats-icon text-success"></i>
-                </div>
-                <div class="stats-content">
-                    <p class="stats-label">{{ __('app.total_etudiants') }}</p>
-                    <h3 class="stats-value">{{ $classes->sum('etudiants_count') }}</h3>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-xl-3 col-md-6">
-            <div class="stats-card">
-                <div class="stats-icon-wrapper bg-info-subtle">
-                    <i class="fas fa-layer-group stats-icon text-info"></i>
-                </div>
-                <div class="stats-content">
-                    <p class="stats-label">{{ __('app.niveau_minimum') }}</p>
-                    <h3 class="stats-value">{{ $classes->min('niveau') ?? 0 }}</h3>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-xl-3 col-md-6">
-            <div class="stats-card">
-                <div class="stats-icon-wrapper bg-warning-subtle">
-                    <i class="fas fa-chart-line stats-icon text-warning"></i>
-                </div>
-                <div class="stats-content">
-                    <p class="stats-label">{{ __('app.niveau_maximum') }}</p>
-                    <h3 class="stats-value">{{ $classes->max('niveau') ?? 0 }}</h3>
+            <div class="google-search-wrapper">
+                <div class="google-search-box">
+                    <svg class="google-search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="M21 21l-4.35-4.35"/>
+                    </svg>
+                    <input type="text" id="classSearch" class="google-search-input" placeholder="{{ __('app.rechercher_une_classe') }}">
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Classes Section Header -->
-    <div class="section-header mb-4">
-        <h5 class="section-title">{{ __('app.liste_classes') }}</h5>
+    <!-- Statistics Overview -->
+    <div class="google-stats-grid">
+        <div class="google-stat-card">
+            <div class="google-stat-label">{{ __('app.total_classes') }}</div>
+            <div class="google-stat-value">{{ $classes->count() }}</div>
+        </div>
+        
+        <div class="google-stat-card">
+            <div class="google-stat-label">{{ __('app.total_etudiants') }}</div>
+            <div class="google-stat-value">{{ $classes->sum('etudiants_count') }}</div>
+        </div>
+        
+        <div class="google-stat-card">
+            <div class="google-stat-label">{{ __('app.niveau_minimum') }}</div>
+            <div class="google-stat-value">{{ $classes->min('niveau') ?? 0 }}</div>
+        </div>
+        
+        <div class="google-stat-card">
+            <div class="google-stat-label">{{ __('app.niveau_maximum') }}</div>
+            <div class="google-stat-value">{{ $classes->max('niveau') ?? 0 }}</div>
+        </div>
     </div>
 
     @if($classes->count() > 0)
-        <div class="row g-4">
+        <!-- Classes List -->
+        <div class="google-list-container">
             @foreach($classes as $item)
-                <div class="col-xl-3 col-lg-4 col-md-6">
-                    <div class="class-card">
-                        <!-- Card Header -->
-                        <div class="class-card-header">
-                            <div class="class-info">
-                                <h6 class="class-name">{{ $item->nom_classe }}</h6>
-                                <span class="class-badge">{{ __('app.niveau') }} {{ $item->niveau }}</span>
+                <div class="google-list-item" onclick="window.location.href='{{ route('classes.show', $item->id_classe) }}'">
+                    <div class="google-list-main">
+                        <div class="google-list-header">
+                            <h3 class="google-list-title">{{ $item->nom_classe }}</h3>
+                            <span class="google-level-badge">{{ __('app.niveau') }} {{ $item->niveau }}</span>
+                        </div>
+                        
+                        <div class="google-list-stats">
+                            <div class="google-stat-pill">
+                                <span class="google-stat-pill-value">{{ $item->etudiants->count() }}</span>
+                                <span class="google-stat-pill-label">{{ __('app.etudiants') }}</span>
                             </div>
-                            <div class="dropdown">
-                                <button class="btn-icon-menu" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="fas fa-ellipsis-v"></i>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end material-dropdown">
-                                    <li>
-                                        <a class="dropdown-item" href="{{ route('classes.show', $item->id_classe) }}">
-                                            <i class="fas fa-eye me-2"></i>{{ __('app.voir') }}
-                                        </a>
-                                    </li>
-                                    @admin
-                                    <li>
-                                        <a class="dropdown-item" href="{{ route('classes.edit', $item->id_classe) }}">
-                                            <i class="fas fa-edit me-2"></i>{{ __('app.modifier') }}
-                                        </a>
-                                    </li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li>
-                                        <form action="{{ route('classes.destroy', $item->id_classe) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="button" class="dropdown-item text-danger delete-class" data-class-name="{{ $item->nom_classe }}">
-                                                <i class="fas fa-trash-alt me-2"></i>{{ __('app.supprimer') }}
-                                            </button>
-                                        </form>
-                                    </li>
-                                    @endadmin
-                                </ul>
+                            <div class="google-stat-pill">
+                                <span class="google-stat-pill-value">{{ $item->enseignants_count ?? 0 }}</span>
+                                <span class="google-stat-pill-label">{{ __('app.enseignants') }}</span>
+                            </div>
+                            <div class="google-stat-pill">
+                                <span class="google-stat-pill-value">{{ $item->cours_count ?? 0 }}</span>
+                                <span class="google-stat-pill-label">{{ __('app.cours') }}</span>
+                            </div>
+                            <div class="google-stat-pill">
+                                <span class="google-stat-pill-value">{{ $item->evaluations->count() }}</span>
+                                <span class="google-stat-pill-label">{{ __('app.evaluations') }}</span>
                             </div>
                         </div>
-
-                        <!-- Card Stats -->
-                        <div class="class-stats">
-                            <div class="stat-item">
-                                <i class="fas fa-user-graduate stat-icon"></i>
-                                <div class="stat-details">
-                                    <span class="stat-value">{{ $item->etudiants->count() }}</span>
-                                    <span class="stat-label">{{ __('app.etudiants') }}</span>
-                                </div>
-                            </div>
-                            
-                            <div class="stat-item">
-                                <i class="fas fa-chalkboard-teacher stat-icon"></i>
-                                <div class="stat-details">
-                                    <span class="stat-value">{{ $item->enseignants_count ?? 0 }}</span>
-                                    <span class="stat-label">{{ __('app.enseignants') }}</span>
-                                </div>
-                            </div>
-                            
-                            <div class="stat-item">
-                                <i class="fas fa-book stat-icon"></i>
-                                <div class="stat-details">
-                                    <span class="stat-value">{{ $item->cours_count ?? 0 }}</span>
-                                    <span class="stat-label">{{ __('app.cours') }}</span>
-                                </div>
-                            </div>
-                            
-                            <div class="stat-item">
-                                <i class="fas fa-clipboard-check stat-icon"></i>
-                                <div class="stat-details">
-                                    <span class="stat-value">{{ $item->evaluations->count() }}</span>
-                                    <span class="stat-label">{{ __('app.evaluations') }}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Card Action -->
-                        <div class="class-card-footer">
-                            <a href="{{ route('classes.show', $item->id_classe) }}" class="btn-view-details">
-                                {{ __('app.voir_details') }}
-                                <i class="fas fa-arrow-right ms-2"></i>
-                            </a>
+                    </div>
+                    
+                    <div class="google-list-actions">
+                        <a href="{{ route('classes.show', $item->id_classe) }}" class="google-action-btn" onclick="event.stopPropagation()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 18l6-6-6-6"/>
+                            </svg>
+                        </a>
+                        <div class="dropdown">
+                            <button class="google-icon-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" onclick="event.stopPropagation()">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                    <circle cx="10" cy="4" r="1.5"/>
+                                    <circle cx="10" cy="10" r="1.5"/>
+                                    <circle cx="10" cy="16" r="1.5"/>
+                                </svg>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end google-dropdown">
+                                <li>
+                                    <a class="dropdown-item google-dropdown-item" href="{{ route('classes.show', $item->id_classe) }}">
+                                        {{ __('app.voir') }}
+                                    </a>
+                                </li>
+                                @admin
+                                <li>
+                                    <a class="dropdown-item google-dropdown-item" href="{{ route('classes.edit', $item->id_classe) }}">
+                                        {{ __('app.modifier') }}
+                                    </a>
+                                </li>
+                                <li><hr class="google-dropdown-divider"></li>
+                                <li>
+                                    <form action="{{ route('classes.destroy', $item->id_classe) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="button" class="dropdown-item google-dropdown-item google-dropdown-item-danger delete-class" data-class-name="{{ $item->nom_classe }}">
+                                            {{ __('app.supprimer') }}
+                                        </button>
+                                    </form>
+                                </li>
+                                @endadmin
+                            </ul>
                         </div>
                     </div>
                 </div>
             @endforeach
         </div>
     @else
-        <div class="empty-state">
-            <div class="empty-state-icon">
-                <i class="fas fa-school"></i>
+        <!-- Empty State -->
+        <div class="google-empty-state">
+            <div class="google-empty-icon">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
             </div>
-            <h4 class="empty-state-title">{{ __('app.no_data') }}</h4>
-            <p class="empty-state-text">{{ __('app.aucune_classe_creee') }}</p>
+            <h2 class="google-empty-title">{{ __('app.no_data') }}</h2>
+            <p class="google-empty-text">{{ __('app.aucune_classe_creee') }}</p>
             @admin
-                <a href="{{ route('classes.create') }}" class="btn btn-primary btn-elevated">
-                    <i class="fas fa-plus me-2"></i>{{ __('app.creer_premiere_classe') }}
+                <a href="{{ route('classes.create') }}" class="google-btn google-btn-primary">
+                    {{ __('app.creer_premiere_classe') }}
                 </a>
             @endadmin
         </div>
@@ -180,456 +154,491 @@
 
 @push('styles')
 <style>
-    /* ===== Material Design Variables ===== */
+    /* ===== Google Design System Variables ===== */
     :root {
-        --md-primary: #0d6efd;
-        --md-primary-hover: #0b5ed7;
-        --md-success: #198754;
-        --md-info: #0dcaf0;
-        --md-warning: #ffc107;
-        --md-danger: #dc3545;
+        /* Colors - Google Palette */
+        --google-blue: #1a73e8;
+        --google-blue-hover: #1967d2;
+        --google-blue-light: #e8f0fe;
+        --google-red: #d93025;
+        --google-red-hover: #c5221f;
         
-        --md-gray-50: #fafafa;
-        --md-gray-100: #f5f5f5;
-        --md-gray-200: #eeeeee;
-        --md-gray-300: #e0e0e0;
-        --md-gray-400: #bdbdbd;
-        --md-gray-500: #9e9e9e;
-        --md-gray-600: #757575;
-        --md-gray-700: #616161;
-        --md-gray-800: #424242;
-        --md-gray-900: #212121;
+        /* Neutrals */
+        --google-white: #ffffff;
+        --google-gray-50: #f8f9fa;
+        --google-gray-100: #f1f3f4;
+        --google-gray-200: #e8eaed;
+        --google-gray-300: #dadce0;
+        --google-gray-400: #bdc1c6;
+        --google-gray-500: #9aa0a6;
+        --google-gray-600: #80868b;
+        --google-gray-700: #5f6368;
+        --google-gray-800: #3c4043;
+        --google-gray-900: #202124;
         
-        --md-radius: 12px;
-        --md-radius-sm: 8px;
-        --md-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
-        --md-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        --md-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
-        --md-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        /* Typography */
+        --google-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        
+        /* Spacing */
+        --google-spacing-xs: 4px;
+        --google-spacing-sm: 8px;
+        --google-spacing-md: 16px;
+        --google-spacing-lg: 24px;
+        --google-spacing-xl: 32px;
+        --google-spacing-2xl: 48px;
+        
+        /* Border Radius */
+        --google-radius: 8px;
+        --google-radius-sm: 4px;
+        --google-radius-lg: 12px;
+        
+        /* Shadows - Subtle Google style */
+        --google-shadow-1: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+        --google-shadow-2: 0 1px 3px 0 rgba(60, 64, 67, 0.3), 0 4px 8px 3px rgba(60, 64, 67, 0.15);
+        
+        /* Transitions */
+        --google-transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
     }
 
-    /* ===== Statistics Cards ===== */
-    .stats-card {
-        background: white;
-        border-radius: var(--md-radius);
-        padding: 1.5rem;
+    /* ===== Page Header ===== */
+    .google-page-header {
+        margin-bottom: var(--google-spacing-2xl);
+    }
+    
+    .google-header-content {
         display: flex;
         align-items: center;
-        gap: 1.25rem;
-        box-shadow: var(--md-shadow-sm);
-        transition: var(--md-transition);
-        border: 1px solid var(--md-gray-200);
+        justify-content: space-between;
+        gap: var(--google-spacing-xl);
     }
     
-    .stats-card:hover {
-        box-shadow: var(--md-shadow);
-        transform: translateY(-2px);
+    .google-header-text {
+        flex: 0 0 auto;
     }
     
-    .stats-icon-wrapper {
-        width: 56px;
-        height: 56px;
-        border-radius: var(--md-radius-sm);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-    }
-    
-    .stats-icon {
-        font-size: 1.5rem;
-    }
-    
-    .stats-content {
-        flex: 1;
-        min-width: 0;
-    }
-    
-    .stats-label {
-        font-size: 0.875rem;
-        color: var(--md-gray-600);
-        margin: 0 0 0.25rem 0;
-        font-weight: 500;
-        letter-spacing: 0.2px;
-    }
-    
-    .stats-value {
+    .google-page-title {
+        font-family: var(--google-font);
         font-size: 2rem;
-        font-weight: 600;
-        color: var(--md-gray-900);
-        margin: 0;
-        line-height: 1;
-    }
-
-    /* ===== Section Header ===== */
-    .section-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-    
-    .section-title {
-        font-size: 1.25rem;
-        font-weight: 600;
-        color: var(--md-gray-900);
-        margin: 0;
-        letter-spacing: -0.3px;
-    }
-
-    /* ===== Class Cards ===== */
-    .class-card {
-        background: white;
-        border-radius: var(--md-radius);
-        border: 1px solid var(--md-gray-200);
-        overflow: hidden;
-        transition: var(--md-transition);
-        box-shadow: var(--md-shadow-sm);
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-    }
-    
-    .class-card:hover {
-        box-shadow: var(--md-shadow-lg);
-        transform: translateY(-4px);
-        border-color: var(--md-gray-300);
-    }
-    
-    .class-card-header {
-        padding: 1.25rem 1.25rem 1rem;
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 1rem;
-        border-bottom: 1px solid var(--md-gray-200);
-    }
-    
-    .class-info {
-        flex: 1;
-        min-width: 0;
-    }
-    
-    .class-name {
-        font-size: 1.125rem;
-        font-weight: 600;
-        color: var(--md-gray-900);
-        margin: 0 0 0.5rem 0;
-        letter-spacing: -0.2px;
-    }
-    
-    .class-badge {
-        display: inline-block;
-        padding: 0.25rem 0.75rem;
-        background: rgba(13, 110, 253, 0.1);
-        color: var(--md-primary);
-        font-size: 0.75rem;
-        font-weight: 600;
-        border-radius: 100px;
-        letter-spacing: 0.3px;
-        text-transform: uppercase;
-    }
-    
-    .btn-icon-menu {
-        width: 32px;
-        height: 32px;
-        border: none;
-        background: transparent;
-        color: var(--md-gray-600);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: var(--md-transition);
-        cursor: pointer;
-        flex-shrink: 0;
-    }
-    
-    .btn-icon-menu:hover {
-        background: var(--md-gray-100);
-        color: var(--md-gray-900);
-    }
-    
-    .btn-icon-menu:active {
-        transform: scale(0.95);
-    }
-
-    /* ===== Class Stats Grid ===== */
-    .class-stats {
-        padding: 1.25rem;
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1rem;
-        flex: 1;
-    }
-    
-    .stat-item {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        padding: 0.75rem;
-        background: var(--md-gray-50);
-        border-radius: var(--md-radius-sm);
-        transition: var(--md-transition);
-    }
-    
-    .stat-item:hover {
-        background: var(--md-gray-100);
-    }
-    
-    .stat-icon {
-        font-size: 1.25rem;
-        color: var(--md-gray-500);
-        flex-shrink: 0;
-    }
-    
-    .stat-details {
-        flex: 1;
-        min-width: 0;
-    }
-    
-    .stat-value {
-        display: block;
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: var(--md-gray-900);
+        font-weight: 400;
+        color: var(--google-gray-900);
+        margin: 0 0 var(--google-spacing-sm) 0;
+        letter-spacing: -0.5px;
         line-height: 1.2;
     }
     
-    .stat-label {
-        display: block;
-        font-size: 0.75rem;
-        color: var(--md-gray-600);
-        margin-top: 2px;
-        font-weight: 500;
+    .google-page-subtitle {
+        font-family: var(--google-font);
+        font-size: 0.875rem;
+        font-weight: 400;
+        color: var(--google-gray-700);
+        margin: 0;
     }
 
-    /* ===== Card Footer ===== */
-    .class-card-footer {
-        padding: 1rem 1.25rem;
-        border-top: 1px solid var(--md-gray-200);
-        background: var(--md-gray-50);
+    /* ===== Search Bar ===== */
+    .google-search-wrapper {
+        flex: 1;
+        max-width: 480px;
     }
     
-    .btn-view-details {
+    .google-search-box {
+        position: relative;
+        width: 100%;
+    }
+    
+    .google-search-icon {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--google-gray-500);
+        pointer-events: none;
+    }
+    
+    .google-search-input {
+        width: 100%;
+        padding: 10px 16px 10px 48px;
+        font-family: var(--google-font);
+        font-size: 0.875rem;
+        color: var(--google-gray-900);
+        background: var(--google-white);
+        border: 1px solid var(--google-gray-300);
+        border-radius: 100px;
+        transition: var(--google-transition);
+        outline: none;
+    }
+    
+    .google-search-input::placeholder {
+        color: var(--google-gray-500);
+    }
+    
+    .google-search-input:focus {
+        border-color: var(--google-blue);
+        box-shadow: 0 0 0 2px var(--google-blue-light);
+    }
+    
+    .google-search-input:hover {
+        border-color: var(--google-gray-400);
+    }
+
+    /* ===== Statistics Grid ===== */
+    .google-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: var(--google-spacing-md);
+        margin-bottom: var(--google-spacing-2xl);
+    }
+    
+    .google-stat-card {
+        background: var(--google-white);
+        border: 1px solid var(--google-gray-200);
+        border-radius: var(--google-radius);
+        padding: var(--google-spacing-lg);
+        transition: var(--google-transition);
+    }
+    
+    .google-stat-card:hover {
+        box-shadow: var(--google-shadow-1);
+        border-color: var(--google-gray-300);
+    }
+    
+    .google-stat-label {
+        font-family: var(--google-font);
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--google-gray-700);
+        margin-bottom: var(--google-spacing-sm);
+        text-transform: capitalize;
+    }
+    
+    .google-stat-value {
+        font-family: var(--google-font);
+        font-size: 2.25rem;
+        font-weight: 400;
+        color: var(--google-gray-900);
+        line-height: 1;
+    }
+
+    /* ===== List Container ===== */
+    .google-list-container {
+        background: var(--google-white);
+        border: 1px solid var(--google-gray-200);
+        border-radius: var(--google-radius);
+        overflow: hidden;
+    }
+
+    /* ===== List Item ===== */
+    .google-list-item {
         display: flex;
         align-items: center;
-        justify-content: center;
-        width: 100%;
-        padding: 0.625rem 1rem;
-        background: var(--md-primary);
-        color: white;
-        text-decoration: none;
-        border-radius: var(--md-radius-sm);
+        justify-content: space-between;
+        padding: var(--google-spacing-lg) var(--google-spacing-xl);
+        border-bottom: 1px solid var(--google-gray-200);
+        transition: var(--google-transition);
+        cursor: pointer;
+        gap: var(--google-spacing-lg);
+    }
+    
+    .google-list-item:last-child {
+        border-bottom: none;
+    }
+    
+    .google-list-item:hover {
+        background: var(--google-gray-50);
+    }
+    
+    .google-list-main {
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .google-list-header {
+        display: flex;
+        align-items: center;
+        gap: var(--google-spacing-md);
+        margin-bottom: var(--google-spacing-md);
+        flex-wrap: wrap;
+    }
+    
+    .google-list-title {
+        font-family: var(--google-font);
+        font-size: 1.125rem;
         font-weight: 500;
-        font-size: 0.875rem;
-        transition: var(--md-transition);
-        border: none;
+        color: var(--google-gray-900);
+        margin: 0;
+        letter-spacing: -0.2px;
+    }
+    
+    .google-level-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 12px;
+        background: var(--google-blue-light);
+        color: var(--google-blue);
+        font-size: 0.75rem;
+        font-weight: 500;
+        border-radius: 100px;
         letter-spacing: 0.3px;
     }
     
-    .btn-view-details:hover {
-        background: var(--md-primary-hover);
-        color: white;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
-    }
-    
-    .btn-view-details:active {
-        transform: translateY(0);
-    }
-    
-    .btn-view-details i {
-        font-size: 0.875rem;
-        transition: var(--md-transition);
-    }
-    
-    .btn-view-details:hover i {
-        transform: translateX(4px);
-    }
-
-    /* ===== Material Dropdown ===== */
-    .material-dropdown {
-        border: none;
-        box-shadow: var(--md-shadow-lg);
-        border-radius: var(--md-radius-sm);
-        padding: 0.5rem 0;
-        min-width: 180px;
-    }
-    
-    .material-dropdown .dropdown-item {
-        padding: 0.625rem 1rem;
-        font-size: 0.875rem;
-        color: var(--md-gray-700);
-        transition: var(--md-transition);
+    .google-list-stats {
         display: flex;
         align-items: center;
+        gap: var(--google-spacing-lg);
+        flex-wrap: wrap;
     }
     
-    .material-dropdown .dropdown-item:hover {
-        background: var(--md-gray-100);
-        color: var(--md-gray-900);
+    .google-stat-pill {
+        display: flex;
+        align-items: baseline;
+        gap: 6px;
     }
     
-    .material-dropdown .dropdown-item:active {
-        background: var(--md-gray-200);
+    .google-stat-pill-value {
+        font-family: var(--google-font);
+        font-size: 1.125rem;
+        font-weight: 500;
+        color: var(--google-gray-900);
     }
     
-    .material-dropdown .dropdown-item i {
-        font-size: 0.875rem;
-        width: 20px;
+    .google-stat-pill-label {
+        font-family: var(--google-font);
+        font-size: 0.8125rem;
+        font-weight: 400;
+        color: var(--google-gray-600);
     }
     
-    .material-dropdown .dropdown-divider {
-        margin: 0.5rem 0;
-        border-color: var(--md-gray-200);
-    }
-
-    /* ===== Empty State ===== */
-    .empty-state {
-        background: white;
-        border-radius: var(--md-radius);
-        padding: 4rem 2rem;
-        text-align: center;
-        box-shadow: var(--md-shadow-sm);
-        border: 1px solid var(--md-gray-200);
+    .google-list-actions {
+        display: flex;
+        align-items: center;
+        gap: var(--google-spacing-sm);
+        flex-shrink: 0;
     }
     
-    .empty-state-icon {
-        width: 80px;
-        height: 80px;
-        margin: 0 auto 1.5rem;
-        background: var(--md-gray-100);
+    .google-action-btn {
+        width: 36px;
+        height: 36px;
+        border: none;
+        background: transparent;
+        color: var(--google-gray-600);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
+        transition: var(--google-transition);
+        cursor: pointer;
+        text-decoration: none;
     }
     
-    .empty-state-icon i {
-        font-size: 2.5rem;
-        color: var(--md-gray-400);
+    .google-action-btn:hover {
+        background: var(--google-gray-200);
+        color: var(--google-gray-900);
     }
     
-    .empty-state-title {
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: var(--md-gray-900);
-        margin-bottom: 0.5rem;
+    .google-icon-btn {
+        width: 36px;
+        height: 36px;
+        border: none;
+        background: transparent;
+        color: var(--google-gray-600);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: var(--google-transition);
+        cursor: pointer;
+        flex-shrink: 0;
+        padding: 0;
     }
     
-    .empty-state-text {
-        font-size: 1rem;
-        color: var(--md-gray-600);
-        margin-bottom: 2rem;
-    }
-    
-    .btn-elevated {
-        box-shadow: 0 2px 8px rgba(13, 110, 253, 0.25);
-        transition: var(--md-transition);
-    }
-    
-    .btn-elevated:hover {
-        box-shadow: 0 4px 16px rgba(13, 110, 253, 0.35);
-        transform: translateY(-2px);
+    .google-icon-btn:hover {
+        background: var(--google-gray-200);
+        color: var(--google-gray-900);
     }
 
-    /* ===== RTL Support ===== */
-    [dir="rtl"] .stats-icon-wrapper {
-        margin-left: 1.25rem;
-        margin-right: 0;
+    /* ===== Buttons ===== */
+    .google-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 24px;
+        font-family: var(--google-font);
+        font-size: 0.875rem;
+        font-weight: 500;
+        text-decoration: none;
+        border-radius: var(--google-radius-sm);
+        border: none;
+        cursor: pointer;
+        transition: var(--google-transition);
+        letter-spacing: 0.25px;
+        white-space: nowrap;
     }
     
-    [dir="rtl"] .btn-view-details i {
-        margin-right: 0.5rem;
-        margin-left: 0;
+    .google-btn-primary {
+        background: var(--google-blue);
+        color: var(--google-white);
     }
     
-    [dir="rtl"] .btn-view-details:hover i {
-        transform: translateX(-4px);
+    .google-btn-primary:hover {
+        background: var(--google-blue-hover);
+        color: var(--google-white);
+        box-shadow: var(--google-shadow-1);
+    }
+
+    /* ===== Dropdown ===== */
+    .google-dropdown {
+        border: 1px solid var(--google-gray-200);
+        box-shadow: var(--google-shadow-2);
+        border-radius: var(--google-radius);
+        padding: var(--google-spacing-sm) 0;
+        min-width: 160px;
     }
     
-    [dir="rtl"] .material-dropdown .dropdown-item i {
-        margin-right: 0;
-        margin-left: 0.5rem;
+    .google-dropdown-item {
+        padding: 12px var(--google-spacing-md);
+        font-family: var(--google-font);
+        font-size: 0.875rem;
+        font-weight: 400;
+        color: var(--google-gray-900);
+        transition: var(--google-transition);
+        background: none;
+        border: none;
+        width: 100%;
+        text-align: left;
+    }
+    
+    .google-dropdown-item:hover {
+        background: var(--google-gray-100);
+        color: var(--google-gray-900);
+    }
+    
+    .google-dropdown-item-danger {
+        color: var(--google-red);
+    }
+    
+    .google-dropdown-item-danger:hover {
+        background: rgba(217, 48, 37, 0.08);
+        color: var(--google-red-hover);
+    }
+    
+    .google-dropdown-divider {
+        margin: var(--google-spacing-sm) 0;
+        border-top: 1px solid var(--google-gray-200);
+    }
+
+    /* ===== Empty State ===== */
+    .google-empty-state {
+        background: var(--google-white);
+        border: 1px solid var(--google-gray-200);
+        border-radius: var(--google-radius);
+        padding: var(--google-spacing-2xl) var(--google-spacing-lg);
+        text-align: center;
+        max-width: 480px;
+        margin: 0 auto;
+    }
+    
+    .google-empty-icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto var(--google-spacing-lg);
+        color: var(--google-gray-400);
+    }
+    
+    .google-empty-title {
+        font-family: var(--google-font);
+        font-size: 1.5rem;
+        font-weight: 400;
+        color: var(--google-gray-900);
+        margin: 0 0 var(--google-spacing-sm) 0;
+    }
+    
+    .google-empty-text {
+        font-family: var(--google-font);
+        font-size: 0.875rem;
+        font-weight: 400;
+        color: var(--google-gray-700);
+        margin: 0 0 var(--google-spacing-lg) 0;
     }
 
     /* ===== Responsive Design ===== */
-    @media (max-width: 1399.98px) {
-        .stats-value {
+    @media (max-width: 768px) {
+        .google-header-content {
+            flex-direction: column;
+            align-items: stretch;
+            gap: var(--google-spacing-md);
+        }
+        
+        .google-search-wrapper {
+            max-width: 100%;
+        }
+        
+        .google-page-title {
+            font-size: 1.5rem;
+        }
+        
+        .google-stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--google-spacing-md);
+        }
+        
+        .google-stat-value {
             font-size: 1.75rem;
         }
-    }
-    
-    @media (max-width: 991.98px) {
-        .stats-card {
-            padding: 1.25rem;
+        
+        .google-list-item {
+            flex-direction: column;
+            align-items: flex-start;
+            padding: var(--google-spacing-md);
         }
         
-        .stats-icon-wrapper {
-            width: 48px;
-            height: 48px;
+        .google-list-actions {
+            width: 100%;
+            justify-content: flex-end;
         }
         
-        .stats-icon {
-            font-size: 1.25rem;
+        .google-list-stats {
+            gap: var(--google-spacing-md);
         }
         
-        .stats-value {
-            font-size: 1.5rem;
-        }
-    }
-    
-    @media (max-width: 767.98px) {
-        .stats-card {
-            padding: 1rem;
-        }
-        
-        .stats-label {
-            font-size: 0.8125rem;
-        }
-        
-        .class-card-header {
-            padding: 1rem;
-        }
-        
-        .class-stats {
-            padding: 1rem;
-            gap: 0.75rem;
-        }
-        
-        .stat-item {
-            padding: 0.625rem;
-        }
-        
-        .class-card-footer {
-            padding: 0.875rem 1rem;
+        .google-stat-pill-value {
+            font-size: 1rem;
         }
     }
     
-    @media (max-width: 575.98px) {
-        .stats-value {
-            font-size: 1.5rem;
+    @media (max-width: 480px) {
+        .google-page-header {
+            margin-bottom: var(--google-spacing-lg);
         }
         
-        .class-name {
+        .google-stats-grid {
+            grid-template-columns: 1fr;
+            margin-bottom: var(--google-spacing-lg);
+        }
+        
+        .google-stat-card {
+            padding: var(--google-spacing-md);
+        }
+        
+        .google-list-item {
+            padding: var(--google-spacing-md);
+        }
+        
+        .google-list-header {
+            margin-bottom: var(--google-spacing-sm);
+        }
+        
+        .google-list-title {
             font-size: 1rem;
         }
         
-        .stat-value {
-            font-size: 1.125rem;
+        .google-list-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--google-spacing-sm);
+            width: 100%;
         }
         
-        .empty-state {
-            padding: 3rem 1.5rem;
-        }
-        
-        .empty-state-icon {
-            width: 64px;
-            height: 64px;
-        }
-        
-        .empty-state-icon i {
-            font-size: 2rem;
+        .google-empty-state {
+            padding: var(--google-spacing-xl) var(--google-spacing-md);
         }
     }
 </style>
@@ -651,6 +660,69 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    // Search functionality
+    const searchInput = document.getElementById('classSearch');
+    if (searchInput) {
+        // Store original values
+        const statCards = document.querySelectorAll('.google-stat-card .google-stat-value');
+        const originalValues = {
+            totalClasses: statCards[0] ? statCards[0].textContent : '0',
+            totalStudents: statCards[1] ? statCards[1].textContent : '0',
+            minLevel: statCards[2] ? statCards[2].textContent : '0',
+            maxLevel: statCards[3] ? statCards[3].textContent : '0'
+        };
+
+        searchInput.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase().trim();
+            const listItems = document.querySelectorAll('.google-list-item');
+            
+            if (!searchTerm) {
+                // Reset to original state
+                listItems.forEach(item => item.style.display = '');
+                if (statCards[0]) statCards[0].textContent = originalValues.totalClasses;
+                if (statCards[1]) statCards[1].textContent = originalValues.totalStudents;
+                if (statCards[2]) statCards[2].textContent = originalValues.minLevel;
+                if (statCards[3]) statCards[3].textContent = originalValues.maxLevel;
+                return;
+            }
+
+            let visibleCount = 0;
+            let totalStudents = 0;
+            let levels = [];
+            
+            listItems.forEach(function(item) {
+                const title = item.querySelector('.google-list-title').textContent.toLowerCase();
+                const badge = item.querySelector('.google-level-badge').textContent.toLowerCase();
+                const searchableText = title + ' ' + badge;
+                
+                if (searchableText.includes(searchTerm)) {
+                    item.style.display = '';
+                    visibleCount++;
+                    
+                    // Extract student count
+                    const studentsPill = item.querySelector('.google-stat-pill-value');
+                    if (studentsPill) {
+                        totalStudents += parseInt(studentsPill.textContent) || 0;
+                    }
+                    
+                    // Extract level
+                    const levelMatch = badge.match(/\d+/);
+                    if (levelMatch) {
+                        levels.push(parseInt(levelMatch[0]));
+                    }
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+
+            // Update statistics
+            if (statCards[0]) statCards[0].textContent = visibleCount;
+            if (statCards[1]) statCards[1].textContent = totalStudents;
+            if (statCards[2]) statCards[2].textContent = levels.length > 0 ? Math.min(...levels) : 0;
+            if (statCards[3]) statCards[3].textContent = levels.length > 0 ? Math.max(...levels) : 0;
+        });
+    }
 });
 </script>
 @endpush

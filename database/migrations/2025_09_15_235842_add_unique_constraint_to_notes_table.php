@@ -49,7 +49,15 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('notes', function (Blueprint $table) {
-            $table->dropUnique('unique_student_evaluation');
+            try {
+                $sm = Schema::getConnection()->getDoctrineSchemaManager();
+                $details = $sm->listTableDetails('notes');
+                if ($details->hasIndex('unique_student_evaluation')) {
+                    $table->dropUnique('unique_student_evaluation');
+                }
+            } catch (\Exception $e) {
+                // Ignore if index doesn't exist (best-effort rollback)
+            }
         });
     }
 };

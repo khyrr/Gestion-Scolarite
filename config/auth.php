@@ -40,6 +40,18 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+
+        'admin' => [
+            'driver' => 'session',
+            'provider' => 'admins',
+        ],
+
+        // Teacher guard - uses the same users table for teacher accounts today
+        // (keeps existing auth behaviour while providing a named guard).
+        'teacher' => [
+            'driver' => 'session',
+            'provider' => 'teachers',
+        ],
     ],
 
     /*
@@ -63,6 +75,17 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => App\Models\User::class,
+        ],
+
+        'admins' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Administrateur::class,
+        ],
+
+        // Teachers provider uses the Enseignant model and the enseignants table
+        'teachers' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Enseignant::class,
         ],
 
         // 'users' => [

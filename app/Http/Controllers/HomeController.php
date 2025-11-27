@@ -27,13 +27,13 @@ class HomeController extends Controller
         $user = Auth::user();
         
         // Redirect users to their appropriate dashboard based on role
-        if ($user->isEnseignant()) {
-            return redirect()->route('enseignant.tableau-bord');
+        if (auth()->check() && auth()->user()->role === 'enseignant') {
+            return redirect()->route('enseignant.dashboard');
         }
         
         // Admins see the main dashboard
         if ($user->isAdmin()) {
-            return view('home');
+            return redirect()->route('admin.dashboard');
         }
         
         // Fallback (should not happen with proper middleware)

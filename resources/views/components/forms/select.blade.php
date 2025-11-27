@@ -1,4 +1,4 @@
-<div class="mb-3">
+<div class="mb-3 form-field">
     @if($label)
         <label for="{{ $name }}" class="form-label">
             {{ $label }}
@@ -11,7 +11,7 @@
     <select 
         name="{{ $name }}"
         id="{{ $name }}"
-        class="form-select @error($name) is-invalid @enderror"
+        class="form-select form-select-lg rounded-2 @error($name) is-invalid @enderror"
         @if($required) required @endif
         @if($disabled) disabled @endif
         {{ $attributes }}

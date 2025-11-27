@@ -5,9 +5,17 @@ namespace App\Http\Controllers;
 use App\Models\EtudePaiement;
 use App\Models\Etudiant;
 use Illuminate\Http\Request;
+use App\Services\PaymentService;
 
 class EtudePaiementController extends Controller
 {
+    protected $paymentService;
+
+    public function __construct(PaymentService $paymentService)
+    {
+        $this->paymentService = $paymentService;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -35,7 +43,9 @@ class EtudePaiementController extends Controller
         $input = $request->all();
         $e = $input['id_etudiant'];
         $etudiant = Etudiant::find($e);
-        EtudePaiement::create($input);
+
+        $this->paymentService->createStudentPayment($input);
+
         return redirect('paiement/etudepaiement')->with('flash_message', "Les frais de {$etudiant->nom} ont été payés");
     }
 
@@ -53,7 +63,7 @@ class EtudePaiementController extends Controller
     public function edit(string $id, $frais)
     {
         $etudepaiement = EtudePaiement::find($id);
-        $idetudiant=$etudepaiement->id_etudiant;
+        $idetudiant = $etudepaiement->id_etudiant;
         $etudiant = Etudiant::find($idetudiant);
         if (!$etudepaiement) {
             return redirect()->back()->with('flash_message', 'introuvable');
@@ -64,15 +74,14 @@ class EtudePaiementController extends Controller
     /**
      * Update the specified resource in storage.
      */
-
     public function update(Request $request, string $etudepaiement)
     {
-
-        $etudepaiement = EtudePaiement::find($etudepaiement);
-        $etudiant = Etudiant::find($etudepaiement->id_etudiant);
+        $etudepaiementModel = EtudePaiement::find($etudepaiement);
+        $etudiant = Etudiant::find($etudepaiementModel->id_etudiant);
         $input = $request->all();
-        $etudepaiement->update($input);
-        
+
+        $this->paymentService->updateStudentPayment($etudepaiement, $input);
+
         return redirect('/paiement/etudepaiement')->with('flash_message', "Les frais de {$etudiant->nom} ont été payés");
     }
 

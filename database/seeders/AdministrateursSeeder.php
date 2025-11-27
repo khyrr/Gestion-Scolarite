@@ -21,25 +21,34 @@ class AdministrateursSeeder extends Seeder
                 'prenom' => 'Mohamed',
                 'email' => 'admin@ecole.com',
                 'mot_de_passe' => Hash::make('password123'),
+                'role' => 'super_admin',
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
             [
                 'nom' => 'Secrétaire Générale',
                 'prenom' => 'Fatima',
                 'email' => 'secretaire@ecole.com',
                 'mot_de_passe' => Hash::make('password123'),
+                'role' => 'admin',
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
             [
                 'nom' => 'Comptable',
                 'prenom' => 'Ahmed',
                 'email' => 'comptable@ecole.com',
                 'mot_de_passe' => Hash::make('password123'),
+                'role' => 'admin',
+                'created_at' => now(),
+                'updated_at' => now(),
             ]
         ];
 
         foreach ($administrators as $adminData) {
             // Create Administrator record in administrateurs table
             Administrateur::create($adminData);
-            
+
             // Create User account for authentication (clean auth system)
             User::updateOrCreate(
                 ['email' => $adminData['email']],

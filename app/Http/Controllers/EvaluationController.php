@@ -13,12 +13,74 @@ class EvaluationController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $evaluations = Evaluation::with(['classe', 'matiere'])
-                                ->orderBy('date', 'desc')
-                                ->get();
-        return view('academic.evaluations.index', compact('evaluations'));
+        $query = Evaluation::with(['classe', 'matiere'])
+            ->orderBy('date', 'desc');
+
+        // Apply filters
+        if ($request->filled('type_filter')) {
+            $query->where('type', $request->type_filter);
+        }
+
+        if ($request->filled('classe_filter')) {
+            $query->whereHas('classe', function($q) use ($request) {
+                $q->where('nom_classe', $request->classe_filter);
+            });
+        }
+
+        if ($request->filled('matiere_filter')) {
+            $query->whereHas('matiere', function($q) use ($request) {
+                $q->where('nom_matiere', $request->matiere_filter);
+            });
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->whereHas('matiere', function($mq) use ($search) {
+                    $mq->where('nom_matiere', 'like', "%{$search}%");
+                })
+                ->orWhereHas('classe', function($cq) use ($search) {
+                    $cq->where('nom_classe', 'like', "%{$search}%");
+                })
+                ->orWhere('type', 'like', "%{$search}%")
+                ->orWhere('date', 'like', "%{$search}%");
+            });
+        }
+
+        // Get filtered results for statistics
+        $filteredEvaluations = $query->get();
+        
+        // Statistics on filtered data
+        $stats = [
+            'total' => $filteredEvaluations->count(),
+            'examens' => $filteredEvaluations->where('type', 'examen')->count(),
+            'controles' => $filteredEvaluations->where('type', 'controle')->count(),
+            'devoirs' => $filteredEvaluations->where('type', 'devoir')->count(),
+        ];
+
+        // Paginate
+        $evaluations = $query->paginate(15)->withQueryString();
+
+        // Get unique classes and matieres for filters
+        $allClasses = Evaluation::with('classe')
+            ->get()
+            ->pluck('classe')
+            ->filter()
+            ->unique('nom_classe')
+            ->sortBy('nom_classe')
+            ->values();
+
+        $allMatieres = Evaluation::with('matiere')
+            ->get()
+            ->pluck('matiere')
+            ->filter()
+            ->unique('nom_matiere')
+            ->sortBy('nom_matiere')
+            ->values();
+
+        return view('admin.academic.evaluations.index', compact('evaluations', 'stats', 'allClasses', 'allMatieres'));
     }
 
     /**
@@ -27,7 +89,7 @@ class EvaluationController extends Controller
     public function create()
     {
         $classes = Classe::orderBy('nom_classe')->get();
-        return view('academic.evaluations.create', compact('classes'));
+        return view('admin.academic.evaluations.create', compact('classes'));
     }
 
     /**
@@ -37,9 +99,9 @@ class EvaluationController extends Controller
     {
         try {
             $evaluation = Evaluation::create($request->validated());
-            
+
             $redirectRoute = $this->getRedirectRoute($evaluation->type);
-            
+
             return redirect()->route($redirectRoute)
                 ->with('success', "L'évaluation de {$evaluation->matiere_name} a été créée avec succès.");
         } catch (\Exception $e) {
@@ -55,7 +117,7 @@ class EvaluationController extends Controller
     public function show(Evaluation $evaluation)
     {
         $evaluation->load(['classe', 'notes.etudiant']);
-        return view('academic.evaluations.show', compact('evaluation'));
+        return view('admin.academic.evaluations.show', compact('evaluation'));
     }
 
     /**
@@ -65,7 +127,7 @@ class EvaluationController extends Controller
     {
         $classes = Classe::orderBy('nom_classe')->get();
         $matieres = \App\Models\Matiere::where('active', true)->orderBy('nom_matiere')->get();
-        return view('academic.evaluations.edit', compact('evaluation', 'classes', 'matieres'));
+        return view('admin.academic.evaluations.edit', compact('evaluation', 'classes', 'matieres'));
     }
 
     /**
@@ -75,7 +137,7 @@ class EvaluationController extends Controller
     {
         try {
             $evaluation->update($request->validated());
-            return redirect()->route('academic.evaluations.index')
+            return redirect()->route('admin.evaluations.index')
                 ->with('success', "L'évaluation a été mise à jour avec succès.");
         } catch (\Exception $e) {
             return redirect()->back()
@@ -92,7 +154,7 @@ class EvaluationController extends Controller
         try {
             $matiere = $evaluation->matiere_name;
             $evaluation->delete();
-            return redirect()->route('academic.evaluations.index')
+            return redirect()->route('admin.evaluations.index')
                 ->with('success', "L'évaluation de {$matiere} a été supprimée.");
         } catch (\Exception $e) {
             return redirect()->back()
@@ -101,25 +163,13 @@ class EvaluationController extends Controller
     }
 
     /**
-     * Show evaluations by type - keeping legacy routes
+     * Show evaluation schedule
      */
-    public function showByType($type, $number = 1)
+    public function schedule($type, $niveau)
     {
-        $evaluations = Evaluation::where('type', $type)
-                                ->with(['classe', 'notes'])
-                                ->get()
-                                ->groupBy('id_classe');
-        
-        return view('evaluation.by-type', compact('evaluations', 'type', 'number'));
+        // Placeholder for schedule logic - to be implemented
+        return view('admin.academic.evaluations.schedule', compact('type', 'niveau'));
     }
-
-    // Legacy methods for existing routes
-    public function show1() { return $this->showByType('devoir', 1); }
-    public function show2() { return $this->showByType('devoir', 2); }
-    public function show3() { return $this->showByType('devoir', 3); }
-    public function show4() { return $this->showByType('examen', 1); }
-    public function show5() { return $this->showByType('examen', 2); }
-    public function show6() { return $this->showByType('examen', 3); }
 
     /**
      * Get redirect route based on evaluation type
@@ -127,11 +177,11 @@ class EvaluationController extends Controller
     private function getRedirectRoute($type)
     {
         $routes = [
-            'devoir' => 'evaluations.index',
-            'examen' => 'evaluations.index',
-            'controle' => 'evaluations.index',
+            'devoir' => 'admin.evaluations.index',
+            'examen' => 'admin.evaluations.index',
+            'controle' => 'admin.evaluations.index',
         ];
 
-        return $routes[$type] ?? 'evaluations.index';
+        return $routes[$type] ?? 'admin.evaluations.index';
     }
 }

@@ -18,8 +18,9 @@ class SetLocale
         // Get locale from session, fallback to config default
         $locale = session('locale', config('app.locale'));
         
-        // Validate locale
-        if (in_array($locale, ['fr', 'ar', 'en'])) {
+        // Validate locale against configured locales
+        $available = array_keys(config('locales', ['fr' => [], 'ar' => [], 'en' => []]));
+        if (in_array($locale, $available, true)) {
             app()->setLocale($locale);
         }
         

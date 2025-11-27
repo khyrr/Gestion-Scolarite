@@ -18,7 +18,9 @@ return new class extends Migration
             }
             
             // Keep the old matiere column for now (we'll remove it later after data migration)
-            $table->string('matiere')->nullable()->change();
+            if (Schema::hasColumn('evaluations', 'matiere')) {
+                $table->string('matiere')->nullable()->change();
+            }
             
             // Add index if it doesn't exist
             if (!Schema::hasIndex('evaluations', 'evaluations_id_matiere_index')) {
@@ -35,9 +37,16 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('evaluations', function (Blueprint $table) {
-            $table->dropForeign(['id_matiere']);
-            $table->dropColumn('id_matiere');
-            $table->string('matiere')->nullable(false)->change();
+            if (Schema::hasColumn('evaluations', 'id_matiere')) {
+                if (Schema::getConnection()->getDriverName() !== 'sqlite') {
+                    $table->dropForeign(['id_matiere']);
+                }
+                $table->dropColumn('id_matiere');
+            }
+
+            if (Schema::hasColumn('evaluations', 'matiere')) {
+                $table->string('matiere')->nullable(false)->change();
+            }
         });
     }
 };

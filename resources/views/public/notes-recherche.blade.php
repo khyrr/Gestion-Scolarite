@@ -103,8 +103,8 @@
                         
                         <div class="text-center mt-4">
                             <p class="text-muted">
-                                Vous êtes un enseignant ou administrateur? 
-                                <a href="{{ route('connexion') }}" class="text-decoration-none">
+                                Vous êtes un enseignant?
+                                <a href="{{ route('enseignant.connexion') }}" class="text-decoration-none">
                                     Se connecter
                                 </a>
                             </p>

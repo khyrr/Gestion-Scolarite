@@ -56,8 +56,12 @@ return new class extends Migration
             $table->string('matiere')->after('id_matiere');
             
             // Drop foreign key and columns
-            $table->dropForeign(['id_matiere']);
-            $table->dropColumn(['id_matiere', 'titre', 'note_max']);
+            if (Schema::hasColumn('evaluations', 'id_matiere')) {
+                if (Schema::getConnection()->getDriverName() !== 'sqlite') {
+                    $table->dropForeign(['id_matiere']);
+                }
+                $table->dropColumn(['id_matiere', 'titre', 'note_max']);
+            }
         });
     }
     

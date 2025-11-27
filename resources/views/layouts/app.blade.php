@@ -66,13 +66,13 @@
                         @guest
                             @if (Route::has('login'))
                                 <li class="nav-item">
-                                    <a class="nav-link" href="{{ route('connexion') }}">{{ __('Connexion') }}</a>
+                                    <a class="nav-link" href="{{ route('enseignant.connexion') }}">{{ __('Connexion') }}</a>
                                 </li>
                             @endif
 
                             @if (Route::has('register'))
                                 <li class="nav-item">
-                                    <a class="nav-link" href="{{ route('inscription') }}">{{ __('Inscription') }}</a>
+                                    <a class="nav-link" href="{{ route('enseignant.inscription') }}">{{ __('Inscription') }}</a>
                                 </li>
                             @endif
                         @else
@@ -83,13 +83,13 @@
                                 </a>
 
                                 <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                    <a class="dropdown-item" href="{{ route('deconnexion') }}"
+                                    <a class="dropdown-item" href="{{ route('enseignant.deconnexion') }}"
                                         onclick="event.preventDefault();
                                                      document.getElementById('logout-form').submit();">
                                         {{ __('Déconnexion ') }} <i class="bi bi-box-arrow-right"></i>
                                     </a>
 
-                                    <form id="logout-form" action="{{ route('deconnexion') }}" method="POST" class="d-none">
+                                    <form id="logout-form" action="{{ route('enseignant.deconnexion') }}" method="POST" class="d-none">
                                         @csrf
                                     </form>
                                 </div>

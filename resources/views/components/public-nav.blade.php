@@ -22,20 +22,20 @@
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li>
-                        <a class="dropdown-item {{ app()->getLocale() === 'fr' ? 'active' : '' }}" 
-                           href="{{ route('lang.switch', 'fr') }}">
+                        <a class="dropdown-item {{ app()->getLocale() === 'fr' ? 'active' : '' }}"
+                           href="{{ Route::has('lang.switch') ? route('lang.switch', 'fr') : url('/langue/fr') }}">
                             <span class="fi fi-fr me-2"></span> Français
                         </a>
                     </li>
                     <li>
-                        <a class="dropdown-item {{ app()->getLocale() === 'ar' ? 'active' : '' }}" 
-                           href="{{ route('lang.switch', 'ar') }}">
+                        <a class="dropdown-item {{ app()->getLocale() === 'ar' ? 'active' : '' }}"
+                           href="{{ Route::has('lang.switch') ? route('lang.switch', 'ar') : url('/langue/ar') }}">
                             <span class="fi fi-sa me-2"></span> العربية
                         </a>
                     </li>
                     <li>
-                        <a class="dropdown-item {{ app()->getLocale() === 'en' ? 'active' : '' }}" 
-                           href="{{ route('lang.switch', 'en') }}">
+                        <a class="dropdown-item {{ app()->getLocale() === 'en' ? 'active' : '' }}"
+                           href="{{ Route::has('lang.switch') ? route('lang.switch', 'en') : url('/langue/en') }}">
                             <span class="fi fi-us me-2"></span> English
                         </a>
                     </li>

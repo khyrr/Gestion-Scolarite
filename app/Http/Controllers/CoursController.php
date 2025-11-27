@@ -5,22 +5,27 @@ namespace App\Http\Controllers;
 use App\Models\Cours;
 use Illuminate\Http\Request;
 use App\Models\Classe;
-use Illuminate\Support\Facades\DB;
 use App\Models\Enseignant;
 use App\Models\Matiere;
+use App\Services\CourseService;
 
 class CoursController extends Controller
 {
+    protected $courseService;
 
+    public function __construct(CourseService $courseService)
+    {
+        $this->courseService = $courseService;
+    }
 
-    
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $cours = Cours::all();
-        return view('academic.cours.index')->with('cours', $cours);;
+        $cours = Cours::with(['classe', 'matiere', 'enseignant'])->latest()->paginate(15);
+        return view('admin.academic.cours.index')->with('cours', $cours);
+        ;
     }
 
     /**
@@ -31,8 +36,8 @@ class CoursController extends Controller
         $classes = Classe::all();
         $enseignants = Enseignant::all();
         $matieres = Matiere::all();
-        
-        return view('academic.cours.create', compact('classes', 'enseignants', 'matieres'));
+
+        return view('admin.academic.cours.create', compact('classes', 'enseignants', 'matieres'));
     }
 
     /**
@@ -42,13 +47,13 @@ class CoursController extends Controller
     {
         $input = $request->all();
         Cours::create($input);
-        
+
         // Redirect to timetable if coming from there, otherwise to index
         if ($request->input('from_timetable')) {
-            return redirect()->route('cours.spectacle')->with('success', 'Le cours a été ajouté avec succès!');
+            return redirect()->route('admin.cours.spectacle')->with('success', 'Le cours a été ajouté avec succès!');
         }
-        
-        return redirect()->route('cours.index')->with('flash_message', 'Le cours a été ajouté');
+
+        return redirect()->route('admin.cours.index')->with('flash_message', 'Le cours a été ajouté');
     }
 
     /**
@@ -58,7 +63,7 @@ class CoursController extends Controller
     {
         $cours = $cour; // Keep variable name consistent in view
         $cours->load(['classe', 'matiere', 'enseignant']);
-        return view('academic.cours.show', compact('cours'));
+        return view('admin.academic.cours.show', compact('cours'));
     }
 
     /**
@@ -66,51 +71,8 @@ class CoursController extends Controller
      */
     public function spectacle()
     {
-        // Get all classes
-        $classes = Classe::all();
-        
-        // Get all courses with relationships
-        $allCours = Cours::with(['classe', 'matiere', 'enseignant'])->get();
-        
-        // Get unique time slots dynamically from existing courses
-        $timeSlots = Cours::select('date_debut', 'date_fin')
-            ->distinct()
-            ->orderBy('date_debut')
-            ->get()
-            ->map(function ($slot) {
-                return [
-                    'debut' => date('H:i', strtotime($slot->date_debut)),
-                    'fin' => date('H:i', strtotime($slot->date_fin))
-                ];
-            })
-            ->unique()
-            ->values();
-        
-        // Days of the week
-        $jours = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi'];
-        
-        // Organize courses by class and time
-        $schedule = [];
-        foreach ($classes as $classe) {
-            $schedule[$classe->id_classe] = [];
-            foreach ($timeSlots as $slot) {
-                $schedule[$classe->id_classe][$slot['debut'] . '-' . $slot['fin']] = [];
-                foreach ($jours as $jour) {
-                    $course = $allCours->where('id_classe', $classe->id_classe)
-                        ->where('jour', $jour)
-                        ->filter(function ($c) use ($slot) {
-                            $debut = date('H:i', strtotime($c->date_debut));
-                            $fin = date('H:i', strtotime($c->date_fin));
-                            return $debut == $slot['debut'] && $fin == $slot['fin'];
-                        })
-                        ->first();
-                    
-                    $schedule[$classe->id_classe][$slot['debut'] . '-' . $slot['fin']][$jour] = $course;
-                }
-            }
-        }
-        
-        return view('academic.cours.spectacle', compact('classes', 'schedule', 'timeSlots', 'jours'));
+        $data = $this->courseService->getScheduleData();
+        return view('admin.academic.cours.spectacle', $data);
     }
 
     /**
@@ -122,12 +84,12 @@ class CoursController extends Controller
         $classes = Classe::all();
         $enseignants = Enseignant::all();
         $matieres = Matiere::all();
-        
+
         if (!$Cours) {
             return redirect()->back()->with('flash_message', 'Cours introuvable');
         }
 
-        return view('academic.cours.edit', compact('Cours', 'classes', 'enseignants', 'matieres'));
+        return view('admin.academic.cours.edit', compact('Cours', 'classes', 'enseignants', 'matieres'));
     }
 
     /**
@@ -138,13 +100,13 @@ class CoursController extends Controller
         $cours = Cours::find($id);
         $input = $request->all();
         $cours->update($input);
-        
+
         // Redirect to timetable if coming from there, otherwise to index
         if ($request->input('from_timetable')) {
-            return redirect()->route('cours.spectacle')->with('success', 'Le cours a été modifié avec succès!');
+            return redirect()->route('admin.cours.spectacle')->with('success', 'Le cours a été modifié avec succès!');
         }
-        
-        return redirect()->route('cours.index')->with('flash_message', 'Les informations ont été mises à jour!');
+
+        return redirect()->route('admin.cours.index')->with('flash_message', 'Les informations ont été mises à jour!');
     }
 
     /**
@@ -153,12 +115,12 @@ class CoursController extends Controller
     public function destroy(Request $request, string $id)
     {
         Cours::find($id)->delete();
-        
+
         // Redirect to timetable if coming from there, otherwise to index
         if ($request->input('from_timetable')) {
-            return redirect()->route('cours.spectacle')->with('success', 'Le cours a été supprimé avec succès!');
+            return redirect()->route('admin.cours.spectacle')->with('success', 'Le cours a été supprimé avec succès!');
         }
-        
-        return redirect()->route('cours.index')->with('flash_message', 'Le cours est supprimé');
+
+        return redirect()->route('admin.cours.index')->with('flash_message', 'Le cours est supprimé');
     }
 }

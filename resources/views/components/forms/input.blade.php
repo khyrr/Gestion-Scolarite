@@ -1,4 +1,4 @@
-<div class="mb-3">
+<div class="mb-3 form-field">
     @if($label)
         <label for="{{ $name }}" class="form-label">
             {{ $label }}
@@ -12,7 +12,7 @@
         type="{{ $type }}"
         name="{{ $name }}"
         id="{{ $name }}"
-        class="form-control {{ $class }} @error($name) is-invalid @enderror"
+        class="form-control form-control-lg rounded-2 {{ $class }} @error($name) is-invalid @enderror"
         value="{{ old($name, $value) }}"
         placeholder="{{ $placeholder }}"
         @if($required) required @endif

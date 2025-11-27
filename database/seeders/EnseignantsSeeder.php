@@ -63,10 +63,22 @@ class EnseignantsSeeder extends Seeder
         ];
 
         foreach ($enseignants as $teacherData) {
+            // Only insert fields that exist on the enseignants table.
+            // 'matiere' and 'id_classe' were removed and are handled via the
+            // enseignant_matiere_classe pivot table (see EnseignantMatiereClasseSeeder).
+            $enseignantData = [
+                'nom' => $teacherData['nom'],
+                'prenom' => $teacherData['prenom'],
+                'email' => $teacherData['email'],
+                'telephone' => $teacherData['telephone'],
+            ];
+
             // Create Teacher record in enseignants table
-            Enseignant::create($teacherData);
-            
+            Enseignant::create($enseignantData);
+
             // Create User account for authentication (clean auth system)
+            // Do not attempt to write 'matiere' or 'id_classe' into users –
+            // those columns were removed from users table in a migration.
             User::updateOrCreate(
                 ['email' => $teacherData['email']],
                 [
@@ -77,8 +89,6 @@ class EnseignantsSeeder extends Seeder
                     'password' => Hash::make('password123'),
                     'role' => 'enseignant',
                     'telephone' => $teacherData['telephone'],
-                    'matiere' => $teacherData['matiere'],
-                    'id_classe' => $teacherData['id_classe'],
                     'is_active' => true,
                     'email_verified_at' => now(),
                 ]

@@ -23,7 +23,7 @@ class ClasseController extends Controller
                           ])
                           ->orderBy('nom_classe')
                           ->get();
-        return view('academic.classes.index', compact('classes'));
+        return view('admin.academic.classes.index', compact('classes'));
     }
 
     /**
@@ -31,7 +31,7 @@ class ClasseController extends Controller
      */
     public function create()
     {
-        return view('academic.classes.create');
+        return view('admin.academic.classes.create');
     }
 
     /**
@@ -51,7 +51,7 @@ class ClasseController extends Controller
             }
             
             $classe = Classe::create($data);
-            return redirect()->route('classes.index')
+            return redirect()->route('admin.classes.index')
                 ->with('success', "La classe {$classe->nom_classe} a été créée avec succès.");
         } catch (\Exception $e) {
             return redirect()->back()
@@ -66,7 +66,7 @@ class ClasseController extends Controller
     public function show(Classe $classe)
     {
         $classe->load(['etudiants', 'enseignants', 'cours.enseignant', 'evaluations']);
-        return view('academic.classes.show', compact('classe'));
+        return view('admin.academic.classes.show', compact('classe'));
     }
 
     /**
@@ -74,7 +74,7 @@ class ClasseController extends Controller
      */
     public function edit(Classe $classe)
     {
-        return view('academic.classes.edit', compact('classe'));
+        return view('admin.academic.classes.edit', compact('classe'));
     }
 
     /**
@@ -94,7 +94,7 @@ class ClasseController extends Controller
             }
             
             $classe->update($data);
-            return redirect()->route('classes.index')
+            return redirect()->route('admin.classes.index')
                 ->with('success', "La classe {$classe->nom_classe} a été mise à jour.");
         } catch (\Exception $e) {
             return redirect()->back()
@@ -118,7 +118,7 @@ class ClasseController extends Controller
             }
             
             $classe->delete();
-            return redirect()->route('classes.index')
+            return redirect()->route('admin.classes.index')
                 ->with('success', "La classe {$nom} a été supprimée.");
         } catch (\Exception $e) {
             return redirect()->back()

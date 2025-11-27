@@ -37,7 +37,7 @@ class LoginController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('guest')->except('logout');
+        $this->middleware('guest:teacher')->except('logout');
     }
 
     /**
@@ -45,6 +45,16 @@ class LoginController extends Controller
      */
     protected function redirectTo()
     {
+        // Prefer admin guard first, then teacher guard. This keeps correct
+        // post-login redirection for both auth systems.
+        if (Auth::guard('admin')->check()) {
+            return RouteServiceProvider::HOME;
+        }
+
+        if (Auth::guard('teacher')->check()) {
+            return route('enseignant.dashboard');
+        }
+
         $user = Auth::user();
         
         if (!$user) {
@@ -52,9 +62,9 @@ class LoginController extends Controller
         }
 
         // Check if user is active
-        if (!$user->is_active) {
+            if (!$user->is_active) {
             Auth::logout();
-            return redirect()->route('connexion')->with('error', __('app.account_deactivated'));
+            return redirect()->route('enseignant.connexion')->with('error', __('app.account_deactivated'));
         }
         
         // Role-based redirect
@@ -62,10 +72,18 @@ class LoginController extends Controller
             case 'admin':
                 return RouteServiceProvider::HOME; // Admin dashboard
             case 'enseignant':
-                return route('enseignant.tableau-bord'); // Teacher dashboard
+                return route('enseignant.dashboard'); // Teacher dashboard
             default:
                 return RouteServiceProvider::HOME;
         }
+    }
+
+    /**
+     * Use the teacher guard for this controller (teacher login flow).
+     */
+    protected function guard()
+    {
+        return Auth::guard('teacher');
     }
 
     /**
@@ -84,6 +102,8 @@ class LoginController extends Controller
 
         // Attempt to log the user in
         if ($this->attemptLogin($request)) {
+            // Log successful teacher login
+            \App\Services\ActivityLogger::log('teacher', Auth::guard('teacher')->id(), 'login', 'enseignant', Auth::guard('teacher')->id(), 'Teacher login');
             $user = Auth::user();
             
             // Check if user is active
@@ -102,7 +122,26 @@ class LoginController extends Controller
         // Increment login attempts
         $this->incrementLoginAttempts($request);
 
+        // Log failed teacher login
+        \App\Services\ActivityLogger::log('teacher', null, 'failed_login', null, null, 'Failed login attempt for '.$request->email);
+
         return $this->sendFailedLoginResponse($request);
+    }
+
+    /**
+     * Number of allowed attempts for teacher logins.
+     */
+    protected function maxAttempts()
+    {
+        return 5; // 5 attempts
+    }
+
+    /**
+     * Decay minutes for teacher login attempts.
+     */
+    protected function decayMinutes()
+    {
+        return 10; // 10 minutes
     }
 
     /**
@@ -123,6 +162,6 @@ class LoginController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('connexion')->with('success', __('app.logged_out_successfully'));
+        return redirect()->route('enseignant.connexion')->with('success', __('app.logged_out_successfully'));
     }
 }

@@ -23,8 +23,17 @@ return new class extends Migration
             $table->decimal('note_max', 5, 2)->default(20.00);
             $table->timestamps();
     
-            $table->foreign('id_classe')->references('id_classe')->on('classes')->onDelete('cascade');
-            $table->foreign('id_matiere')->references('id_matiere')->on('matieres')->onDelete('cascade');
+            // Only add foreign key constraints if referenced tables already exist.
+            // Some deployments/migration orders may not have the referenced tables created
+            // yet (for example matieres created by a later migration). Avoid failing the
+            // migration on fresh installs — perform best-effort foreign key additions.
+            if (Schema::hasTable('classes')) {
+                $table->foreign('id_classe')->references('id_classe')->on('classes')->onDelete('cascade');
+            }
+
+            if (Schema::hasTable('matieres')) {
+                $table->foreign('id_matiere')->references('id_matiere')->on('matieres')->onDelete('cascade');
+            }
             
             $table->index('id_classe');
             $table->index('id_matiere');

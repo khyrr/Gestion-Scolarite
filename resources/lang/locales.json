@@ -1,0 +1,13 @@
+{
+  "fr": { "label": "Français", "flag": "fr" },
+  "ar": { "label": "العربية", "flag": "sa" },
+  "en": { "label": "English", "flag": "us" },
+  "es": { "label": "Español", "flag": "es" },
+  "de": { "label": "Deutsch", "flag": "de" },
+  "pt": { "label": "Português", "flag": "pt" },
+  "it": { "label": "Italiano", "flag": "it" },
+  "nl": { "label": "Nederlands", "flag": "nl" },
+  "ru": { "label": "Русский", "flag": "ru" },
+  "zh": { "label": "中文", "flag": "cn" },
+  "ja": { "label": "日本語", "flag": "jp" }
+}

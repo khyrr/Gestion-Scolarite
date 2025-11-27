@@ -21,8 +21,10 @@ return new class extends Migration
             // Add foreign key constraints
             $table->foreign('id_matiere')->references('id_matiere')->on('matieres')->onDelete('cascade');
             
-            // Remove old matiere string column only (keep id_enseignant)
-            $table->dropColumn('matiere');
+            // Remove old matiere string column only (keep id_enseignant) if present
+            if (Schema::hasColumn('cours', 'matiere')) {
+                $table->dropColumn('matiere');
+            }
         });
     }
 
@@ -32,11 +34,13 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('cours', function (Blueprint $table) {
-            // Drop foreign key
-            $table->dropForeign(['id_matiere']);
-            
-            // Remove new column
-            $table->dropColumn('id_matiere');
+            // Drop foreign key and column if they exist (skip dropForeign on sqlite)
+            if (Schema::hasColumn('cours', 'id_matiere')) {
+                if (Schema::getConnection()->getDriverName() !== 'sqlite') {
+                    $table->dropForeign(['id_matiere']);
+                }
+                $table->dropColumn('id_matiere');
+            }
             
             // Add back old matiere string column
             $table->string('matiere');

@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('evaluations', function (Blueprint $table) {
-            $table->decimal('note_max', 5, 2)->default(20.00)->after('type');
+            if (! Schema::hasColumn('evaluations', 'note_max')) {
+                $table->decimal('note_max', 5, 2)->default(20.00)->after('type');
+            }
         });
     }
 
@@ -22,7 +24,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('evaluations', function (Blueprint $table) {
-            $table->dropColumn('note_max');
+            if (Schema::hasColumn('evaluations', 'note_max')) {
+                $table->dropColumn('note_max');
+            }
         });
     }
 };

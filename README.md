@@ -64,3 +64,9 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## Project documentation
+
+This repository contains additional internal walkthroughs and developer docs under the `docs/` folder. A recent walkthrough describing the "Disable Admin Registration & Internal Management" changes is available here:
+
+- docs/DISABLE_ADMIN_REGISTRATION.md — Walkthrough for disabling public admin registration, adding the `admin:create` command and admin management UI.

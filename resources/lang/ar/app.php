@@ -9,7 +9,10 @@ return [
     'profil' => 'الملف الشخصي',
     'parametres' => 'الإعدادات',
     'deconnexion' => 'تسجيل الخروج',
-    
+    'activity_logs' => 'سجلات النشاط',
+    'two_factor' => 'المصادقة ذات العاملين',
+    'export_csv' => 'تصدير CSV',
+
     // ===========================================
     // GESTION ACADÉMIQUE
     // ===========================================
@@ -21,6 +24,58 @@ return [
     'cours' => 'المقررات',
     'evaluations' => 'التقييمات',
     'notes' => 'الدرجات',
+    'user_type' => 'نوع المستخدم',
+    'user' => 'المستخدم',
+    'resource' => 'المورد',
+    'ip' => 'IP',
+    'user_agent' => 'وكيل المستخدم',
+    'time' => 'الوقت',
+    'no_logs' => 'لا توجد سجلات',
+    'two_factor_management' => 'إدارة المصادقة ذات العاملين',
+    'two_factor_setup' => 'إعداد المصادقة ذات العاملين',
+    'setup_minimal_description' => 'قم بإعداد المصادقة ذات العاملين لإضافة طبقة أمان إلى حسابك. امسح رمز QR ثم أكد عبر تطبيق المصادقة.',
+    // Short version for compact UI
+    'setup_minimal_description_short' => 'امسح رمز QR ثم أكد في تطبيق المصادقة.',
+    'scan_qr_or_enter_secret' => 'قم بمسح رمز الاستجابة السريعة (QR) باستخدام تطبيق المصادقة أو أدخل المفتاح السري يدويًا.',
+    'secret' => 'المفتاح السري',
+    'copy' => 'نسخ',
+    'enter_code_from_app' => 'أدخل رمز الـ 6 أرقام من تطبيق المصادقة',
+    'enter_code_help' => 'تتغير الرموز كل 30 ثانية — تأكد من إدخال أحدث رمز.',
+    'provisioning_uri' => 'سلسلة التهيئة (URI)',
+    'scan_qr_or_capture' => 'امسح رمز QR أو خزنه على جهازك.',
+    'keep_recovery_codes' => 'خزن رموز الاسترداد في مكان آمن (تُعرض مرة واحدة فقط).',
+    'keep_recovery_codes_short' => 'احفظ رموز الاسترداد في مكان آمن — قد تحتاجها لاحقًا.',
+    'secret_label' => 'المفتاح السري',
+    'recovery_codes_title' => 'رموز الاسترداد',
+    'no_recovery_codes' => 'لا توجد رموز استرداد متاحة.',
+    'two_factor_disable_notice_user' => 'ملاحظة: لا يمكنك تعطيل 2FA بنفسك — يرجى الاتصال بمشرف فائق إذا كنت بحاجة لذلك.',
+
+    'two_factor_challenge' => 'تأكيد المصادقة ذات العاملين',
+    'two_factor_challenge_instructions' => 'أدخل رمز الـ 6 أرقام من تطبيق المصادقة للمتابعة.',
+    'two_factor_challenge_instructions_short' => 'أدخل رمز التحقق المكوّن من 6 أرقام من تطبيق المصادقة.',
+    'verify' => 'تحقق',
+    'use_recovery_code' => 'استخدم رمز الاسترداد بدلًا من ذلك',
+    'back_to_otp' => 'العودة إلى رمز المصادقة',
+    'enter_recovery_code' => 'أدخل رمز الاسترداد',
+    'recovery_code_info' => 'رموز الاسترداد للاستخدام مرة واحدة — استخدمها فقط إذا لم تتمكن من الوصول إلى التطبيق.',
+    'secure_account' => 'أمن حسابك',
+    'two_factor_recovery_notice' => 'إذا لم تتمكن من الوصول إلى التطبيق، يمكنك استخدام رمز استرداد (يُستخدم مرة واحدة).',
+    'two_factor_recovery_hint_short' => 'لا يمكنك الوصول للتطبيق؟ استخدم رمز استرداد (للاستخدام مرة واحدة).',
+    'two_factor_hint' => 'هذا يساعد في حماية حساب المشرف. التحقق مطلوب للعمليات الحساسة.',
+    'deux_facteurs_active_court' => 'التحقق الثنائي مفعل',
+    'two_factor_enabled_since' => 'مفعل :when',
+    'show_recovery_codes' => 'عرض رموز الاسترداد',
+    'hide_recovery_codes' => 'إخفاء رموز الاسترداد',
+    'copy_all' => 'نسخ الكل',
+    'download_codes' => 'تنزيل الرموز',
+    'save_recovery_now' => 'احفظ رموز الاسترداد الآن — لن تُعرض مجددًا.',
+    'copied' => 'نسخ!',
+    'qr_code_alt' => 'رمز QR لتطبيق المصادقة الخاص بك',
+    'regenerate_secret' => 'إعادة إنشاء المفتاح',
+    'regenerate_notice' => 'إعادة الإنشاء ستستبدل مفتاحك ورموز الاسترداد — يجب إعادة تكوين تطبيق المصادقة.',
+    'current_password' => 'كلمة المرور الحالية',
+    'current_otp' => 'رمز 2FA الحالي',
+    'confirm' => 'تأكيد',
 
     // ===========================================
     // PAIEMENTS
@@ -28,7 +83,7 @@ return [
     'paiements' => 'المدفوعات',
     'paiements_etudiants' => 'مدفوعات الطلاب',
     'paiements_enseignants' => 'مدفوعات المعلمين',
-    
+
     // ===========================================
     // STATISTIQUES
     // ===========================================
@@ -39,7 +94,7 @@ return [
     'etudiants_hommes' => 'الطلاب الذكور',
     'etudiantes_femmes' => 'الطالبات الإناث',
     'classes_actives' => 'الفصول النشطة',
-    
+
     // ===========================================
     // ACTIONS RAPIDES
     // ===========================================
@@ -53,7 +108,7 @@ return [
     'rapports_resultats' => 'التقارير والنتائج',
     'evaluations_recents' => 'التقييمات الحديثة',
     'voir_tout' => 'عرض الكل',
-    
+
     // ===========================================
     // ACTIONS GÉNÉRALES
     // ===========================================
@@ -66,7 +121,7 @@ return [
     'chercher' => 'بحث',
     'actions' => 'الإجراءات',
     'voir_details' => 'عرض التفاصيل',
-    
+
     // ===========================================
     // CHAMPS COMMUNS
     // ===========================================
@@ -88,7 +143,7 @@ return [
     'date' => 'التاريخ',
     'type' => 'النوع',
     'titre' => 'العنوان',
-    
+
     // ===========================================
     // GESTION DES CLASSES
     // ===========================================
@@ -99,13 +154,13 @@ return [
     'aucun_etudiant_inscrit' => 'لا يوجد طلاب مسجلون',
     'classe_pas_etudiants' => 'هذا الفصل لا يحتوي على طلاب مسجلين بعد.',
     'voir_cours' => 'عرض المقرر',
-    
+
     // ===========================================
     // GENRE
     // ===========================================
     'masculin' => 'ذكر',
     'feminin' => 'أنثى',
-    
+
     // ===========================================
     // STATUT
     // ===========================================
@@ -114,7 +169,7 @@ return [
     'paye' => 'مدفوع',
     'non_paye' => 'غير مدفوع',
     'partiel' => 'جزئي',
-    
+
     // ===========================================
     // JOURS DE LA SEMAINE
     // ===========================================
@@ -125,7 +180,7 @@ return [
     'vendredi' => 'الجمعة',
     'samedi' => 'السبت',
     'dimanche' => 'الأحد',
-    
+
     // ===========================================
     // TYPES D'ÉVALUATION
     // ===========================================
@@ -152,6 +207,8 @@ return [
     'connexion_requise' => 'يجب عليك تسجيل الدخول للوصول إلى هذه الصفحة.',
     'compte_desactive' => 'تم إلغاء تفعيل حسابك. يرجى الاتصال بالمسؤول.',
     'acces_refuse' => 'تم رفض الوصول. ليس لديك الصلاحيات اللازمة.',
+    '2fa_required_setup' => 'هذه العملية تتطلب المصادقة ذات العاملين. يرجى إعداد 2FA قبل المتابعة.',
+    '2fa_required_contact_admin' => 'هذه العملية تتطلب المصادقة ذات العاملين. يرجى الاتصال بمشرف فائق لتمكين أو تنفيذ هذا الإجراء.',
     'acces_non_autorise' => 'وصول غير مصرح به.',
     'deconnexion_reussie' => 'تم تسجيل الخروج بنجاح.',
 
@@ -172,7 +229,7 @@ return [
 
     // MATIÈRES
     // ===========================================
-    'MATH' =>  'الرياضيات',
+    'MATH' => 'الرياضيات',
     'FR' => 'الفرنسية',
     'ANG' => 'الإنجليزية',
     'HG' => 'التاريخ والجغرافيا',
@@ -253,7 +310,7 @@ return [
     'reinitialiser' => 'إعادة تعيين',
     'notes_saisies' => 'الدرجات المدخلة',
     'moyenne_classe' => 'متوسط الفصل',
-    'formulaire_saisie_notes' => 'نموذج إدخال الدرجات', 
+    'formulaire_saisie_notes' => 'نموذج إدخال الدرجات',
     'rechercher' => 'بحث',
     'notes_existantes' => 'الدرجات الموجودة',
     'noter' => 'تسجيل',
@@ -273,7 +330,7 @@ return [
     'note_ajoutee' => 'تمت إضافة الدرجة بنجاح',
     'evaluations_terminees_seulement' => 'يمكن إدخال الدرجات فقط للتقييمات المنتهية',
     'aucune_evaluation_terminee' => 'لا توجد تقييمات منتهية متاحة لإدخال الدرجات',
-    
+
     // Profile & Personal Information
     'informations_personnelles' => 'المعلومات الشخصية',
     'changer_mot_de_passe' => 'تغيير كلمة المرور',
@@ -383,8 +440,6 @@ return [
     'aucun_resultat' => 'لا توجد نتائج',
     'essayez_autres_filtres' => 'حاول ضبط عوامل التصفية الخاصة بك',
     'aucune_evaluation_trouvee' => 'لم يتم العثور على تقييمات',
-    'aucune_evaluation_terminee' => 'لا توجد تقييمات منتهية',
-    'aucune_evaluation_a_venir' => 'لا توجد تقييمات قادمة',
     'notes_superieures' => 'الدرجات ≥ 10/20',
     'aucune_note' => 'لا توجد درجات متاحة',
     'annee_scolaire' => 'السنة الدراسية',
@@ -483,5 +538,60 @@ return [
     'cours_dispenses' => 'الدروس المقدمة',
     'evaluations_creees' => 'التقييمات المنشأة',
     'id_enseignant' => 'معرف المعلم',
-    
+    'aucun_resultat_trouve' => 'لم يتم العثور على نتائج',
+    'nouvelle_evaluation' => 'تقييم جديد',
+    'administrateur' => 'مسؤول',
+    'retour_tableau_bord' => 'العودة إلى لوحة التحكم',
+    'ajouter_nouvelle_ip' => 'إضافة عنوان IP جديد',
+    'adresse_ip' => 'عنوان IP',
+    'ip_filtering_disabled' => 'تصفية عناوين IP معطلة',
+    'attention' => 'تنبيه',
+    'description_optionnelle' => 'وصف اختياري',
+    'liste_blanche_ips' => 'قائمة عناوين IP المسموح بها',
+    'ex_bureau_directeur' => 'مثال: مكتب المدير',
+    'aucune_adresse_ip_configuree' => 'لم يتم تكوين أي عناوين IP',
+    'ajoute_par' => 'تمت الإضافة بواسطة',
+    'activer' => 'تفعيل',
+    'desactiver' => 'تعطيل',
+    'system' => 'النظام',
+    'email_ou_mot_de_passe_incorrects' => 'البريد الإلكتروني أو كلمة المرور غير صحيحة',
+    'securite_ip' => 'أمان عنوان IP',
+    'description' => 'الوصف',
+    'action' => 'الإجراء',
+    'creer_admin' => 'إنشاء مسؤول',
+    'releves_notes' => 'كشوف الدرجات',
+    'resultats_scolaires' => 'النتائج الدراسية',
+    'invalid_2fa_code' => 'رمز 2FA غير صحيح',
+    'please_login_first' => 'يرجى تسجيل الدخول أولاً',
+    'invalid_recovery_code' => 'رمز الاسترداد غير صحيح',
+    'sms_authentication' => 'المصادقة عبر الرسائل القصيرة',
+    'aide_scan_qr' => 'إذا كنت غير قادر على مسح رمز الاستجابة السريعة، يمكنك إدخال المفتاح السري يدويًا في تطبيق المصادقة الخاص بك',
+    'indice_secret_manuel' => 'لا تشارك مفتاحك السري مع أي شخص',
+    'alternative_2fa_options' => 'خيارات بديلة للمصادقة ذات العاملين',
+    '2fa_active_description' => 'تم تفعيل المصادقة الثنائية على حسابك حالياً.',
+    'restants' => 'الباقي',
+    'rappel' => 'تذكير',
+    'regeneration_2fa_en_attente' => 'إعادة توليد 2FA في انتظار',
+    'nouveau_secret_genere' => 'تم إنشاء مفتاح جديد',
+    'ancien_secret_reste_actif' => 'الكود القديم لا يزال نشطًا',
+    'finaliser' => 'إنهاء',
+    'confirmer' => 'تأكيد',
+    'current_otp' => 'رمز OTP الحالي',
+    'use_recovery_code' => 'لا يمكنك الوصول للكود؟ استخدم رمز استرداد',
+    'use_otp_code' => 'استخدم رمز التطبيق',
+    'recovery_code' => 'رمز الاسترداد',
+    'two_factor_enabled' => 'تم تفعيل المصادقة الثنائية',
+    'oui' => 'نعم',
+    'non' => 'لا',
+    'super_admin' => 'مشرف فائق',
+    'admin' => 'مسؤول',
+    '2fa_status' => 'حالة 2FA',
+    'activer_2fa' => 'تفعيل 2FA',
+    'desactiver_2fa' => 'تعطيل 2FA',
+    'confirmer_action' => 'تأكيد الإجراء',
+    'activer_2fa_description' => 'ستقوم بتفعيل المصادقة الثنائية لـ',
+    'desactiver_2fa_description' => 'ستقوم بتعطيل المصادقة الثنائية لـ',
+    'ajouter_admin' => 'إضافة مسؤول',
+    'gestion_admins' => 'إدارة المسؤولين',
 ];
+

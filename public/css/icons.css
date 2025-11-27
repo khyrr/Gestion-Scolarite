@@ -1,0 +1,169 @@
+/* Icon Component Styles */
+
+/* Base Icon Styles */
+.icon {
+    display: inline-block;
+    vertical-align: middle;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+/* Icon Size Classes */
+.icon-xs {
+    width: 14px;
+    height: 14px;
+}
+
+.icon-sm {
+    width: 18px;
+    height: 18px;
+}
+
+.icon-md {
+    width: 20px;
+    height: 20px;
+}
+
+.icon-lg {
+    width: 24px;
+    height: 24px;
+}
+
+.icon-xl {
+    width: 32px;
+    height: 32px;
+}
+
+.icon-2xl {
+    width: 40px;
+    height: 40px;
+}
+
+.icon-3xl {
+    width: 48px;
+    height: 48px;
+}
+
+/* Icon Color Filters */
+.icon-white {
+    filter: brightness(0) invert(1);
+}
+
+.icon-blue {
+    filter: brightness(0) saturate(100%) invert(27%) sepia(98%) 
+            saturate(2366%) hue-rotate(203deg) brightness(98%) contrast(99%);
+}
+
+.icon-red {
+    filter: brightness(0) saturate(100%) invert(23%) sepia(93%) 
+            saturate(3347%) hue-rotate(347deg) brightness(91%) contrast(95%);
+}
+
+.icon-gray {
+    filter: brightness(0) saturate(100%) invert(42%) sepia(8%) 
+            saturate(495%) hue-rotate(180deg) brightness(94%) contrast(88%);
+}
+
+.icon-green {
+    filter: brightness(0) saturate(100%) invert(47%) sepia(57%) 
+            saturate(2105%) hue-rotate(93deg) brightness(91%) contrast(83%);
+}
+
+/* Context-Based Icon Colors */
+
+/* Primary buttons - white icons */
+.action-btn.primary .icon,
+.google-btn-primary .icon,
+.btn-primary .icon {
+    filter: brightness(0) invert(1);
+}
+
+/* Secondary buttons - inherit text color */
+.action-btn.secondary .icon,
+.google-btn-secondary .icon {
+    color: var(--text-primary);
+}
+
+/* Action buttons hover states */
+.google-action-btn:hover .icon {
+    filter: brightness(0) saturate(100%) invert(27%) sepia(98%) 
+            saturate(2366%) hue-rotate(203deg) brightness(98%) contrast(99%);
+}
+
+/* Delete action hover - red icon */
+.google-action-delete:hover .icon,
+.google-action-btn.delete:hover .icon {
+    filter: brightness(0) saturate(100%) invert(23%) sepia(93%) 
+            saturate(3347%) hue-rotate(347deg) brightness(91%) contrast(95%);
+}
+
+/* Icon button styles */
+.google-icon-btn .icon {
+    transition: all 0.2s ease;
+}
+
+.google-icon-btn:hover .icon {
+    filter: brightness(0) saturate(100%) invert(27%) sepia(98%) 
+            saturate(2366%) hue-rotate(203deg) brightness(98%) contrast(99%);
+}
+
+/* Filter button icons */
+.google-filter-btn .icon {
+    transition: all var(--transition-base);
+}
+
+.google-filter-btn:hover .icon {
+    transform: scale(1.1);
+}
+
+/* Empty state icons */
+.google-empty-state .icon,
+.empty-state .icon {
+    color: var(--text-tertiary);
+    margin: 0 auto var(--spacing-md);
+}
+
+/* Loading/Spinning icons */
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.icon.animate-spin,
+.animate-spin .icon {
+    animation: spin 1s linear infinite;
+}
+
+/* Icon alignment helpers */
+.icon-inline {
+    vertical-align: -0.125em;
+}
+
+.icon-text-top {
+    vertical-align: text-top;
+}
+
+.icon-text-bottom {
+    vertical-align: text-bottom;
+}
+
+/* Icon spacing helpers */
+.icon-mr-1 {
+    margin-right: 0.25rem;
+}
+
+.icon-mr-2 {
+    margin-right: 0.5rem;
+}
+
+.icon-ml-1 {
+    margin-left: 0.25rem;
+}
+
+.icon-ml-2 {
+    margin-left: 0.5rem;
+}

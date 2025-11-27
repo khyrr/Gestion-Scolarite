@@ -7,16 +7,24 @@ use App\Models\Classe;
 use App\Http\Requests\StoreEtudiantRequest;
 use App\Http\Requests\UpdateEtudiantRequest;
 use Illuminate\Http\Request;
+use App\Services\EtudiantService;
 
 class EtudiantController extends Controller
 {
+    protected $etudiantService;
+
+    public function __construct(EtudiantService $etudiantService)
+    {
+        $this->etudiantService = $etudiantService;
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $etudiants = Etudiant::with('classe')->latest()->paginate(10);
-        return view('academic.etudiants.index', compact('etudiants'));
+        $etudiants = $this->etudiantService->getPaginatedEtudiants();
+        return view('admin.academic.etudiants.index', compact('etudiants'));
     }
 
     /**
@@ -25,7 +33,7 @@ class EtudiantController extends Controller
     public function create()
     {
         $classes = Classe::orderBy('nom_classe')->get();
-        return view('academic.etudiants.create', compact('classes'));
+        return view('admin.academic.etudiants.create', compact('classes'));
     }
 
     /**
@@ -34,8 +42,8 @@ class EtudiantController extends Controller
     public function store(StoreEtudiantRequest $request)
     {
         try {
-            $etudiant = Etudiant::create($request->validated());
-            return redirect()->route('etudiants.index')
+            $etudiant = $this->etudiantService->createEtudiant($request->validated());
+            return redirect()->route('admin.etudiants.index')
                 ->with('success', "L'étudiant {$etudiant->full_name} a été ajouté avec succès.");
         } catch (\Exception $e) {
             return redirect()->back()
@@ -50,7 +58,7 @@ class EtudiantController extends Controller
     public function show(Etudiant $etudiant)
     {
         $etudiant->load(['classe', 'notes.evaluation', 'paiements']);
-        return view('academic.etudiants.show', compact('etudiant'));
+        return view('admin.academic.etudiants.show', compact('etudiant'));
     }
 
     /**
@@ -59,7 +67,7 @@ class EtudiantController extends Controller
     public function edit(Etudiant $etudiant)
     {
         $classes = Classe::orderBy('nom_classe')->get();
-        return view('academic.etudiants.edit', compact('etudiant', 'classes'));
+        return view('admin.academic.etudiants.edit', compact('etudiant', 'classes'));
     }
 
     /**
@@ -68,8 +76,8 @@ class EtudiantController extends Controller
     public function update(UpdateEtudiantRequest $request, Etudiant $etudiant)
     {
         try {
-            $etudiant->update($request->validated());
-            return redirect()->route('etudiants.index')
+            $this->etudiantService->updateEtudiant($etudiant, $request->validated());
+            return redirect()->route('admin.etudiants.index')
                 ->with('success', "Les informations de {$etudiant->full_name} ont été mises à jour.");
         } catch (\Exception $e) {
             return redirect()->back()
@@ -85,8 +93,8 @@ class EtudiantController extends Controller
     {
         try {
             $nom = $etudiant->full_name;
-            $etudiant->delete();
-            return redirect()->route('etudiants.index')
+            $this->etudiantService->deleteEtudiant($etudiant);
+            return redirect()->route('admin.etudiants.index')
                 ->with('success', "L'étudiant {$nom} a été supprimé.");
         } catch (\Exception $e) {
             return redirect()->back()

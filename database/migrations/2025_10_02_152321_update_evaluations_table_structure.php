@@ -19,7 +19,7 @@ return new class extends Migration
             
             // Add id_matiere if not exists
             if (!Schema::hasColumn('evaluations', 'id_matiere')) {
-                $table->unsignedBigInteger('id_matiere')->after('id_evaluation');
+                $table->unsignedBigInteger('id_matiere')->nullable()->after('id_evaluation');
                 $table->foreign('id_matiere')->references('id_matiere')->on('matieres')->onDelete('cascade');
             }
             
@@ -45,7 +45,9 @@ return new class extends Migration
         Schema::table('evaluations', function (Blueprint $table) {
             // Reverse the changes
             if (Schema::hasColumn('evaluations', 'id_matiere')) {
-                $table->dropForeign(['id_matiere']);
+                if (Schema::getConnection()->getDriverName() !== 'sqlite') {
+                    $table->dropForeign(['id_matiere']);
+                }
                 $table->dropColumn('id_matiere');
             }
             

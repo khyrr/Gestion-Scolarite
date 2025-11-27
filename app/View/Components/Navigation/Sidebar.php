@@ -32,20 +32,136 @@ class Sidebar extends Component
     private function getMenuItems()
     {
         $user = auth()->user();
-        
-        if (!$user) {
+        $admin = auth('admin')->user();
+
+        if (!$user && !$admin) {
             return [];
         }
 
-        // Admin Menu - Full Access
-        if ($user->hasRole('admin')) {
-            return [
+        // Admin Menu - Full Access (New Guard)
+        if ($admin) {
+            $menu = [
                 [
                     'title' => __('app.tableau_de_bord'),
                     'icon' => 'fas fa-tachometer-alt',
-                    'route' => 'tableau-bord',
-                    'active' => request()->routeIs(['accueil', 'tableau-bord', 'home'])
+                    'route' => 'admin.dashboard',
+                    'active' => request()->routeIs(['admin.dashboard'])
                 ],
+                [
+                    'title' => __('app.gestion_academique'),
+                    'icon' => 'fas fa-university',
+                    'children' => [
+                        [
+                            'title' => __('app.etudiants'),
+                            'route' => 'admin.etudiants.index',
+                            'active' => request()->routeIs('admin.etudiants.*')
+                        ],
+                        [
+                            'title' => __('app.enseignants'),
+                            'route' => 'admin.enseignants.index',
+                            'active' => request()->routeIs('admin.enseignants.*')
+                        ],
+                        [
+                            'title' => __('app.classes'),
+                            'route' => 'admin.classes.index',
+                            'active' => request()->routeIs('admin.classes.*')
+                        ],
+                        [
+                            'title' => __('app.cours'),
+                            'route' => 'admin.cours.index',
+                            'active' => request()->routeIs('admin.cours.*')
+                        ],
+                        [
+                            'title' => __('app.evaluations'),
+                            'route' => 'admin.evaluations.index',
+                            'active' => request()->routeIs('admin.evaluations.*')
+                        ],
+                    ]
+                ],
+                [
+                    'title' => __('app.resultats_scolaires'),
+                    'icon' => 'fas fa-chart-line',
+                    'children' => [
+                        [
+                            'title' => __('app.notes'),
+                            'route' => 'admin.notes.index',
+                            'active' => request()->routeIs('admin.notes.index')
+                        ],
+                        [
+                            'title' => __('app.releves_notes'),
+                            'route' => 'admin.rapports.notes.transcript-index',
+                            'active' => request()->routeIs('admin.rapports.notes.*')
+                        ],
+                    ]
+                ],
+            ];
+
+                // Settings / Parameters (show sensitive ones only to super_admins)
+                $parametresMenu = (function () use ($admin) {
+                    $children = [];
+
+                    // 2FA setup should be visible to any admin so users (admins) can enroll
+                    $children[] = [
+                        'title' => __('app.two_factor'),
+                        'route' => 'admin.2fa.setup',
+                        'active' => request()->routeIs('admin.2fa.*')
+                    ];
+
+                    // IP Security is sensitive and should be managed only by super_admin
+                    if (($admin->role ?? '') === 'super_admin') {
+                        $children[] = [
+                            'title' => __('app.securite_ip'),
+                            'route' => 'admin.settings.ip',
+                            'active' => request()->routeIs('admin.settings.ip*')
+                        ];
+                    }
+
+                    if (empty($children)) {
+                        return null;
+                    }
+
+                    return [
+                        'title' => __('app.parametres'),
+                        'icon' => 'fas fa-cogs',
+                        'children' => $children,
+                    ];
+                })();
+
+                if ($parametresMenu) {
+                    $menu[] = $parametresMenu;
+                }
+
+            // Only append the admin-management tools for super_admins
+            if (($admin->role ?? '') === 'super_admin') {
+                $menu[] = [
+                    'title' => __('app.gestion_admins'),
+                    'icon' => 'fas fa-users-cog',
+                    'children' => [
+                        [
+                            'title' => __('app.liste_admins'),
+                            'route' => 'admin.admins.index',
+                            'active' => request()->routeIs('admin.admins.*')
+                        ],
+                        [
+                            'title' => __('app.creer_admin'),
+                            'route' => 'admin.admins.create',
+                            'active' => request()->routeIs('admin.admins.create')
+                        ],
+                        [
+                            'title' => __('app.activity_logs'),
+                            'route' => 'admin.logs.index',
+                            'active' => request()->routeIs('admin.logs.*')
+                        ],
+                    ]
+                ];
+            }
+
+            return $menu;
+        }
+
+        // Admin Menu - Full Access (Old Role)
+        if ($user && $user->hasRole('admin')) {
+            return [
                 [
                     'title' => __('app.gestion_academique'),
                     'icon' => 'fas fa-graduation-cap',
@@ -118,8 +234,8 @@ class Sidebar extends Component
                 [
                     'title' => __('app.tableau_de_bord'),
                     'icon' => 'fas fa-tachometer-alt',
-                    'route' => 'enseignant.tableau-bord',
-                    'active' => request()->routeIs(['enseignant.tableau-bord'])
+                    'route' => 'enseignant.dashboard',
+                    'active' => request()->routeIs(['enseignant.dashboard'])
                 ],
                 [
                     'title' => __('app.mon_enseignement'),
@@ -157,8 +273,8 @@ class Sidebar extends Component
                 [
                     'title' => __('app.tableau_de_bord'),
                     'icon' => 'fas fa-tachometer-alt',
-                    'route' => 'etudiant.tableau-bord',
-                    'active' => request()->routeIs(['etudiant.tableau-bord'])
+                    'route' => 'etudiant.dashboard',
+                    'active' => request()->routeIs(['etudiant.dashboard'])
                 ],
                 [
                     'title' => __('app.mon_parcours'),

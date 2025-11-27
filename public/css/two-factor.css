@@ -1,0 +1,348 @@
+/* ============================================
+   Google Material 2FA Design System
+   ============================================ */
+
+:root {
+    /* Google Colors */
+    --gm-primary: #1a73e8;
+    --gm-primary-hover: #1557b0;
+    --gm-primary-light: #e8f0fe;
+
+    --gm-text-primary: #202124;
+    --gm-text-secondary: #5f6368;
+    --gm-text-disabled: #80868b;
+
+    --gm-border: #dadce0;
+    --gm-bg: #ffffff;
+    --gm-surface: #ffffff;
+    --gm-bg-app: #f0f2f5;
+
+    --gm-danger: #d93025;
+    --gm-success: #1e8e3e;
+    --gm-warning: #f9ab00;
+
+    /* Spacing */
+    --gm-space-xs: 4px;
+    --gm-space-sm: 8px;
+    --gm-space-md: 16px;
+    --gm-space-lg: 24px;
+    --gm-space-xl: 40px;
+
+    /* Radius */
+    --gm-radius: 8px;
+    --gm-radius-pill: 999px;
+
+    /* Shadows */
+    --gm-shadow-1: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+    --gm-shadow-2: 0 1px 3px 0 rgba(60, 64, 67, 0.3), 0 4px 8px 3px rgba(60, 64, 67, 0.15);
+
+    /* Typography */
+    --gm-font: 'Google Sans', Roboto, Arial, sans-serif;
+}
+
+/* Reset & Base */
+.tf-wrapper * {
+    box-sizing: border-box;
+}
+
+.tf-wrapper {
+    font-family: var(--gm-font);
+    /* Removed fixed height to fit in dashboard */
+    /* min-height: calc(100vh - 64px); */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    /* Start from top in dashboard */
+    padding: 40px 20px;
+    color: var(--gm-text-primary);
+    width: 100%;
+}
+
+/* Card */
+.tf-card {
+    background: var(--gm-surface);
+    border-radius: var(--gm-radius);
+    box-shadow: var(--gm-shadow-1);
+    width: 100%;
+    max-width: 450px;
+    /* Google sign-in width */
+    padding: 48px 40px 36px;
+    transition: box-shadow 0.2s;
+    text-align: center;
+    margin: 0 auto;
+    /* Center horizontally */
+}
+
+@media (max-width: 600px) {
+    .tf-card {
+        padding: 24px;
+        box-shadow: none;
+        background: transparent;
+        max-width: 100%;
+        border: 1px solid var(--gm-border);
+        /* Add border on mobile if shadow removed */
+        background: var(--gm-surface);
+    }
+}
+
+/* Typography */
+.tf-logo {
+    margin-bottom: 16px;
+    height: 48px;
+    width: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tf-heading {
+    font-family: 'Google Sans', Roboto, Arial, sans-serif;
+    font-size: 24px;
+    font-weight: 400;
+    line-height: 1.3333;
+    margin-bottom: 0;
+    color: var(--gm-text-primary);
+}
+
+.tf-subheading {
+    font-size: 16px;
+    line-height: 1.5;
+    color: var(--gm-text-primary);
+    margin-top: 8px;
+    margin-bottom: 40px;
+}
+
+/* QR Code */
+.tf-qr-box {
+    margin: 24px auto;
+    padding: 16px;
+    border: 1px solid var(--gm-border);
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.tf-qr-img {
+    width: 180px;
+    height: 180px;
+    display: block;
+}
+
+/* Secret */
+.tf-secret-area {
+    background: var(--gm-primary-light);
+    border-radius: 4px;
+    padding: 16px;
+    margin: 24px 0;
+    text-align: center;
+}
+
+.tf-secret-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--gm-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+
+.tf-secret-code {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 16px;
+    color: var(--gm-text-primary);
+    letter-spacing: 1px;
+    word-break: break-all;
+}
+
+/* Inputs */
+.tf-input-group {
+    margin-bottom: 24px;
+    text-align: left;
+}
+
+.tf-label {
+    display: block;
+    font-size: 14px;
+    color: var(--gm-text-secondary);
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.tf-input {
+    width: 100%;
+    height: 40px;
+    /* Google standard input height */
+    padding: 8px 12px;
+    border: 1px solid var(--gm-border);
+    border-radius: 4px;
+    font-size: 16px;
+    color: var(--gm-text-primary);
+    transition: border 0.2s;
+    outline: none;
+}
+
+.tf-input:focus {
+    border: 2px solid var(--gm-primary);
+    padding: 7px 11px;
+    /* Adjust for border width change */
+}
+
+.tf-input-code {
+    text-align: center;
+    letter-spacing: 0.5em;
+    font-family: 'Roboto Mono', monospace;
+}
+
+.tf-error {
+    color: var(--gm-danger);
+    font-size: 12px;
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Buttons */
+.tf-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 32px;
+}
+
+.tf-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 36px;
+    padding: 0 24px;
+    border-radius: 4px;
+    font-family: 'Google Sans', Roboto, Arial, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    text-decoration: none;
+    transition: background 0.2s, box-shadow 0.2s;
+}
+
+.tf-btn-primary {
+    background: var(--gm-primary);
+    color: white;
+}
+
+.tf-btn-primary:hover {
+    background: var(--gm-primary-hover);
+    box-shadow: 0 1px 2px rgba(60, 64, 67, 0.3);
+}
+
+.tf-btn-text {
+    background: transparent;
+    color: var(--gm-primary);
+    padding: 0 8px;
+}
+
+.tf-btn-text:hover {
+    background: rgba(26, 115, 232, 0.04);
+}
+
+/* Recovery Codes */
+.tf-recovery-section {
+    margin-top: 32px;
+    border-top: 1px solid var(--gm-border);
+    padding-top: 24px;
+    text-align: left;
+}
+
+.tf-recovery-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.tf-code-item {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 14px;
+    background: var(--gm-bg-app);
+    padding: 8px;
+    border-radius: 4px;
+    text-align: center;
+    color: var(--gm-text-primary);
+}
+
+/* Utilities */
+.hidden {
+    display: none !important;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.mt-4 {
+    margin-top: 16px;
+}
+
+.mb-4 {
+    margin-bottom: 16px;
+}
+
+.w-full {
+    width: 100%;
+}
+
+/* Banner - Inline for Dashboard */
+.tf-banner {
+    position: relative;
+    /* Changed from fixed */
+    width: 100%;
+    max-width: 450px;
+    /* Match card width */
+    margin: 0 auto 20px auto;
+    /* Center and add bottom margin */
+    background: #323232;
+    color: white;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 4px;
+    /* Rounded corners */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.tf-banner-text {
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.tf-banner-btn {
+    color: #8ab4f8;
+    text-transform: uppercase;
+    font-weight: 500;
+    font-size: 13px;
+    text-decoration: none;
+    margin-left: 16px;
+    white-space: nowrap;
+}
+
+/* Modal */
+.tf-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 1100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tf-modal {
+    background: white;
+    border-radius: 8px;
+    width: 100%;
+    max-width: 400px;
+    padding: 24px;
+    box-shadow: 0 24px 38px 3px rgba(0, 0, 0, 0.14);
+}

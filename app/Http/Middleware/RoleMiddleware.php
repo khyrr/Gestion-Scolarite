@@ -18,7 +18,7 @@ class RoleMiddleware
     {
         // Check if user is authenticated
         if (!auth()->check()) {
-            return redirect()->route('connexion')->with('error', __('app.login_required'));
+            return redirect()->route('enseignant.connexion')->with('error', __('app.login_required'));
         }
 
         $user = auth()->user();
@@ -26,7 +26,7 @@ class RoleMiddleware
         // Check if user account is active
         if (!$user->is_active) {
             auth()->logout();
-            return redirect()->route('connexion')->with('error', __('app.account_deactivated'));
+            return redirect()->route('enseignant.connexion')->with('error', __('app.account_deactivated'));
         }
         
         // Check if user has the required role
@@ -37,10 +37,10 @@ class RoleMiddleware
                 ], 403);
             }
             if ($user->role === 'admin') {
-                return redirect()->route('tableau-bord')->with('error', __('app.acces_refuse'));
+                return redirect()->route('admin.dashboard')->with('error', __('app.acces_refuse'));
             }
             if ($user->role === 'enseignant') {
-                return redirect()->route('enseignant.tableau-bord')->with('error', __('app.acces_refuse'));
+                return redirect()->route('enseignant.dashboard')->with('error', __('app.acces_refuse'));
             }
 
             return redirect()->route('accueil')->with('error', __('app.acces_refuse'));

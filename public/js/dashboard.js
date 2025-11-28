@@ -158,6 +158,76 @@
         });
     }
 
+    // Page Transition Loader (NProgress)
+    function initPageLoader() {
+        if (typeof NProgress === 'undefined') return;
+
+        NProgress.configure({ showSpinner: false });
+
+        // Show loader on page unload (navigation start)
+        window.addEventListener('beforeunload', () => {
+            NProgress.start();
+        });
+
+        // Also trigger on link clicks for immediate feedback
+        document.addEventListener('click', (e) => {
+            const link = e.target.closest('a');
+            if (link && 
+                !link.target && 
+                !link.hasAttribute('download') && 
+                link.href && 
+                link.href.startsWith(window.location.origin) &&
+                !link.href.includes('#') &&
+                !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey
+            ) {
+                NProgress.start();
+            }
+        });
+
+        // Complete loader when page finishes loading
+        window.addEventListener('load', () => {
+            NProgress.done();
+        });
+    }
+
+    // Global Button Loading State
+    function initButtonLoading() {
+        document.addEventListener('submit', function(e) {
+            const form = e.target;
+            const submitBtn = form.querySelector('[type="submit"], button:not([type="button"]):not([type="reset"])');
+
+            if (submitBtn && !submitBtn.classList.contains('no-loading')) {
+                // Prevent double submission
+                if (submitBtn.disabled) {
+                    e.preventDefault();
+                    return;
+                }
+
+                // Store original content
+                submitBtn.dataset.originalContent = submitBtn.innerHTML;
+                
+                // Set loading state
+                const loadingText = submitBtn.dataset.loadingText || 'Chargement...';
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>${loadingText}`;
+            }
+        });
+
+        // Restore button state if page is restored from bfcache (back/forward navigation)
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted) {
+                const submitBtns = document.querySelectorAll('[type="submit"][disabled], button[disabled]');
+                submitBtns.forEach(btn => {
+                    if (btn.dataset.originalContent) {
+                        btn.innerHTML = btn.dataset.originalContent;
+                        btn.disabled = false;
+                    }
+                });
+                NProgress.done();
+            }
+        });
+    }
+
     // Performance optimization: Debounced scroll handler
     function initScrollHandler() {
         let ticking = false;
@@ -191,6 +261,8 @@
         initAlerts();
         initAccessibility();
         initScrollHandler();
+        initPageLoader();
+        initButtonLoading();
     }
 
     // Run initialization

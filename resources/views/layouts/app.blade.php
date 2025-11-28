@@ -17,12 +17,30 @@
         integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous">
-    </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/spin.js/2.3.2/spin.min.js"></script>
+        </script>
 
     <!-- Scripts -->
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
 
+    <!-- NProgress CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.css" />
+    <style>
+        #nprogress .bar {
+            background: #0d6efd !important;
+            height: 3px !important;
+            z-index: 99999 !important;
+        }
+
+        /* Bootstrap Primary Blue */
+        #nprogress .peg {
+            box-shadow: 0 0 10px #0d6efd, 0 0 5px #0d6efd !important;
+        }
+
+        #nprogress .spinner-icon {
+            border-top-color: #0d6efd !important;
+            border-left-color: #0d6efd !important;
+        }
+    </style>
 </head>
 <style>
     .container {
@@ -31,17 +49,10 @@
         border-radius: 10px;
         box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
     }
-
-    #loading-spinner {
-       
-        top: 50%;
-        left: 50%;
-
-    }
 </style>
 
 <body>
-    
+
     <div id="app">
         <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm fixed-top" id="allAction">
             <div class="container">
@@ -85,11 +96,12 @@
                                 <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                                     <a class="dropdown-item" href="{{ route('enseignant.deconnexion') }}"
                                         onclick="event.preventDefault();
-                                                     document.getElementById('logout-form').submit();">
+                                                                                 document.getElementById('logout-form').submit();">
                                         {{ __('Déconnexion ') }} <i class="bi bi-box-arrow-right"></i>
                                     </a>
 
-                                    <form id="logout-form" action="{{ route('enseignant.deconnexion') }}" method="POST" class="d-none">
+                                    <form id="logout-form" action="{{ route('enseignant.deconnexion') }}" method="POST"
+                                        class="d-none">
                                         @csrf
                                     </form>
                                 </div>
@@ -105,23 +117,70 @@
             @yield('content')
         </main>
     </div>
+    <!-- NProgress JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.js"></script>
+
     <script>
-        var spinner = new Spinner({
-            lines: 12, // Number of lines to draw
-            length: 10, // Length of each line
-            width: 4, // Line thickness
-            radius: 10, // Inner radius of the spinner
-            color: '#353535', // Color of the spinner
-            speed: 1.5, // Rotation speed in revolutions per second
-        });
+        document.addEventListener('DOMContentLoaded', function () {
+            // NProgress Configuration
+            NProgress.configure({ showSpinner: false });
 
-        // Show the loading spinner
-        window.addEventListener('beforeunload', function() {
-            spinner.spin(document.getElementById('loading-spinner'));
-        });
+            // Page Transition Loading
+            window.addEventListener('beforeunload', function () {
+                NProgress.start();
+            });
 
-        window.addEventListener('load', function() {
-            spinner.stop();
+            // Also trigger on link clicks for immediate feedback
+            document.addEventListener('click', (e) => {
+                const link = e.target.closest('a');
+                if (link &&
+                    !link.target &&
+                    !link.hasAttribute('download') &&
+                    link.href &&
+                    link.href.startsWith(window.location.origin) &&
+                    !link.href.includes('#') &&
+                    !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey
+                ) {
+                    NProgress.start();
+                }
+            });
+
+            window.addEventListener('load', function () {
+                NProgress.done();
+            });
+
+            // Global Button Loading
+            document.addEventListener('submit', function (e) {
+                const form = e.target;
+                const submitBtn = form.querySelector('[type="submit"], button:not([type="button"]):not([type="reset"])');
+
+                if (submitBtn && !submitBtn.classList.contains('no-loading')) {
+                    if (submitBtn.disabled) {
+                        e.preventDefault();
+                        return;
+                    }
+
+                    submitBtn.dataset.originalContent = submitBtn.innerHTML;
+                    const loadingText = submitBtn.dataset.loadingText || 'Chargement...';
+                    submitBtn.disabled = true;
+                    // Add spinner if bootstrap is available or use custom
+                    submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>${loadingText}`;
+                }
+            });
+
+            // Restore button state (bfcache)
+            window.addEventListener('pageshow', function (event) {
+                if (event.persisted) {
+                    const submitBtns = document.querySelectorAll('[type="submit"][disabled], button[disabled]');
+                    submitBtns.forEach(btn => {
+                        if (btn.dataset.originalContent) {
+                            btn.innerHTML = btn.dataset.originalContent;
+                            btn.disabled = false;
+                        }
+                    });
+                    NProgress.done();
+                }
+            });
         });
     </script>
 </body>

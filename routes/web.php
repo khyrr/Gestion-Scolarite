@@ -103,9 +103,9 @@ Route::prefix(config('admin.prefix'))->name('admin.')->middleware('admin.ip')->g
     Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
 
     // Dashboard route (protected)
-    Route::get('/dashboard', function () {
-        return view('admin.dashboard');
-    })->name('dashboard')->middleware(['auth:admin', 'require.2fa:if_enabled']);
+    Route::get('/dashboard', [App\Http\Controllers\Admin\AdminDashboardController::class, 'index'])
+        ->name('dashboard')
+        ->middleware(['auth:admin', 'require.2fa:if_enabled']);
 
     // IP Whitelist Management
     Route::get('/settings/ip', [App\Http\Controllers\Admin\AdminIpController::class, 'index'])

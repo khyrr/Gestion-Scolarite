@@ -19,7 +19,7 @@
         </div>
     </form>
 
-    <x-table.data-table :title="__('app.activity_logs')" :showSearch="false" serverFormId="filterForm" cardView>
+    <x-table.data-table :title="__('app.activity_logs')" :showSearch="false" serverFormId="filterForm">
             <table class="google-table">
                 <thead>
                     <tr>

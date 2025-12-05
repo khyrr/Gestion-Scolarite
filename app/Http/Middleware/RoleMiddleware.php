@@ -23,8 +23,8 @@ class RoleMiddleware
 
         $user = auth()->user();
         
-        // Check if user account is active
-        if (!$user->is_active) {
+        // Check if user account is active (if the attribute exists)
+        if (isset($user->is_active) && !$user->is_active) {
             auth()->logout();
             return redirect()->route('enseignant.connexion')->with('error', __('app.account_deactivated'));
         }

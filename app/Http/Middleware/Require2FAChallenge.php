@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Log;
 
 class Require2FAChallenge
 {
@@ -19,10 +20,23 @@ class Require2FAChallenge
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // Debug: log session details to troubleshoot session persistence across requests
+        Log::debug('Require2FAChallenge middleware - session state', [
+            'session_id' => session()->getId(),
+            'admin_2fa_pending' => session('admin_2fa_pending'),
+            'admin_2fa_passed' => session('admin_2fa_passed'),
+            'cookie_header' => $request->headers->get('cookie'),
+        ]);
+
         // Check if the admin has a pending 2FA challenge session
         // This flag is set by AdminAuthController after successful password verification
-        if (!session()->has('admin_2fa_pending')) {
-            // No pending 2FA session - redirect to login
+        if (! session()->has('admin_2fa_pending')) {
+            // No pending 2FA session - log and redirect to login
+            Log::warning('Require2FAChallenge: no pending 2FA session, redirecting to login', [
+                'session_id' => session()->getId(),
+                'cookie_header' => $request->headers->get('cookie'),
+            ]);
+
             return redirect()->route('admin.login')
                 ->withErrors(['error' => __('app.please_login_first')]);
         }

@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class RequireTwoFactor
 {
@@ -29,6 +30,13 @@ class RequireTwoFactor
                     return $next($request);
                 }
 
+                // Log for debugging session persistence
+                Log::debug('RequireTwoFactor: redirecting to 2fa.challenge', [
+                    'session_id' => session()->getId(),
+                    'admin_id' => $admin->id_administrateur ?? null,
+                    'cookie_header' => $request->headers->get('cookie'),
+                ]);
+
                 return redirect()->route('admin.2fa.challenge');
             }
 
@@ -46,10 +54,22 @@ class RequireTwoFactor
         if ($admin && ! $admin->two_factor_enabled) {
             if ($admin->role === 'super_admin') {
                 // Ask super_admin to setup 2FA first
+                Log::warning('RequireTwoFactor: super_admin without 2FA, redirecting to setup', [
+                    'session_id' => session()->getId(),
+                    'admin_id' => $admin->id_administrateur ?? null,
+                    'cookie_header' => $request->headers->get('cookie'),
+                ]);
+
                 return redirect()->route('admin.2fa.setup')->with('warning', __('app.2fa_required_setup'));
             }
 
             // Non-super_admins cannot proceed if 2FA is required but they don't have it
+            Log::warning('RequireTwoFactor: non-super admin blocked due to missing 2FA', [
+                'session_id' => session()->getId(),
+                'admin_id' => $admin->id_administrateur ?? null,
+                'cookie_header' => $request->headers->get('cookie'),
+            ]);
+
             abort(403, __('app.2fa_required_contact_admin'));
         }
 

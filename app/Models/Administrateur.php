@@ -18,7 +18,7 @@ class Administrateur extends Authenticatable
         'nom',
         'prenom',
         'email',
-        'mot_de_passe',
+        'password',
         'role',
         'two_factor_secret',
         'two_factor_enabled',
@@ -26,7 +26,7 @@ class Administrateur extends Authenticatable
     ];
 
     protected $hidden = [
-        'mot_de_passe',
+        'password',
         'remember_token',
         'two_factor_secret',
     ];
@@ -35,8 +35,4 @@ class Administrateur extends Authenticatable
         'two_factor_enabled' => 'boolean',
     ];
 
-    public function getAuthPassword()
-    {
-        return $this->mot_de_passe;
-    }
 }

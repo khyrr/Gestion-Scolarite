@@ -11,9 +11,9 @@ class Enseignant extends Authenticatable
     use Notifiable, HasFactory;
 
     protected $primaryKey ='id_enseignant';
-    protected $fillable =['nom','prenom','email','telephone','mot_de_passe','is_active','email_verified_at','remember_token'];
+    protected $fillable =['nom','prenom','email','telephone','password','is_active','email_verified_at','remember_token'];
 
-    protected $hidden = ['mot_de_passe', 'remember_token'];
+    protected $hidden = ['password', 'remember_token'];
 
     protected $casts = [
         'is_active' => 'boolean',
@@ -48,11 +48,7 @@ class Enseignant extends Authenticatable
     }
     
     // Helper method to get full name
-    // For login compatibility (Authenticatable expects password/remember_token)
-    public function getAuthPassword()
-    {
-        return $this->mot_de_passe;
-    }
+
 
     // A teacher is always an 'enseignant' role in the system
     public function hasRole(string $role): bool

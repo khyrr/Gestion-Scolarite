@@ -20,11 +20,9 @@ class EtudiantService
      */
     public function createEtudiant(array $data)
     {
-        // Hash password if provided, otherwise use default
+        // Password handling removed as Etudiant table has no password column
         if (isset($data['password'])) {
-            $data['password'] = Hash::make($data['password']);
-        } else {
-            $data['password'] = Hash::make('password'); // Default password
+            unset($data['password']);
         }
 
         return Etudiant::create($data);
@@ -35,10 +33,8 @@ class EtudiantService
      */
     public function updateEtudiant(Etudiant $etudiant, array $data)
     {
-        // Handle password update if provided
-        if (isset($data['password']) && !empty($data['password'])) {
-            $data['password'] = Hash::make($data['password']);
-        } else {
+        // Password handling removed as Etudiant table has no password column
+        if (isset($data['password'])) {
             unset($data['password']);
         }
 

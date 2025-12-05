@@ -331,12 +331,15 @@ Route::middleware(['auth', 'role:enseignant'])->prefix('enseignant')->name('ense
 |--------------------------------------------------------------------------
 | Student (Etudiant) Dashboard Routes
 |--------------------------------------------------------------------------
+| DISABLED: Students do not have authentication yet.
 */
+/*
 Route::middleware(['auth', 'role:etudiant'])->prefix('etudiant')->name('etudiant.')->group(function () {
     Route::get('/dashboard', [EtudiantDashboardController::class, 'index'])->name('dashboard');
     Route::get('/mes-notes', [EtudiantDashboardController::class, 'mesNotes'])->name('mes-notes');
     Route::get('/mon-emploi', [EtudiantDashboardController::class, 'monEmploi'])->name('mon-emploi');
 });
+*/
 
 /*
 |--------------------------------------------------------------------------

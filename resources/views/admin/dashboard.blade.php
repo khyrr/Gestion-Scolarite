@@ -10,22 +10,22 @@
     <!-- Dashboard Statistics -->
     <div class="row mb-4">
         <div class="col-xl-3 col-md-6 mb-4">
-            <x-cards.info-card title="{{ __('app.total_etudiants') }}" :value="App\Models\Etudiant::count()"
+            <x-cards.info-card title="{{ __('app.total_etudiants') }}" :value="$stats['students']"
                 icon="fas fa-user-graduate" color="primary" :href="route('admin.etudiants.index')" />
         </div>
 
         <div class="col-xl-3 col-md-6 mb-4">
-            <x-cards.info-card title="{{ __('app.total_enseignants') }}" :value="App\Models\Enseignant::count()"
+            <x-cards.info-card title="{{ __('app.total_enseignants') }}" :value="$stats['teachers']"
                 icon="fas fa-chalkboard-teacher" color="success" :href="route('admin.enseignants.index')" />
         </div>
 
         <div class="col-xl-3 col-md-6 mb-4">
-            <x-cards.info-card title="{{ __('app.total_classes') }}" :value="App\Models\Classe::count()"
+            <x-cards.info-card title="{{ __('app.total_classes') }}" :value="$stats['classes']"
                 icon="fas fa-school" color="info" :href="route('admin.classes.index')" />
         </div>
 
         <div class="col-xl-3 col-md-6 mb-4">
-            <x-cards.info-card title="{{ __('app.total_cours') }}" :value="App\Models\Cours::count()" icon="fas fa-book"
+            <x-cards.info-card title="{{ __('app.total_cours') }}" :value="$stats['courses']" icon="fas fa-book"
                 color="warning" :href="route('admin.cours.index')" />
         </div>
     </div>

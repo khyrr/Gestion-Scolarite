@@ -115,7 +115,7 @@ class AdminManagementController extends Controller
             'nom' => $request->nom,
             'prenom' => $request->prenom,
             'email' => $request->email,
-            'mot_de_passe' => Hash::make($request->password),
+            'password' => Hash::make($request->password),
             'role' => $request->role,
         ]);
 

@@ -47,8 +47,8 @@
             <div class="mobile-action-dropdown">
                 <button class="mobile-action-btn mobile-user-btn" type="button" data-bs-toggle="dropdown" aria-label="{{ __('app.menu_utilisateur') }}">
                     @php
-                        $user = Auth::guard('admin')->user();
-                        $userName = $user->prenom . ' ' . $user->nom ?? 'Admin';
+                        $user = Auth::user();
+                        $userName = $user->name ?? 'Admin';
                         $initials = collect(explode(' ', $userName))->map(fn($word) => mb_substr($word, 0, 1))->take(2)->join('');
                     @endphp
                     <span class="mobile-user-avatar">{{ $initials }}</span>

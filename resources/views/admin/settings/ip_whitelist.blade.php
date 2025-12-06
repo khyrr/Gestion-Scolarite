@@ -1,118 +1,113 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ __('Gestion des IP') }} - {{ config('app.name') }}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body { font-family: 'Roboto', sans-serif; background-color: #f8f9fa; }
-        .navbar { background-color: #fff; box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3); }
-        .navbar-brand { font-family: 'Google Sans', sans-serif; color: #5f6368; font-weight: 500; }
-        .card { border: none; border-radius: 8px; box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3); }
-        .btn-primary { background-color: #d93025; border-color: #d93025; }
-        .btn-primary:hover { background-color: #b31412; border-color: #b31412; }
-        .table th { font-weight: 500; color: #5f6368; }
-    </style>
-</head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-light sticky-top">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="{{ route('admin.dashboard') }}">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="#d93025" style="margin-right: 8px; vertical-align: middle;">
-                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
-                </svg>
-                {{ __('app.retour_tableau_bord')}}
-            </a>
-        </div>
-    </nav>
+@extends('admin.layouts.dashboard')
+@section('title', __('app.liste_blanche_ips'))
+@section('content')
 
-    <div class="container mt-4">
+    <div class="container-fluid px-4 mt-4">
         <div class="row">
             <div class="col-md-12">
-                <h2 class="mb-4" style="font-family: 'Google Sans', sans-serif;">{{ __('app.liste_blanche_ips') }}</h2>
-                
-                @if(session('success'))
-                    <div class="alert alert-success">{{ session('success') }}</div>
-                @endif
-
                 @if(!config('admin.security.ip_whitelist_enabled'))
-                    <div class="alert alert-warning">
-                        <strong>{{ __('app.attention') }}:</strong> {{ __('app.ip_filtering_disabled') }}
+                    <div class="alert alert-warning d-flex align-items-center" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <div>
+                            <strong>{{ __('app.attention') }}:</strong> {{ __('app.ip_filtering_disabled') }}
+                        </div>
                     </div>
                 @endif
 
-                <div class="card mb-4">
-                    <div class="card-header bg-white">
-                        <h5 class="mb-0">{{ __('app.ajouter_nouvelle_ip') }}</h5>
+                {{-- Add New IP Card --}}
+                <div class="google-card mb-4">
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <h5 class="google-table-title mb-0">{{ __('app.ajouter_nouvelle_ip') }}</h5>
                     </div>
-                    <div class="card-body">
-                        <form action="{{ route('admin.settings.ip.store') }}" method="POST" class="row g-3 align-items-end">
-                            @csrf
-                            <div class="col-md-4">
-                                <label for="ip_address" class="form-label">{{ __('app.adresse_ip') }}</label>
-                                <input type="text" class="form-control @error('ip_address') is-invalid @enderror" id="ip_address" name="ip_address" placeholder="ex: 192.168.1.1" required>
-                                @error('ip_address') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                            </div>
-                            <div class="col-md-4">
-                                <label for="label" class="form-label">{{ __('app.description_optionnelle') }}</label>
-                                <input type="text" class="form-control" id="label" name="label" placeholder="{{ __('app.ex_bureau_directeur') }}">
-                            </div>
-                            <div class="col-md-4">
-                                <button type="submit" class="btn btn-primary">{{ __('app.ajouter') }}</button>
-                            </div>
-                        </form>
-                    </div>
+                    
+                    <form action="{{ route('admin.settings.ip.store') }}" method="POST" class="row g-3 align-items-end">
+                        @csrf
+                        <div class="col-md-4">
+                            <label for="ip_address" class="google-label">{{ __('app.adresse_ip') }} <span class="google-required">*</span></label>
+                            <input type="text" class="google-input @error('ip_address') is-invalid @enderror" id="ip_address" name="ip_address" placeholder="ex: 192.168.1.1" required>
+                            @error('ip_address') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                        <div class="col-md-4">
+                            <label for="label" class="google-label">{{ __('app.description_optionnelle') }}</label>
+                            <input type="text" class="google-input" id="label" name="label" placeholder="{{ __('app.ex_bureau_directeur') }}">
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="google-btn google-btn-primary">
+                                <i class="fas fa-plus"></i> {{ __('app.ajouter') }}
+                            </button>
+                        </div>
+                    </form>
                 </div>
 
-                <div class="card">
-                    <div class="card-body p-0">
-                        <table class="table table-hover mb-0">
-                            <thead class="table-light">
+                {{-- IP List Card --}}
+                <div class="google-card">
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <h5 class="google-table-title mb-0">{{ __('app.liste_blanche_ips') }}</h5>
+                    </div>
+
+                    <div class="google-table-wrapper">
+                        <table class="google-table">
+                            <thead>
                                 <tr>
                                     <th>{{ __('app.adresse_ip') }}</th>
                                     <th>{{ __('app.description_optionnelle') }}</th>
                                     <th>{{ __('app.ajoute_par') }}</th>
                                     <th>{{ __('app.date_ajout') }}</th>
                                     <th>{{ __('app.statut') }}</th>
-                                    <th>{{ __('app.actions') }}</th>
+                                    <th class="text-end">{{ __('app.actions') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($ips as $ip)
                                     <tr>
-                                        <td>{{ $ip->ip_address }}</td>
+                                        <td class="fw-medium">{{ $ip->ip_address }}</td>
                                         <td>{{ $ip->label ?? '-' }}</td>
-                                        <td>{{ $ip->addedBy->prenom ?? '' }} {{ $ip->addedBy->nom ?? __('app.system') }}</td>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-size: 0.875rem;">
+                                                    {{ substr($ip->addedBy->prenom ?? 'S', 0, 1) }}
+                                                </div>
+                                                <span>{{ $ip->addedBy->prenom ?? '' }} {{ $ip->addedBy->nom ?? __('app.system') }}</span>
+                                            </div>
+                                        </td>
                                         <td>{{ $ip->created_at ? $ip->created_at->format('d/m/Y H:i') : '-' }}</td>
                                         <td>
                                             @if($ip->is_active)
-                                                <span class="badge bg-success">{{ __('app.actif') }}</span>
+                                                <span class="google-badge google-badge-success">{{ __('app.actif') }}</span>
                                             @else
-                                                <span class="badge bg-secondary">{{ __('app.inactif') }}</span>
+                                                <span class="google-badge google-badge-neutral">{{ __('app.inactif') }}</span>
                                             @endif
                                         </td>
-                                        <td>
-                                            <div class="btn-group" role="group">
+                                        <td class="text-end">
+                                            <div class="d-flex justify-content-end gap-2">
                                                 <form action="{{ route('admin.settings.ip.toggle', $ip) }}" method="POST" class="d-inline">
                                                     @csrf
                                                     @method('PATCH')
-                                                    <button type="submit" class="btn btn-sm btn-outline-secondary" title="{{ $ip->is_active ? __('app.desactiver') : __('app.activer') }}">
-                                                        {{ $ip->is_active ? __('app.desactiver') : __('app.activer') }}
+                                                    <button type="submit" class="google-action-btn" title="{{ $ip->is_active ? __('app.desactiver') : __('app.activer') }}">
+                                                        <i class="fas {{ $ip->is_active ? 'fa-toggle-on text-success' : 'fa-toggle-off text-muted' }} fa-lg"></i>
                                                     </button>
                                                 </form>
-                                                <form action="{{ route('admin.settings.ip.destroy', $ip) }}" method="POST" class="d-inline ms-1">
+                                                <form action="{{ route('admin.settings.ip.destroy', $ip) }}" method="POST" class="d-inline">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('{{ __('app.confirmer_suppression') }}')">{{ __('app.supprimer') }}</button>
+                                                    <button type="submit" class="google-action-btn delete" onclick="return confirm('{{ __('app.confirmer_suppression') }}')" title="{{ __('app.supprimer') }}">
+                                                        <i class="far fa-trash-alt"></i>
+                                                    </button>
                                                 </form>
                                             </div>
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="6" class="text-center py-4 text-muted">{{ __('app.aucune_adresse_ip_configuree') }}</td>
+                                        <td colspan="6" class="text-center py-5">
+                                            <div class="empty-state">
+                                                <div class="mb-3 text-muted">
+                                                    <i class="fas fa-network-wired fa-3x"></i>
+                                                </div>
+                                                <h3 class="h5">{{ __('app.aucune_adresse_ip_configuree') }}</h3>
+                                                <p class="text-muted">{{ __('app.ajouter_ip_pour_commencer') }}</p>
+                                            </div>
+                                        </td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -122,5 +117,4 @@
             </div>
         </div>
     </div>
-</body>
-</html>
+@endsection

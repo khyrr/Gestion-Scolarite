@@ -5,6 +5,8 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Log;
+use App\Models\ActivityLog;
 
 class RoleMiddleware
 {
@@ -18,7 +20,7 @@ class RoleMiddleware
     {
         // Check if user is authenticated
         if (!auth()->check()) {
-            return redirect()->route('enseignant.connexion')->with('error', __('app.login_required'));
+            return redirect()->route('login')->with('error', __('app.login_required'));
         }
 
         $user = auth()->user();
@@ -26,11 +28,29 @@ class RoleMiddleware
         // Check if user account is active (if the attribute exists)
         if (isset($user->is_active) && !$user->is_active) {
             auth()->logout();
-            return redirect()->route('enseignant.connexion')->with('error', __('app.account_deactivated'));
+            return redirect()->route('login')->with('error', __('app.account_deactivated'));
         }
         
         // Check if user has the required role
         if (!$this->hasRole($user, $role)) {
+            Log::warning('Access denied: User attempted to access restricted route', [
+                'user_id' => $user->id,
+                'user_role' => $user->role,
+                'required_role' => $role,
+                'url' => $request->fullUrl(),
+                'ip' => $request->ip(),
+            ]);
+
+            ActivityLog::create([
+                'user_type' => get_class($user),
+                'user_id' => $user->id,
+                'action' => 'access_denied',
+                'resource' => $request->path(),
+                'description' => "Unauthorized access attempt. Required role: {$role}. User role: {$user->role}",
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+
             if ($request->expectsJson()) {
                 return response()->json([
                     'message' => __('app.unauthorized_access')
@@ -39,7 +59,7 @@ class RoleMiddleware
             if ($user->role === 'admin') {
                 return redirect()->route('admin.dashboard')->with('error', __('app.acces_refuse'));
             }
-            if ($user->role === 'enseignant') {
+            if ($user->role === 'teacher' || $user->role === 'enseignant') {
                 return redirect()->route('enseignant.dashboard')->with('error', __('app.acces_refuse'));
             }
 

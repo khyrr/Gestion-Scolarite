@@ -63,12 +63,12 @@
             <!-- Brand -->
             @php
                 $dashboardRoute = route('accueil');
-                if (auth('admin')->check()) {
-                    $dashboardRoute = route('admin.dashboard');
-                } elseif (auth()->check()) {
-                    if (auth()->user()->hasRole('enseignant')) {
+                if (auth()->check()) {
+                    if (auth()->user()->isAdmin()) {
+                        $dashboardRoute = route('admin.dashboard');
+                    } elseif (auth()->user()->isTeacher()) {
                         $dashboardRoute = route('enseignant.dashboard');
-                    } elseif (auth()->user()->hasRole('etudiant')) {
+                    } elseif (auth()->user()->isStudent()) {
                         $dashboardRoute = route('etudiant.dashboard');
                     }
                 }
@@ -142,7 +142,7 @@
                 <div class="mobile-action-dropdown">
                     <button class="mobile-action-btn mobile-user-btn" type="button" data-bs-toggle="dropdown" aria-label="{{ __('app.menu_utilisateur') }}">
                         @php
-                            $currentUser = auth()->user() ?? auth('admin')->user();
+                            $currentUser = auth()->user();
                             $userName = $currentUser->name ?? 'User';
                             $userEmail = $currentUser->email ?? '';
                             $initials = collect(explode(' ', $userName))->map(fn($word) => mb_substr($word, 0, 1))->take(2)->join('');

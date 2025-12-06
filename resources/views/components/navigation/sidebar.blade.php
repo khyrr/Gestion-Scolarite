@@ -74,8 +74,8 @@
         <div class="user-profile">
             <div class="user-avatar">
                 @php
-                    $user = auth()->user() ?? auth('admin')->user();
-                    $userName = $user->nom . ' ' . $user->prenom ?? 'User';
+                    $user = auth()->user();
+                    $userName = $user->name ?? 'User';
                     $userEmail = $user->email ?? '';
                     $initials = collect(explode(' ', $userName))->map(fn($word) => mb_substr($word, 0, 1))->take(2)->join('');
                 @endphp
@@ -84,9 +84,9 @@
             <div class="user-info">
                 <div class="user-name">{{ $userName }}</div>
                 <div class="user-role">
-                    @if(auth('admin')->check())
+                    @if($user->isAdmin())
                         <i class="fas fa-shield-alt"></i> {{ __('app.administrateur') }}
-                    @elseif(auth()->check() && auth()->user()->role === 'enseignant')  
+                    @elseif($user->isTeacher())  
                         <i class="fas fa-chalkboard-teacher"></i> {{ __('app.enseignant') }}
                     @else
                         <i class="fas fa-user"></i> {{ __('app.utilisateur') }}
@@ -103,7 +103,7 @@
                         <div class="dropdown-user-email">{{ $userEmail }}</div>
                     </li>
                     <li><hr class="dropdown-divider"></li>
-                    @if(auth()->check() && auth()->user()->role === 'enseignant')
+                    @if($user->isTeacher())
                     <li>
                         <a class="dropdown-item" href="{{ route('enseignant.profil') }}">
                             <i class="fas fa-user-circle"></i>
@@ -125,7 +125,7 @@
                     </li>
                     <li><hr class="dropdown-divider"></li>
                     <li>
-                        <form method="POST" action="{{ auth('admin')->check() ? route('admin.logout') : route('enseignant.deconnexion') }}">
+                        <form method="POST" action="{{ $user->isAdmin() ? route('admin.logout') : route('enseignant.deconnexion') }}">
                             @csrf
                             <button type="submit" class="dropdown-item dropdown-item-danger">
                                 <i class="fas fa-sign-out-alt"></i>

@@ -3,10 +3,10 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 
-class Enseignant extends Authenticatable
+class Enseignant extends Model
 {
     use Notifiable, HasFactory;
 
@@ -19,6 +19,11 @@ class Enseignant extends Authenticatable
         'is_active' => 'boolean',
         'email_verified_at' => 'datetime',
     ];
+
+    public function user()
+    {
+        return $this->morphOne(User::class, 'profile');
+    }
     
     // Removed direct classe relationship - now handled through pivot table
     

@@ -26,6 +26,8 @@ class User extends Authenticatable
         'role',
         'telephone',
         'is_active',
+        'profile_type',
+        'profile_id',
     ];
 
     /**
@@ -50,19 +52,43 @@ class User extends Authenticatable
     ];
 
     /**
+     * Get the profile associated with the user.
+     */
+    public function profile()
+    {
+        return $this->morphTo();
+    }
+
+    /**
      * Check if user is an administrator
      */
     public function isAdmin(): bool
     {
-        return $this->role === 'admin';
+        return $this->role === 'admin' || $this->role === 'super_admin';
     }
 
     /**
      * Check if user is a teacher
      */
+    public function isTeacher(): bool
+    {
+        return $this->role === 'teacher' || $this->role === 'enseignant';
+    }
+
+    /**
+     * Check if user is a teacher (alias)
+     */
     public function isEnseignant(): bool
     {
-        return $this->role === 'enseignant';
+        return $this->isTeacher();
+    }
+
+    /**
+     * Check if user is a student
+     */
+    public function isStudent(): bool
+    {
+        return $this->role === 'student' || $this->role === 'etudiant';
     }
 
 
@@ -72,6 +98,9 @@ class User extends Authenticatable
      */
     public function hasRole(string $role): bool
     {
+        if ($this->role === 'super_admin' && $role === 'admin') {
+            return true;
+        }
         return $this->role === $role;
     }
 

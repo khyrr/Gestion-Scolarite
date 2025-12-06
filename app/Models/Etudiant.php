@@ -13,6 +13,11 @@ class Etudiant extends Model
     protected $casts = [
         'date_naissance' => 'datetime',
     ];
+
+    public function user()
+    {
+        return $this->morphOne(User::class, 'profile');
+    }
     
     public function classe()
     {

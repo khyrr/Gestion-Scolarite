@@ -14,7 +14,7 @@ class AdminAuthController extends Controller
     use ThrottlesLogins;
     public function __construct()
     {
-        $this->middleware('guest:admin')->except('logout');
+        $this->middleware('guest')->except('logout');
     }
 
     public function showLoginForm()
@@ -35,16 +35,26 @@ class AdminAuthController extends Controller
             return $this->sendLockoutResponse($request);
         }
 
-        if (Auth::guard('admin')->attempt(['email' => $request->email, 'password' => $request->password], $request->remember)) {
+        if (Auth::attempt(['email' => $request->email, 'password' => $request->password], $request->remember)) {
+            $user = Auth::user();
+
+            if (!$user->isAdmin()) {
+                Auth::logout();
+                return back()->withInput($request->only('email', 'remember'))->withErrors([
+                    'email' => 'Access denied. Not an administrator.',
+                ]);
+            }
+
             // Log successful admin login
-            ActivityLogger::log('admin', Auth::guard('admin')->id(), 'login', 'administrateur', Auth::guard('admin')->id(), 'Admin login');
+            ActivityLogger::log('admin', $user->id, 'login', 'user', $user->id, 'Admin login');
             $this->clearLoginAttempts($request);
             // Clear any previous 2FA session marker so a fresh challenge is required
             session()->forget('admin_2fa_passed');
 
             // If admin has 2FA enabled, send them to the challenge step so they must verify
-            $admin = Auth::guard('admin')->user();
-            if ($admin && $admin->two_factor_enabled) {
+            // Access profile data via $user->profile
+            $adminProfile = $user->profile;
+            if ($adminProfile && $adminProfile->two_factor_enabled) {
                 // Set a temporary session flag to indicate pending 2FA verification
                 // This ensures the challenge page can only be accessed after password auth
                 session(['admin_2fa_pending' => true]);
@@ -91,11 +101,13 @@ class AdminAuthController extends Controller
 
     public function logout()
     {
-        $adminId = Auth::guard('admin')->id();
-        Auth::guard('admin')->logout();
+        $userId = Auth::id();
+        Auth::logout();
         // Ensure 2FA pass marker is removed on logout (session may persist)
         session()->forget('admin_2fa_passed');
-        ActivityLogger::log('admin', $adminId, 'logout', 'administrateur', $adminId, 'Admin logout');
+        if ($userId) {
+            ActivityLogger::log('admin', $userId, 'logout', 'user', $userId, 'Admin logout');
+        }
         return redirect()->route('admin.login');
     }
 }

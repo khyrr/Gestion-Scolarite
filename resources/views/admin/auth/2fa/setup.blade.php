@@ -105,7 +105,7 @@
           } elseif (isset($recoveryCodes) && is_array($recoveryCodes)) {
             $codesList = $recoveryCodes;
           } else {
-            $codes = Auth::guard('admin')->user()?->two_factor_recovery_codes;
+            $codes = Auth::user()->profile?->two_factor_recovery_codes;
             $codesList = $codes ? (json_decode($codes, true) ?: []) : [];
           }
         @endphp

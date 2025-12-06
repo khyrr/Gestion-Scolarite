@@ -11,11 +11,11 @@ class ActivityLogController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth:admin');
+        $this->middleware('auth');
 
         // Only super_admin can access the audit UI
         $this->middleware(function ($request, $next) {
-            $user = auth('admin')->user();
+            $user = auth()->user();
             if (! $user || ($user->role ?? '') !== 'super_admin') {
                 abort(403, 'Only super administrators can access logs.');
             }

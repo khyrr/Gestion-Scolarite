@@ -15,14 +15,21 @@ class RequireTwoFactor
      */
     public function handle(Request $request, Closure $next, ?string $mode = null): Response
     {
-        if (! Auth::guard('admin')->check()) {
+        if (! Auth::check()) {
             return $next($request);
         }
 
-        $admin = Auth::guard('admin')->user();
+        $user = Auth::user();
+
+        // Only apply to admins
+        if (!$user->isAdmin()) {
+            return $next($request);
+        }
+
+        $adminProfile = $user->profile;
 
         // If the admin has 2FA enabled, ensure they have passed a recent challenge
-        if ($admin && $admin->two_factor_enabled) {
+        if ($adminProfile && $adminProfile->two_factor_enabled) {
             if (! session('admin_2fa_passed', false)) {
                 // Allow 2FA setup/verify endpoints to be reachable without the flag
                 $path = $request->path();
@@ -33,9 +40,12 @@ class RequireTwoFactor
                 // Log for debugging session persistence
                 Log::debug('RequireTwoFactor: redirecting to 2fa.challenge', [
                     'session_id' => session()->getId(),
-                    'admin_id' => $admin->id_administrateur ?? null,
+                    'admin_id' => $adminProfile->id_administrateur ?? null,
                     'cookie_header' => $request->headers->get('cookie'),
                 ]);
+
+                // Ensure the pending flag is set so Require2FAChallenge allows access
+                session(['admin_2fa_pending' => true]);
 
                 return redirect()->route('admin.2fa.challenge');
             }
@@ -51,12 +61,12 @@ class RequireTwoFactor
 
         // Admin does NOT have 2FA enabled but we are on a route protected by require.2fa (strict mode)
         // Policy: super_admins are prompted to setup 2FA before proceeding; regular admins are denied.
-        if ($admin && ! $admin->two_factor_enabled) {
-            if ($admin->role === 'super_admin') {
+        if ($adminProfile && ! $adminProfile->two_factor_enabled) {
+            if ($user->role === 'super_admin') {
                 // Ask super_admin to setup 2FA first
                 Log::warning('RequireTwoFactor: super_admin without 2FA, redirecting to setup', [
                     'session_id' => session()->getId(),
-                    'admin_id' => $admin->id_administrateur ?? null,
+                    'admin_id' => $adminProfile->id_administrateur ?? null,
                     'cookie_header' => $request->headers->get('cookie'),
                 ]);
 
@@ -66,7 +76,7 @@ class RequireTwoFactor
             // Non-super_admins cannot proceed if 2FA is required but they don't have it
             Log::warning('RequireTwoFactor: non-super admin blocked due to missing 2FA', [
                 'session_id' => session()->getId(),
-                'admin_id' => $admin->id_administrateur ?? null,
+                'admin_id' => $adminProfile->id_administrateur ?? null,
                 'cookie_header' => $request->headers->get('cookie'),
             ]);
 

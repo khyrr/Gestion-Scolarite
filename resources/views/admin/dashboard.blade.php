@@ -153,11 +153,13 @@
     </div>
 
     <!-- Recent Activity -->
+    @if(auth()->user()->role === 'super_admin')
     <div class="row mt-4">
         <div class="col-12">
             <x-cards.recent-activity :activities="$recentLogs ?? collect([])" />
         </div>
     </div>
+    @endif
 @endsection
 
 @push('styles')

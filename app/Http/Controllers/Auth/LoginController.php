@@ -37,7 +37,7 @@ class LoginController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('guest:teacher')->except('logout');
+        $this->middleware('guest')->except('logout');
     }
 
     /**
@@ -45,46 +45,30 @@ class LoginController extends Controller
      */
     protected function redirectTo()
     {
-        // Prefer admin guard first, then teacher guard. This keeps correct
-        // post-login redirection for both auth systems.
-        if (Auth::guard('admin')->check()) {
-            return RouteServiceProvider::HOME;
-        }
-
-        if (Auth::guard('teacher')->check()) {
-            return route('enseignant.dashboard');
-        }
-
         $user = Auth::user();
         
         if (!$user) {
-            return RouteServiceProvider::HOME;
-        }
-
-        // Check if user is active
-            if (!$user->is_active) {
-            Auth::logout();
-            return redirect()->route('enseignant.connexion')->with('error', __('app.account_deactivated'));
+            return '/';
         }
         
         // Role-based redirect
         switch ($user->role) {
+            case 'super_admin':
             case 'admin':
-                return RouteServiceProvider::HOME; // Admin dashboard
+                return route('admin.dashboard');
+            case 'teacher':
             case 'enseignant':
-                return route('enseignant.dashboard'); // Teacher dashboard
+                return route('enseignant.dashboard');
+            case 'student':
+            case 'etudiant':
+                // return route('etudiant.dashboard');
+                return '/';
             default:
-                return RouteServiceProvider::HOME;
+                return '/';
         }
     }
 
-    /**
-     * Use the teacher guard for this controller (teacher login flow).
-     */
-    protected function guard()
-    {
-        return Auth::guard('teacher');
-    }
+    // Removed guard() method to use default web guard
 
     /**
      * Handle a login request to the application.
@@ -102,10 +86,34 @@ class LoginController extends Controller
 
         // Attempt to log the user in
         if ($this->attemptLogin($request)) {
-            // Log successful teacher login
-            \App\Services\ActivityLogger::log('teacher', Auth::guard('teacher')->id(), 'login', 'enseignant', Auth::guard('teacher')->id(), 'Teacher login');
             $user = Auth::user();
-            
+
+            // Enforce Login Context (Admin vs Teacher)
+            if ($request->routeIs('admin.login.submit') && !$user->isAdmin()) {
+                Auth::logout();
+                return redirect()->back()
+                    ->withInput($request->only($this->username(), 'remember'))
+                    ->withErrors([
+                        $this->username() => __('app.acces_refuse'),
+                    ]);
+            }
+
+            if ($request->routeIs('enseignant.connexion.submit') && !$user->isTeacher()) {
+                Auth::logout();
+                return redirect()->back()
+                    ->withInput($request->only($this->username(), 'remember'))
+                    ->withErrors([
+                        $this->username() => __('app.acces_refuse'),
+                    ]);
+            }
+
+            // Log successful login
+            if ($user->isTeacher() && $user->profile) {
+                \App\Services\ActivityLogger::log('teacher', $user->profile->id_enseignant, 'login', 'enseignant', $user->profile->id_enseignant, 'Teacher login');
+            } elseif ($user->isAdmin() && $user->profile) {
+                 \App\Services\ActivityLogger::log('admin', $user->profile->id_administrateur, 'login', 'administrateur', $user->profile->id_administrateur, 'Admin login');
+            }
+
             // Check if user is active
             if (!$user->is_active) {
                 Auth::logout();
@@ -114,6 +122,13 @@ class LoginController extends Controller
                     ->withErrors([
                         $this->username() => __('app.account_deactivated'),
                     ]);
+            }
+
+            // 2FA Logic for Admins
+            if ($user->isAdmin() && $user->profile && $user->profile->two_factor_enabled) {
+                session()->forget('admin_2fa_passed');
+                session(['admin_2fa_pending' => true]);
+                return redirect()->route('admin.2fa.challenge');
             }
             
             return $this->sendLoginResponse($request);
@@ -149,6 +164,9 @@ class LoginController extends Controller
      */
     public function showLoginForm()
     {
+        if (request()->routeIs('admin.login')) {
+            return view('admin.auth.login');
+        }
         return view('auth.login');
     }
 
@@ -161,6 +179,10 @@ class LoginController extends Controller
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
+        if ($request->routeIs('admin.logout')) {
+             return redirect()->route('admin.login')->with('success', __('app.logged_out_successfully'));
+        }
 
         return redirect()->route('enseignant.connexion')->with('success', __('app.logged_out_successfully'));
     }

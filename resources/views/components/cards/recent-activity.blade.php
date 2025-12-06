@@ -43,9 +43,9 @@
         });
 
     $dateLabels = [
-        'today' => __('app.today') ?? 'Today',
-        'yesterday' => __('app.yesterday') ?? 'Yesterday',
-        'earlier' => __('app.earlier') ?? 'Earlier',
+        'today' => __('app.aujourdhui') ?? 'Today',
+        'yesterday' => __('app.hier') ?? 'Yesterday',
+        'earlier' => __('app.plus_tard') ?? 'Earlier',
     ];
 @endphp
 

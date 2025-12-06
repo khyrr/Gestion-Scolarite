@@ -28,11 +28,11 @@ class Require2FAChallenge
             'cookie_header' => $request->headers->get('cookie'),
         ]);
 
-        // Check if the admin has a pending 2FA challenge session
-        // This flag is set by AdminAuthController after successful password verification
-        if (! session()->has('admin_2fa_pending')) {
-            // No pending 2FA session - log and redirect to login
-            Log::warning('Require2FAChallenge: no pending 2FA session, redirecting to login', [
+        // Check if the admin has a pending 2FA challenge session OR is already authenticated
+        // This flag is set by LoginController after successful password verification
+        if (! session()->has('admin_2fa_pending') && ! \Illuminate\Support\Facades\Auth::check()) {
+            // No pending 2FA session and not authenticated - log and redirect to login
+            Log::warning('Require2FAChallenge: no pending 2FA session and not authenticated, redirecting to login', [
                 'session_id' => session()->getId(),
                 'cookie_header' => $request->headers->get('cookie'),
             ]);

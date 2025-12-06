@@ -3,14 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 
-class Administrateur extends Authenticatable
+class Administrateur extends Model
 {
     use HasFactory, Notifiable;
-
-    protected $guard = 'admin';
 
     protected $primaryKey = 'id_administrateur';
 
@@ -35,4 +33,8 @@ class Administrateur extends Authenticatable
         'two_factor_enabled' => 'boolean',
     ];
 
+    public function user()
+    {
+        return $this->morphOne(User::class, 'profile');
+    }
 }

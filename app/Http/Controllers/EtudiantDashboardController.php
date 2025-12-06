@@ -16,7 +16,7 @@ class EtudiantDashboardController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $student = Etudiant::where('email', $user->email)->first();
+        $student = $user->profile;
 
         if (!$student) {
             return redirect()->back()->with('error', 'Profil étudiant non trouvé');

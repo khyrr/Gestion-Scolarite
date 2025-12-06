@@ -32,14 +32,13 @@ class Sidebar extends Component
     private function getMenuItems()
     {
         $user = auth()->user();
-        $admin = auth('admin')->user();
 
-        if (!$user && !$admin) {
+        if (!$user) {
             return [];
         }
 
         // Admin Menu - Full Access (New Guard)
-        if ($admin) {
+        if ($user->isAdmin()) {
             $menu = [
                 [
                     'title' => __('app.tableau_de_bord'),
@@ -97,7 +96,7 @@ class Sidebar extends Component
             ];
 
                 // Settings / Parameters (show sensitive ones only to super_admins)
-                $parametresMenu = (function () use ($admin) {
+                $parametresMenu = (function () use ($user) {
                     $children = [];
 
                     // 2FA setup should be visible to any admin so users (admins) can enroll
@@ -108,7 +107,7 @@ class Sidebar extends Component
                     ];
 
                     // IP Security is sensitive and should be managed only by super_admin
-                    if (($admin->role ?? '') === 'super_admin') {
+                    if (($user->role ?? '') === 'super_admin') {
                         $children[] = [
                             'title' => __('app.securite_ip'),
                             'route' => 'admin.settings.ip',
@@ -132,7 +131,7 @@ class Sidebar extends Component
                 }
 
             // Only append the admin-management tools for super_admins
-            if (($admin->role ?? '') === 'super_admin') {
+            if (($user->role ?? '') === 'super_admin') {
                 $menu[] = [
                     'title' => __('app.gestion_admins'),
                     'icon' => 'fas fa-users-cog',

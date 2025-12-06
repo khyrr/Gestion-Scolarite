@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ __('Code de récupération') }} - {{ config('app.name', 'Gestion Scolaire') }}</title>
+    <title>{{ __('app.recovery_code') }} - {{ config('app.name', 'Gestion Scolaire') }}</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,6 +21,7 @@
         /* Admin specific overrides */
         .auth-logo path {
             fill: #d93025;
+            /* Google Red for Admin */
         }
 
         .btn-primary {
@@ -66,29 +67,44 @@
             font-family: 'Courier New', monospace;
             font-size: 18px;
             letter-spacing: 2px;
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            background: #fff;
+            color: #202124;
+            margin-top: 8px;
+            transition: all 0.2s;
+        }
+
+        .recovery-input:focus {
+            border-color: #d93025;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(217, 48, 37, 0.1);
         }
 
         .info-box {
-            background: #f8f9fa;
+            background: #fce8e6;
             border-left: 4px solid #d93025;
             padding: 12px 16px;
             margin: 16px 0;
             border-radius: 4px;
             font-size: 14px;
-            color: #5f6368;
+            color: #3c4043;
+            text-align: left;
         }
 
         .back-link {
             display: inline-block;
             margin-top: 16px;
             font-size: 14px;
-            color: #5f6368;
+            color: #d93025;
             text-decoration: none;
             transition: color 0.2s;
         }
 
         .back-link:hover {
-            color: #d93025;
+            color: #b31412;
         }
     </style>
 </head>
@@ -97,7 +113,7 @@
     <div class="auth-container">
         <div class="auth-card">
             <div class="auth-header">
-                <!-- Key Icon -->
+                <!-- Security Icon -->
                 <div class="auth-icon">
                     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path
@@ -105,39 +121,36 @@
                             fill="#d93025" />
                     </svg>
                 </div>
-                <h1 class="auth-title">{{ __('Code de récupération') }}</h1>
-                <p class="auth-subtitle">{{ __('Entrez un de vos codes de récupération à 12 caractères') }}</p>
+                <h1 class="auth-title">{{ __('app.recovery_code') }}</h1>
+                <p class="auth-subtitle">
+                    {{ __('app.enter_recovery_code') }}
+                </p>
             </div>
 
             <div class="info-box">
-                <strong>{{ __('Note :') }}</strong>
-                {{ __('Chaque code de récupération ne peut être utilisé qu\'une seule fois.') }}
+                <strong>{{ __('app.Note :') }}</strong>
+                {{ __('app.recovery_code_info') }}
             </div>
 
             <form method="POST" action="{{ route('admin.2fa.verify') }}" class="auth-form">
                 @csrf
 
-                <!-- Recovery Code Input -->
                 <div class="form-group">
+                    <label for="recovery_code" class="form-label"
+                        style="display: block; text-align: left; margin-bottom: 8px; color: #5f6368; font-size: 14px;">{{ __('app.recovery_code') }}</label>
                     <input id="recovery_code" type="text"
-                        class="form-control recovery-input @error('recovery_code') is-invalid @enderror @error('code') is-invalid @enderror"
+                        class="recovery-input @error('recovery_code') is-invalid @enderror @error('code') is-invalid @enderror"
                         name="recovery_code" required autofocus placeholder=" " maxlength="12" autocomplete="off">
-                    <label for="recovery_code" class="form-label">{{ __('Code de récupération') }}</label>
+
                     @error('recovery_code')
-                        <span class="invalid-feedback" role="alert">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                                <path
-                                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
-                            </svg>
+                        <span class="invalid-feedback" role="alert"
+                            style="display: block; text-align: left; margin-top: 8px; color: #d93025; font-size: 12px;">
                             <strong>{{ $message }}</strong>
                         </span>
                     @enderror
                     @error('code')
-                        <span class="invalid-feedback" role="alert">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                                <path
-                                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
-                            </svg>
+                        <span class="invalid-feedback" role="alert"
+                            style="display: block; text-align: left; margin-top: 8px; color: #d93025; font-size: 12px;">
                             <strong>{{ $message }}</strong>
                         </span>
                     @enderror
@@ -145,14 +158,14 @@
 
                 <div class="form-group" style="margin-top: 1.5rem;">
                     <button type="submit" class="btn-primary">
-                        {{ __('Vérifier') }}
+                        {{ __('app.verify') }}
                     </button>
                 </div>
             </form>
 
             <div class="auth-footer" style="text-align: center;">
                 <a href="{{ route('admin.2fa.challenge') }}" class="back-link">
-                    ← {{ __('Retour au code d\'authentification') }}
+                    ← {{ __('app.back_to_otp') }}
                 </a>
             </div>
         </div>
@@ -166,11 +179,6 @@
                 // Remove spaces only (keep lowercase as codes are stored in lowercase)
                 recoveryInput.addEventListener('input', function (e) {
                     this.value = this.value.toLowerCase().replace(/\s/g, '');
-                });
-
-                // Select all on focus
-                recoveryInput.addEventListener('focus', function () {
-                    this.select();
                 });
             }
         });

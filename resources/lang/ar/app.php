@@ -593,5 +593,13 @@ return [
     'desactiver_2fa_description' => 'ستقوم بتعطيل المصادقة الثنائية لـ',
     'ajouter_admin' => 'إضافة مسؤول',
     'gestion_admins' => 'إدارة المسؤولين',
+    'aucun_cours_assigne' => 'لا يوجد مقرر معين',
+    'vous_navez_aucun_cours_assigne_pour_le_moment' => 'ليس لديك أي مقرر معين في الوقت الحالي.',
+    'contactez_administrateur' => 'يرجى الاتصال بالمسؤول إذا كنت تعتقد أن هذا خطأً.',
+    'aucun_etudiant_assigne' => 'لا يوجد طالب معين',
+    'aucun' => 'لا شيء',
+    'total_notes' => 'إجمالي الدرجات',
+    'activites_recentes' => 'الأنشطة الحديثة',
+    'filtrer' => 'تصفية',
 ];
 

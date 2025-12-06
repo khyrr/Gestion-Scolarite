@@ -134,9 +134,9 @@
                             fill="#d93025" />
                     </svg>
                 </div>
-                <h1 class="auth-title">{{ __('Vérification en deux étapes') }}</h1>
+                <h1 class="auth-title">{{ __('app.two_factor_challenge') }}</h1>
                 <p class="auth-subtitle">
-                    {{ __('Entrez le code à 6 chiffres de votre application d\'authentification') }}
+                    {{ __('app.two_factor_challenge_instructions') }}
                 </p>
             </div>
 
@@ -176,14 +176,14 @@
 
                 <div class="form-group" style="margin-top: 1.5rem;">
                     <button type="submit" class="btn-primary">
-                        {{ __('Vérifier') }}
+                        {{ __('app.verify') }}
                     </button>
                 </div>
             </form>
 
             <div class="auth-footer" style="text-align: center;">
                 <a href="{{ route('admin.2fa.recovery') }}" class="recovery-link">
-                    {{ __('Utiliser un code de récupération') }}
+                    {{ __('app.use_recovery_code') }}
                 </a>
             </div>
         </div>

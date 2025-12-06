@@ -97,7 +97,10 @@ return [
     // ===========================================
     // ACTIONS RAPIDES
     // ===========================================
-    'actions_rapides' => 'Quick Actions',
+        'actions_rapides' => 'Quick Actions',
+    'impossible_desactiver_propre_ip' => 'Cannot deactivate your own IP address.',
+    'impossible_supprimer_propre_ip' => 'Cannot delete your own IP address.',
+
     'ajouter_classe' => 'Add Class',
     'ajouter_evaluation' => 'Add Evaluation',
     'voir_notes' => 'View Grades',
@@ -615,6 +618,14 @@ return [
     'gestion_admins' => 'Administrator Management',
     'liste_admins' => 'Administrator List',
     'ajouter_admin' => 'Add Administrator',
+    'aucun_cours_assigne' => 'No course assigned',
+    'vous_navez_aucun_cours_assigne_pour_le_moment' => 'You have no course assigned at the moment.',
+    'contactez_administrateur' => 'Please contact the administrator if you believe this is an error.',
+    'aucun_etudiant_assigne' => 'No student assigned',
+    'aucun' => 'None',
+    'total_notes' => 'Total Grades',
+    'activites_recentes' => 'Recent Activities',
+    'filtrer' => 'Filter',
 
 
 

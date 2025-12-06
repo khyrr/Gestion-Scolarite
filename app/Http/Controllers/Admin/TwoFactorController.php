@@ -19,7 +19,19 @@ class TwoFactorController extends Controller
 
     public function __construct()
     {
-        $this->middleware('auth:admin');
+        $this->middleware('auth');
+    }
+
+    /**
+     * Helper to get the authenticated admin profile.
+     */
+    private function getAdminProfile()
+    {
+        $user = Auth::user();
+        if (!$user || !$user->isAdmin()) {
+            abort(403, 'Unauthorized');
+        }
+        return $user->profile;
     }
 
     /**
@@ -36,8 +48,7 @@ class TwoFactorController extends Controller
     /** Show the setup page with a generated secret */
     public function showSetup(Request $request)
     {
-        /** @var \App\Models\Administrateur $admin */
-        $admin = Auth::guard('admin')->user();
+        $admin = $this->getAdminProfile();
 
         // Check pending regeneration and TTL from session
         $pendingRegeneration = session('admin_2fa_pending_regeneration');
@@ -129,7 +140,7 @@ class TwoFactorController extends Controller
             'code' => ['required', 'digits:6'],
         ]);
 
-        $admin = Auth::guard('admin')->user();
+        $admin = $this->getAdminProfile();
 
         // Check pending regeneration and TTL (if present)
         $pendingRegeneration = session('admin_2fa_pending_regeneration');
@@ -189,10 +200,10 @@ class TwoFactorController extends Controller
     /** Disable 2FA */
     public function disable(Request $request)
     {
-        $admin = Auth::guard('admin')->user();
+        $admin = $this->getAdminProfile();
 
         // Extra server-side guard in case route-level middleware missed it
-        if ($admin->role !== 'super_admin') {
+        if (Auth::user()->role !== 'super_admin') {
             abort(403, __('app.acces_refuse'));
         }
 
@@ -233,7 +244,7 @@ class TwoFactorController extends Controller
             'recovery_code' => ['nullable', 'string', 'max:64'],
         ]);
 
-        $admin = Auth::guard('admin')->user();
+        $admin = $this->getAdminProfile();
         $secret = $admin->two_factor_secret;
 
         $providedOtp = $request->input('code');
@@ -308,10 +319,10 @@ class TwoFactorController extends Controller
             'regenerate_code' => ['required', 'string', 'max:64'], // OTP or recovery code
         ]);
 
-        $admin = Auth::guard('admin')->user();
+        $admin = $this->getAdminProfile();
 
         // confirm identity with password
-        if (!Hash::check($request->password, $admin->mot_de_passe)) {
+        if (!Hash::check($request->password, Auth::user()->password)) {
             return back()->withErrors(['password' => __('app.invalid_password')]);
         }
 

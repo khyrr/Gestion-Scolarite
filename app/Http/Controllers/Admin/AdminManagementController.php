@@ -8,16 +8,17 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Services\TwoFactorService;
 use App\Services\ActivityLogger;
+use App\Models\User;
 
 class AdminManagementController extends Controller
 {
     public function __construct()
     {
         // Ensure only authenticated admins with the super_admin role can manage administrators
-        $this->middleware('auth:admin');
+        $this->middleware('auth');
 
         $this->middleware(function ($request, $next) {
-            $user = auth('admin')->user();
+            $user = auth()->user();
 
             if (! $user || ($user->role ?? '') !== 'super_admin') {
                 abort(403, 'Only super administrators can manage administrator accounts.');
@@ -32,7 +33,10 @@ class AdminManagementController extends Controller
      */
     public function index()
     {
-        $admins = Administrateur::orderBy('role', 'desc')->orderBy('email')->get();
+        $admins = User::where('profile_type', Administrateur::class)
+            ->with('profile')
+            ->orderBy('created_at', 'desc')
+            ->get();
         return view('admin.users.index', compact('admins'));
     }
 
@@ -45,10 +49,13 @@ class AdminManagementController extends Controller
             'confirmation_code' => ['required', 'digits:6'],
         ]);
 
-        $actor = auth('admin')->user();
+        $actor = auth()->user()->profile;
 
         // Verify actor's current OTP
         if (! $actor->two_factor_secret || ! TwoFactorService::verifyCode($actor->two_factor_secret, $request->confirmation_code)) {
+            if ($request->wantsJson()) {
+                return response()->json(['errors' => ['confirmation_code' => [__('app.invalid_2fa_code')]]], 422);
+            }
             return back()->withErrors(['confirmation_code' => __('app.invalid_2fa_code')]);
         }
 
@@ -56,6 +63,9 @@ class AdminManagementController extends Controller
 
         // Prevent toggling self from this interface
         if ($target->id_administrateur === $actor->id_administrateur) {
+            if ($request->wantsJson()) {
+                return response()->json(['message' => __('app.cannot_manage_self')], 403);
+            }
             return back()->with('error', __('app.cannot_manage_self'));
         }
 
@@ -68,6 +78,9 @@ class AdminManagementController extends Controller
 
             ActivityLogger::log('admin', $actor->id_administrateur, '2fa_disabled_for_other', 'administrateur', $target->id_administrateur, 'Disabled 2FA for admin '.$target->email);
 
+            if ($request->wantsJson()) {
+                return response()->json(['message' => __('app.two_factor_disabled_for_admin', ['email' => $target->email])]);
+            }
             return back()->with('success', __('app.two_factor_disabled_for_admin', ['email' => $target->email]));
         }
 
@@ -83,6 +96,9 @@ class AdminManagementController extends Controller
         ActivityLogger::log('admin', $actor->id_administrateur, '2fa_enabled_for_other', 'administrateur', $target->id_administrateur, 'Enabled 2FA for admin '.$target->email);
 
         // For now we do not render the secret in the UI here automatically – the super-admin must deliver it to the target securely.
+        if ($request->wantsJson()) {
+            return response()->json(['message' => __('app.two_factor_enabled_for_admin', ['email' => $target->email])]);
+        }
         return back()->with('success', __('app.two_factor_enabled_for_admin', ['email' => $target->email]));
     }
     /**
@@ -106,21 +122,34 @@ class AdminManagementController extends Controller
         $request->validate([
             'nom' => ['required', 'string', 'max:255'],
             'prenom' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:administrateurs'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'role' => ['required', 'string', 'in:admin,super_admin'],
         ]);
 
-        $created = Administrateur::create([
-            'nom' => $request->nom,
-            'prenom' => $request->prenom,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => $request->role,
-        ]);
+        $created = \Illuminate\Support\Facades\DB::transaction(function () use ($request) {
+            $admin = Administrateur::create([
+                'nom' => $request->nom,
+                'prenom' => $request->prenom,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                // 'role' => $request->role, // Administrateur model might not have role anymore or it's ignored
+            ]);
+
+            \App\Models\User::create([
+                'name' => $request->nom . ' ' . $request->prenom,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'role' => $request->role,
+                'profile_type' => Administrateur::class,
+                'profile_id' => $admin->id_administrateur,
+            ]);
+
+            return $admin;
+        });
 
         // Log admin creation
-        \App\Services\ActivityLogger::log('admin', auth('admin')->id(), 'create', 'administrateur', $created->id_administrateur, 'Created new admin ' . $created->email);
+        \App\Services\ActivityLogger::log('admin', auth()->user()->profile->id_administrateur, 'create', 'administrateur', $created->id_administrateur, 'Created new admin ' . $created->email);
 
         return redirect()->route('admin.dashboard')->with('success', 'Nouvel administrateur créé avec succès.');
     }

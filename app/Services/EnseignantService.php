@@ -18,7 +18,10 @@ class EnseignantService
     public function getCurrentTeacher()
     {
         $user = Auth::user();
-        return Enseignant::where('email', $user->email)->first();
+        if ($user && $user->isTeacher()) {
+            return $user->profile;
+        }
+        return null;
     }
 
     /**

@@ -10,7 +10,6 @@ use App\Http\Controllers\EvaluationController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -98,60 +97,60 @@ Route::prefix(config('admin.prefix'))->name('admin.')->middleware('admin.ip')->g
         }
         return redirect()->back();
     })->name('lang.switch');
-    Route::get('/login', [AdminAuthController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [AdminAuthController::class, 'login'])->name('login.submit');
-    Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
+    Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [LoginController::class, 'login'])->name('login.submit');
+    Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
     // Dashboard route (protected)
     Route::get('/dashboard', [App\Http\Controllers\Admin\AdminDashboardController::class, 'index'])
         ->name('dashboard')
-        ->middleware(['auth:admin', 'require.2fa:if_enabled']);
+        ->middleware(['auth', 'role:admin', 'require.2fa:if_enabled']);
 
     // IP Whitelist Management
     Route::get('/settings/ip', [App\Http\Controllers\Admin\AdminIpController::class, 'index'])
         ->name('settings.ip')
-        ->middleware(['auth:admin', 'require.super_admin']);
+        ->middleware(['auth', 'role:super_admin']);
 
     Route::post('/settings/ip', [App\Http\Controllers\Admin\AdminIpController::class, 'store'])
         ->name('settings.ip.store')
-        ->middleware(['auth:admin', 'require.super_admin', 'require.2fa']);
+        ->middleware(['auth', 'role:super_admin', 'require.2fa']);
 
     Route::patch('/settings/ip/{ip}/toggle', [App\Http\Controllers\Admin\AdminIpController::class, 'toggle'])
         ->name('settings.ip.toggle')
-        ->middleware(['auth:admin', 'require.super_admin', 'require.2fa']);
+        ->middleware(['auth', 'role:super_admin', 'require.2fa']);
 
     Route::delete('/settings/ip/{ip}', [App\Http\Controllers\Admin\AdminIpController::class, 'destroy'])
         ->name('settings.ip.destroy')
-        ->middleware(['auth:admin', 'require.super_admin', 'require.2fa']);
+        ->middleware(['auth', 'role:super_admin', 'require.2fa']);
 
     // Activity log viewer / export
-    Route::get('/logs', [App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('logs.index')->middleware('auth:admin');
-    Route::get('/logs/export', [App\Http\Controllers\Admin\ActivityLogController::class, 'export'])->name('logs.export')->middleware('auth:admin');
+    Route::get('/logs', [App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('logs.index')->middleware(['auth', 'role:super_admin']);
+    Route::get('/logs/export', [App\Http\Controllers\Admin\ActivityLogController::class, 'export'])->name('logs.export')->middleware(['auth', 'role:super_admin', 'require.2fa']);
 
     // Two-Factor Authentication management
     // 2FA management: only super_admins are allowed to setup/enable/disable their 2FA
     // Both super_admin and normal admin may enroll and enable 2FA for their own account
     Route::get('/2fa/setup', [App\Http\Controllers\Admin\TwoFactorController::class, 'showSetup'])
         ->name('2fa.setup')
-        ->middleware(['auth:admin']);
+        ->middleware(['auth', 'role:admin']);
 
     Route::post('/2fa/enable', [App\Http\Controllers\Admin\TwoFactorController::class, 'enable'])
         ->name('2fa.enable')
-        ->middleware(['auth:admin']);
+        ->middleware(['auth', 'role:admin']);
 
     // Regenerate secret (step-up required)
     Route::post('/2fa/regenerate', [App\Http\Controllers\Admin\TwoFactorController::class, 'regenerate'])
         ->name('2fa.regenerate')
-        ->middleware(['auth:admin']);
+        ->middleware(['auth', 'role:admin']);
 
     // Only super_admins can disable 2FA for themselves (or others)
     Route::post('/2fa/disable', [App\Http\Controllers\Admin\TwoFactorController::class, 'disable'])
         ->name('2fa.disable')
-        ->middleware(['auth:admin', 'require.super_admin']);
+        ->middleware(['auth', 'role:super_admin']);
 
     Route::post('/2fa/clear-pending', [\App\Http\Controllers\Admin\TwoFactorController::class, 'clearPending'])
         ->name('2fa.clear_pending')
-        ->middleware(['auth:admin', 'throttle:10,1']);
+        ->middleware(['auth', 'role:admin', 'throttle:10,1']);
 
 
     // 2FA challenge when required - protected by middleware to ensure prior authentication
@@ -165,14 +164,14 @@ Route::prefix(config('admin.prefix'))->name('admin.')->middleware('admin.ip')->g
     // List and manage administrators (super admin only, 2FA required)
     Route::get('/admins', [App\Http\Controllers\Admin\AdminManagementController::class, 'index'])
         ->name('admins.index')
-        ->middleware(['auth:admin', 'require.super_admin', 'require.2fa']);
+        ->middleware(['auth', 'role:super_admin', 'require.2fa']);
 
     Route::post('/admins/{admin}/toggle-2fa', [App\Http\Controllers\Admin\AdminManagementController::class, 'toggle2fa'])
         ->name('admins.toggle_2fa')
-        ->middleware(['auth:admin', 'require.super_admin', 'require.2fa']);
+        ->middleware(['auth', 'role:super_admin', 'require.2fa']);
 
-    Route::get('/admins/create', [App\Http\Controllers\Admin\AdminManagementController::class, 'create'])->name('admins.create')->middleware('auth:admin');
-    Route::post('/admins', [App\Http\Controllers\Admin\AdminManagementController::class, 'store'])->name('admins.store')->middleware('auth:admin');
+    Route::get('/admins/create', [App\Http\Controllers\Admin\AdminManagementController::class, 'create'])->name('admins.create')->middleware(['auth', 'role:super_admin', 'require.2fa']);
+    Route::post('/admins', [App\Http\Controllers\Admin\AdminManagementController::class, 'store'])->name('admins.store')->middleware(['auth', 'role:admin']);
 
 
     /*
@@ -180,7 +179,7 @@ Route::prefix(config('admin.prefix'))->name('admin.')->middleware('admin.ip')->g
     | Academic Management Routes (Admin)
     |--------------------------------------------------------------------------
     */
-    Route::middleware(['auth:admin', 'require.2fa:if_enabled'])->group(function () {
+    Route::middleware(['auth', 'role:admin', 'require.2fa:if_enabled'])->group(function () {
         // Classes
         Route::resource('classes', ClasseController::class);
 

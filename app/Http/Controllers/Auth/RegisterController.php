@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Providers\RouteServiceProvider;
 use App\Models\Enseignant;
+use App\Models\User;
 use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 class RegisterController extends Controller
 {
@@ -38,7 +40,7 @@ class RegisterController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('guest:teacher');
+        $this->middleware('guest');
     }
 
     /**
@@ -51,8 +53,9 @@ class RegisterController extends Controller
     {
         return Validator::make($data, [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:enseignants,email'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'telephone' => ['nullable', 'string', 'max:20'],
         ]);
     }
 
@@ -64,18 +67,25 @@ class RegisterController extends Controller
      */
     protected function create(array $data)
     {
-        // Create Enseignant record for teacher registrations
-        return Enseignant::create([
-            'nom' => $data['prenom'] ?? $data['name'] ?? '',
-            'prenom' => $data['prenom'] ?? '',
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
-        ]);
+        return DB::transaction(function () use ($data) {
+            // Create Enseignant record
+            $enseignant = Enseignant::create([
+                'nom' => $data['prenom'] ?? $data['name'] ?? '',
+                'prenom' => $data['prenom'] ?? '',
+                'email' => $data['email'],
+                'telephone' => $data['telephone'] ?? '',
+                'password' => Hash::make($data['password']),
+            ]);
 
-    }
-
-    protected function guard()
-    {
-        return Auth::guard('teacher');
+            // Create User record
+            return User::create([
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'password' => Hash::make($data['password']),
+                'role' => 'enseignant',
+                'profile_type' => Enseignant::class,
+                'profile_id' => $enseignant->id_enseignant,
+            ]);
+        });
     }
 }

@@ -23,17 +23,19 @@ class AdminIpController extends Controller
             'label' => 'nullable|string|max:255',
         ]);
 
+        $adminId = Auth::user()->profile->id_administrateur;
+
         $created = AdminAllowedIp::create([
             'ip_address' => $request->ip_address,
             'label' => $request->label,
             'is_active' => true,
-            'added_by' => Auth::guard('admin')->id(),
+            'added_by' => $adminId,
         ]);
 
         // Audit the creation of a whitelist entry
         ActivityLogger::log(
             'admin',
-            Auth::guard('admin')->id(),
+            $adminId,
             'create',
             'admin_allowed_ip',
             $created->id,
@@ -51,12 +53,17 @@ class AdminIpController extends Controller
 
     public function toggle(AdminAllowedIp $ip)
     {
+        // Prevent deactivating your own IP
+        if ($ip->ip_address === request()->ip() && $ip->is_active) {
+             return redirect()->back()->with('error', __('app.impossible_desactiver_propre_ip'));
+        }
+
         $old = $ip->is_active;
         $ip->update(['is_active' => ! $old]);
 
         ActivityLogger::log(
             'admin',
-            Auth::guard('admin')->id(),
+            Auth::user()->profile->id_administrateur,
             'update',
             'admin_allowed_ip',
             $ip->id,
@@ -69,13 +76,18 @@ class AdminIpController extends Controller
 
     public function destroy(AdminAllowedIp $ip)
     {
+        // Prevent deleting your own IP
+        if ($ip->ip_address === request()->ip()) {
+             return redirect()->back()->with('error', __('app.impossible_supprimer_propre_ip'));
+        }
+
         // Keep a snapshot for auditing before deleting
         $snapshot = $ip->toArray();
         $ip->delete();
 
         ActivityLogger::log(
             'admin',
-            Auth::guard('admin')->id(),
+            Auth::user()->profile->id_administrateur,
             'delete',
             'admin_allowed_ip',
             $snapshot['id'] ?? null,

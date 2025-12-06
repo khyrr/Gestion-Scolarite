@@ -1,5 +1,5 @@
 @extends('admin.layouts.dashboard')
-
+@section('title', __('app.activity_logs'))
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1>{{ __('app.activity_logs') }}</h1>
@@ -15,7 +15,7 @@
             <div class="col-md-3"><input class="form-control" name="search" placeholder="{{ __('app.search') }}" value="{{ request('search') }}"></div>
             <div class="col-md-2"><input type="date" class="form-control" name="from" value="{{ request('from') }}"></div>
             <div class="col-md-2"><input type="date" class="form-control" name="to" value="{{ request('to') }}"></div>
-            <div class="col-md-1"><button class="btn btn-primary w-100" type="submit">{{ __('app.filter') }}</button></div>
+            <div class="col-md-1"><button class="btn btn-primary w-100" type="submit">{{ __('app.filtrer') }}</button></div>
         </div>
     </form>
 

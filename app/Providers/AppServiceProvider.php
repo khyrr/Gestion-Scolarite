@@ -35,24 +35,12 @@ class AppServiceProvider extends ServiceProvider
         
         // Add custom Blade directive for admin check
         Blade::if('admin', function () {
-            if (auth('admin')->check()) {
-                return true;
-            }
-            
-            return auth()->check() && method_exists(auth()->user(), 'hasRole') &&
-                   (auth()->user()->hasRole('admin') || auth()->user()->hasRole('administrateur'));
+            return auth()->check() && auth()->user()->isAdmin();
         });
         
         // Add custom Blade directive for admin or teacher check
         Blade::if('adminOrTeacher', function () {
-            if (auth('admin')->check()) {
-                return true;
-            }
-
-            return auth()->check() && method_exists(auth()->user(), 'hasRole') &&
-                   (auth()->user()->hasRole('admin') || 
-                    auth()->user()->hasRole('administrateur') || 
-                    auth()->user()->hasRole('enseignant'));
+            return auth()->check() && (auth()->user()->isAdmin() || auth()->user()->isTeacher());
         });
     }
 }

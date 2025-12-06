@@ -641,9 +641,16 @@ return [
     'desactiver_2fa_description' => 'Vous allez désactiver l\'authentification à deux facteurs pour',
     'ajouter_admin' => 'Ajouter un Administrateur',
     'gestion_admins' => 'Gestion des Administrateurs',
-
-
-
+    'aucun_cours_assigne' => 'Aucun cours assigné',
+    'vous_navez_aucun_cours_assigne_pour_le_moment' => 'Vous n\'avez aucun cours assigné pour le moment.',
+    'contactez_administrateur' => 'Contactez un super administrateur si vous pensez que c\'est une erreur.',
+    'aucun_etudiant_assigné' => 'Aucun étudiant assigné',
+    'aucun' => 'Aucun',
+    'total_notes' => 'Total des Notes',
+    'activites_recentes' => 'Activités Récentes',
+    'filtrer' => 'Filtrer',
+    'impossible_desactiver_propre_ip' => 'Impossible de désactiver votre propre adresse IP.',
+    'impossible_supprimer_propre_ip' => 'Impossible de supprimer votre propre adresse IP.',
 ];
 
 

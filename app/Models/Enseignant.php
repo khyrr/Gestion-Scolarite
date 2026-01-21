@@ -5,10 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class Enseignant extends Model
 {
-    use Notifiable, HasFactory;
+    use Notifiable, HasFactory, LogsActivity;
 
     protected $primaryKey ='id_enseignant';
     protected $fillable =['nom','prenom','email','telephone','password','is_active','email_verified_at','remember_token'];
@@ -65,5 +67,16 @@ class Enseignant extends Model
     {
         return $this->prenom . ' ' . $this->nom;
     }
-    
+
+    /**
+     * Configure activity logging
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['nom', 'prenom', 'email', 'telephone', 'is_active'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->setDescriptionForEvent(fn(string $eventName) => "Teacher {$eventName}");
+    }
 }

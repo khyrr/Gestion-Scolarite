@@ -4,9 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class Etudiant extends Model
 {
+    use HasFactory, LogsActivity;
+    
     protected $primaryKey = 'id_etudiant';
     protected $fillable = ['matricule', 'nom', 'prenom', 'telephone', 'date_naissance', 'genre', 'adresse', 'email', 'id_classe'];
     
@@ -44,6 +48,18 @@ class Etudiant extends Model
     public function getRouteKeyName()
     {
         return 'matricule';
+    }
+
+    /**
+     * Configure activity logging
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['nom', 'prenom', 'email', 'telephone', 'id_classe', 'matricule'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->setDescriptionForEvent(fn(string $eventName) => "Student {$eventName}");
     }
     
     use HasFactory;

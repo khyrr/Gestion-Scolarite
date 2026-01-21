@@ -13,7 +13,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-use App\\Models\\Evaluation;
+use App\Models\Evaluation;
 
 class NoteResource extends Resource
 {
@@ -29,20 +29,20 @@ class NoteResource extends Resource
     {
         return $form
             ->schema([
-                Forms\\Components\\Section::make('Grade Information')
+                Forms\Components\Section::make('Grade Information')
                     ->schema([
-                        Forms\\Components\\Select::make('id_etudiant')
+                        Forms\Components\Select::make('id_etudiant')
                             ->label('Student')
                             ->relationship('etudiant', 'nom')
-                            ->getOptionLabelFromRecordUsing(fn ($record) => \"{$record->nom} {$record->prenom} ({$record->matricule})\")
+                            ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->nom} {$record->prenom} ({$record->matricule})")
                             ->required()
                             ->searchable()
                             ->preload(),
                             
-                        Forms\\Components\\Select::make('id_evaluation')
+                        Forms\Components\Select::make('id_evaluation')
                             ->label('Evaluation')
                             ->relationship('evaluation', 'titre')
-                            ->getOptionLabelFromRecordUsing(fn ($record) => \"{$record->titre} ({$record->matiere->nom_matiere})\")
+                            ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->titre} ({$record->matiere->nom_matiere})")
                             ->required()
                             ->searchable()
                             ->reactive()
@@ -60,9 +60,9 @@ class NoteResource extends Resource
                     ])
                     ->columns(2),
                     
-                Forms\\Components\\Section::make('Score')
+                Forms\Components\Section::make('Score')
                     ->schema([
-                        Forms\\Components\\TextInput::make('note')
+                        Forms\Components\TextInput::make('note')
                             ->label('Score')
                             ->required()
                             ->numeric()
@@ -70,17 +70,17 @@ class NoteResource extends Resource
                             ->helperText('Score must not exceed evaluation max score')
                             ->live(onBlur: true),
                             
-                        Forms\\Components\\Textarea::make('commentaire')
+                        Forms\Components\Textarea::make('commentaire')
                             ->label('Comments')
                             ->rows(3)
                             ->columnSpanFull(),
                     ]),
                     
-                Forms\\Components\\Section::make('Auto-filled')
+                Forms\Components\Section::make('Auto-filled')
                     ->schema([
-                        Forms\\Components\\Hidden::make('id_matiere'),
-                        Forms\\Components\\Hidden::make('id_classe'),
-                        Forms\\Components\\Hidden::make('type'),
+                        Forms\Components\Hidden::make('id_matiere'),
+                        Forms\Components\Hidden::make('id_classe'),
+                        Forms\Components\Hidden::make('type'),
                     ])
                     ->hidden(),
             ]);
@@ -90,43 +90,43 @@ class NoteResource extends Resource
     {
         return $table
             ->columns([
-                Tables\\Columns\\TextColumn::make('etudiant.matricule')
+                Tables\Columns\TextColumn::make('etudiant.matricule')
                     ->label('Student ID')
                     ->searchable()
                     ->sortable()
                     ->copyable(),
                     
-                Tables\\Columns\\TextColumn::make('etudiant.nom')
+                Tables\Columns\TextColumn::make('etudiant.nom')
                     ->label('Student')
-                    ->formatStateUsing(fn ($record) => \"{$record->etudiant->nom} {$record->etudiant->prenom}\")
+                    ->formatStateUsing(fn ($record) => "{$record->etudiant->nom} {$record->etudiant->prenom}")
                     ->searchable(['nom', 'prenom'])
                     ->sortable(),
                     
-                Tables\\Columns\\TextColumn::make('evaluation.titre')
+                Tables\Columns\TextColumn::make('evaluation.titre')
                     ->label('Evaluation')
                     ->searchable()
                     ->sortable()
                     ->description(fn ($record) => $record->matiere->nom_matiere ?? 'N/A'),
                     
-                Tables\\Columns\\TextColumn::make('note')
+                Tables\Columns\TextColumn::make('note')
                     ->label('Score')
                     ->numeric()
                     ->sortable()
                     ->badge()
-                    ->color(fn ($state, $record) => {
+                    ->color(function ($state, $record) {
                         $max = $record->evaluation->note_max ?? 20;
                         $percent = ($state / $max) * 100;
                         if ($percent >= 75) return 'success';
                         if ($percent >= 50) return 'warning';
                         return 'danger';
                     })
-                    ->formatStateUsing(fn ($state, $record) => {
+                    ->formatStateUsing(function ($state, $record) {
                         $max = $record->evaluation->note_max ?? 20;
                         $percent = number_format(($state / $max) * 100, 1);
-                        return \"{$state}/{$max} ({$percent}%)\";
+                        return "{$state}/{$max} ({$percent}%)";
                     }),
                     
-                Tables\\Columns\\TextColumn::make('type')
+                Tables\Columns\TextColumn::make('type')
                     ->label('Type')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
@@ -138,37 +138,37 @@ class NoteResource extends Resource
                         default => 'gray',
                     }),
                     
-                Tables\\Columns\\TextColumn::make('classe.nom_classe')
+                Tables\Columns\TextColumn::make('classe.nom_classe')
                     ->label('Class')
                     ->sortable()
                     ->toggleable(),
                     
-                Tables\\Columns\\TextColumn::make('created_at')
+                Tables\Columns\TextColumn::make('created_at')
                     ->label('Entered')
                     ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\\Filters\\SelectFilter::make('id_etudiant')
+                Tables\Filters\SelectFilter::make('id_etudiant')
                     ->label('Student')
                     ->relationship('etudiant', 'nom')
                     ->searchable()
                     ->preload(),
                     
-                Tables\\Filters\\SelectFilter::make('id_evaluation')
+                Tables\Filters\SelectFilter::make('id_evaluation')
                     ->label('Evaluation')
                     ->relationship('evaluation', 'titre')
                     ->searchable()
                     ->preload(),
                     
-                Tables\\Filters\\SelectFilter::make('id_classe')
+                Tables\Filters\SelectFilter::make('id_classe')
                     ->label('Class')
                     ->relationship('classe', 'nom_classe')
                     ->searchable()
                     ->preload(),
                     
-                Tables\\Filters\\SelectFilter::make('type')
+                Tables\Filters\SelectFilter::make('type')
                     ->label('Type')
                     ->options([
                         'devoir' => 'Homework',
@@ -179,17 +179,17 @@ class NoteResource extends Resource
                     ]),
             ])
             ->actions([
-                Tables\\Actions\\ViewAction::make(),
-                Tables\\Actions\\EditAction::make(),
-                Tables\\Actions\\DeleteAction::make()
+                Tables\Actions\ViewAction::make(),
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make()
                     ->label('Delete')
                     ->modalHeading('Delete Grade')
                     ->modalDescription('Are you sure you want to delete this grade? This action will be logged.')
                     ->successNotificationTitle('Grade deleted'),
             ])
             ->bulkActions([
-                Tables\\Actions\\BulkActionGroup::make([
-                    Tables\\Actions\\DeleteBulkAction::make()
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make()
                         ->modalHeading('Delete Grades')
                         ->modalDescription('Are you sure? All deletions will be logged.'),
                 ]),

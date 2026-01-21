@@ -6,12 +6,16 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "barryvdh/laravel-dompdf": "^3.1",
         "endroid/qr-code": "^4.7",
+        "filament/filament": "^3.0",
         "guzzlehttp/guzzle": "^7.2",
         "laravel/framework": "^11.0",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
-        "laravel/ui": "^4.5"
+        "laravel/ui": "^4.5",
+        "spatie/laravel-activitylog": "^4.10",
+        "spatie/laravel-permission": "^6.24"
     },
     "require-dev": {
         "doctrine/dbal": "^3.10",
@@ -30,8 +34,6 @@
             "Database\\Seeders\\": "database/seeders/"
         }
     },
-    
-
     "autoload-dev": {
         "psr-4": {
             "Tests\\": "tests/"
@@ -40,7 +42,8 @@
     "scripts": {
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-            "@php artisan package:discover --ansi"
+            "@php artisan package:discover --ansi",
+            "@php artisan filament:upgrade"
         ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force"

@@ -19,11 +19,32 @@ class EnseignPaiementResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-banknotes';
     
-    protected static ?string $navigationGroup = 'Financial';
-    
     protected static ?int $navigationSort = 1;
-    
-    protected static ?string $navigationLabel = 'Teacher Payments';
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('app.gestion_financiere');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('app.paiements_enseignants');
+    }
+
+    public static function getPluralLabel(): string
+    {
+        return __('app.paiements_enseignants');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('app.paiements_enseignants');
+    }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->hasRole('super_admin') || auth()->user()->can('manage payments');
+    }
 
     public static function form(Form $form): Form
     {

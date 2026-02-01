@@ -19,27 +19,50 @@ class ClasseResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
     
-    protected static ?string $navigationGroup = 'Academic Management';
-    
     protected static ?int $navigationSort = 1;
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('app.gestion_academique');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('app.classes');
+    }
+
+    public static function getPluralLabel(): string
+    {
+        return __('app.classes');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('app.classe');
+    }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->hasRole('super_admin') || auth()->user()->can('manage classes');
+    }
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Class Information')
+                Forms\Components\Section::make(__('app.informations_classe'))
                     ->schema([
                         Forms\Components\TextInput::make('nom_classe')
-                            ->label('Class Name')
+                            ->label(__('app.nom_classe'))
                             ->required()
                             ->maxLength(191)
-                            ->placeholder('e.g., 6ème A, Terminale S'),
+                            ->placeholder(__('app.placeholder_nom_classe')),
                         
                         Forms\Components\TextInput::make('niveau')
-                            ->label('Level/Grade')
+                            ->label(__('app.niveau'))
                             ->required()
                             ->maxLength(191)
-                            ->placeholder('e.g., 6ème, Terminale'),
+                            ->placeholder(__('app.placeholder_niveau')),
                     ])
                     ->columns(2),
             ]);
@@ -50,37 +73,39 @@ class ClasseResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('nom_classe')
-                    ->label('Class Name')
+                    ->label(__('app.nom_classe'))
                     ->searchable()
                     ->sortable(),
                     
                 Tables\Columns\TextColumn::make('niveau')
-                    ->label('Level')
+                    ->label(__('app.niveau'))
                     ->searchable()
                     ->sortable()
                     ->badge()
                     ->color('info'),
                     
                 Tables\Columns\TextColumn::make('etudiants_count')
-                    ->label('Students')
+                    ->label(__('app.etudiants'))
+                    ->sortable()
                     ->counts('etudiants')
                     ->badge()
                     ->color('success'),
                     
                 Tables\Columns\TextColumn::make('cours_count')
-                    ->label('Courses')
+                    ->label(__('app.cours'))
                     ->counts('cours')
+                    ->sortable()
                     ->badge()
                     ->color('warning'),
                     
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Created')
+                    ->label(__('app.cree_a'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                     
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Updated')
+                    ->label(__('app.mis_a_jour_le'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -90,7 +115,7 @@ class ClasseResource extends Resource
                     ->label('Level')
                     ->options(function () {
                         return Classe::distinct()->pluck('niveau', 'niveau')->toArray();
-                    }),
+                    }),                    
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),

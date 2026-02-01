@@ -19,9 +19,32 @@ class EvaluationResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';
     
-    protected static ?string $navigationGroup = 'Academic Management';
-    
     protected static ?int $navigationSort = 4;
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('app.gestion_academique');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('app.evaluations');
+    }
+
+    public static function getPluralLabel(): string
+    {
+        return __('app.evaluations');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('app.evaluation');
+    }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->hasRole('super_admin') || auth()->user()->can('manage evaluations');
+    }
 
     public static function form(Form $form): Form
     {
@@ -64,16 +87,16 @@ class EvaluationResource extends Resource
                 Forms\Components\Section::make('Grading')
                     ->schema([
                         Forms\Components\TextInput::make('note_max')
-                            ->label('Maximum Score')
+                            ->label(__('app.note_maximum'))
                             ->required()
                             ->numeric()
                             ->default(20.00)
                             ->minValue(0)
                             ->maxValue(100)
-                            ->suffix('pts'),
+                            ->suffix(__('app.point')),
                             
                         Forms\Components\DatePicker::make('date')
-                            ->label('Evaluation Date')
+                            ->label(__('app.date_evaluation'))
                             ->required()
                             ->displayFormat('d/m/Y'),
                     ])
@@ -86,13 +109,20 @@ class EvaluationResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('titre')
-                    ->label('Title')
-                    ->searchable()
-                    ->description(fn ($record) => $record->type),
+                    ->label(__('app.evaluation'))
+                    ->searchable(),
                     
                 Tables\Columns\TextColumn::make('type')
-                    ->label('Type')
+                    ->label(__('app.type'))
                     ->badge()
+                    ->formatStateUsing(fn (?string $state) => match ($state) {
+                        'devoir' => __('app.devoir'),
+                        'interrogation' => __('app.interrogation'),
+                        'examen' => __('app.examen'),
+                        'controle' => __('app.controle'),
+                        'projet' => __('app.projet'),
+                            default => $state ?? __('app.type'),
+                    })
                     ->color(fn (string $state): string => match ($state) {
                         'examen' => 'danger',
                         'controle' => 'warning',
@@ -102,60 +132,67 @@ class EvaluationResource extends Resource
                         default => 'gray',
                     }),
                     
-                Tables\Columns\TextColumn::make('matiere.nom_matiere')
-                    ->label('Subject')
+                Tables\Columns\TextColumn::make('matiere.code_matiere')
+                    ->label(__('app.matiere'))
+                    ->formatStateUsing(fn ($record) => __("app." . $record->matiere->code_matiere))
+                    ->searchable()
                     ->searchable()
                     ->sortable(),
                     
                 Tables\Columns\TextColumn::make('classe.nom_classe')
-                    ->label('Class')
+                    ->label(__('app.classe'))
                     ->searchable()
                     ->sortable()
                     ->badge()
                     ->color('info'),
                     
                 Tables\Columns\TextColumn::make('date')
-                    ->label('Date')
+                    ->label(__('app.date_evaluation'))
                     ->date('d/m/Y')
                     ->sortable(),
                     
                 Tables\Columns\TextColumn::make('note_max')
-                    ->label('Max Score')
-                    ->numeric()
+                    ->label(__('app.note_maximum'))
                     ->sortable()
-                    ->suffix(' pts'),
+                    ->suffix(__('app.point')),
                     
                 Tables\Columns\TextColumn::make('notes_count')
-                    ->label('Grades')
+                    ->label(__('app.etudiants_notee'))
                     ->counts('notes')
                     ->badge()
                     ->color('success'),
                     
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Created')
+                    ->label(__('app.cree_a'))
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->label(__('app.mis_a_jour_le'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('type')
-                    ->label('Type')
+                    ->label(__('app.type'))
                     ->options([
-                        'devoir' => 'Homework',
-                        'interrogation' => 'Quiz',
-                        'examen' => 'Exam',
-                        'controle' => 'Test',
-                        'projet' => 'Project',
+                        'devoir' => __('app.homework'),
+                        'interrogation' => __('app.quiz'),
+                        'examen' => __('app.exam'),
+                        'controle' => __('app.test'),
+                        'projet' => __('app.project'),
                     ]),
                     
                 Tables\Filters\SelectFilter::make('id_matiere')
-                    ->label('Subject')
+                    ->label(__('app.matiere'))
                     ->relationship('matiere', 'nom_matiere')
                     ->searchable()
                     ->preload(),
                     
                 Tables\Filters\SelectFilter::make('id_classe')
-                    ->label('Class')
+                    ->label(__('app.classe'))
                     ->relationship('classe', 'nom_classe')
                     ->searchable()
                     ->preload(),

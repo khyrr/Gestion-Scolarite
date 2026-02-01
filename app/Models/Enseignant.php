@@ -12,19 +12,37 @@ class Enseignant extends Model
 {
     use Notifiable, HasFactory, LogsActivity;
 
-    protected $primaryKey ='id_enseignant';
-    protected $fillable =['nom','prenom','email','telephone','password','is_active','email_verified_at','remember_token'];
-
-    protected $hidden = ['password', 'remember_token'];
-
-    protected $casts = [
-        'is_active' => 'boolean',
-        'email_verified_at' => 'datetime',
+    protected $primaryKey = 'id_enseignant';
+    
+    protected $fillable = [
+        'nom',
+        'prenom',
+        'telephone',
+        'adresse',
     ];
+
+    protected $hidden = [];
+
+    protected $casts = [];
 
     public function user()
     {
         return $this->morphOne(User::class, 'profile');
+    }
+
+    /**
+     * Helper to check if teacher has a user account
+     */
+    public function hasAccount(): bool
+    {
+        return $this->user !== null;
+    }
+    /**
+     * Get full name
+     */
+    public function getFullNameAttribute(): string
+    {
+        return trim("{$this->prenom} {$this->nom}");
     }
     
     // Removed direct classe relationship - now handled through pivot table
@@ -53,19 +71,13 @@ class Enseignant extends Model
                     ->withPivot('id_matiere', 'active')
                     ->withTimestamps();
     }
-    
-    // Helper method to get full name
 
-
-    // A teacher is always an 'enseignant' role in the system
+    /**
+     * A teacher is always an 'enseignant' role in the system
+     */
     public function hasRole(string $role): bool
     {
         return $role === 'enseignant';
-    }
-
-    public function getFullNameAttribute()
-    {
-        return $this->prenom . ' ' . $this->nom;
     }
 
     /**

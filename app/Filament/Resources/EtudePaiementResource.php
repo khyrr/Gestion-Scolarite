@@ -12,6 +12,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class EtudePaiementResource extends Resource
 {
@@ -19,11 +20,32 @@ class EtudePaiementResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-currency-dollar';
     
-    protected static ?string $navigationGroup = 'Financial';
-    
     protected static ?int $navigationSort = 2;
-    
-    protected static ?string $navigationLabel = 'Student Payments';
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('app.gestion_financiere');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('app.paiements_etudiants');
+    }
+
+    public static function getPluralLabel(): string
+    {
+        return __('app.paiements_etudiants');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('app.paiements_etudiants');
+    }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->hasRole('super_admin') || auth()->user()->can('manage payments');
+    }
 
     public static function form(Form $form): Form
     {
@@ -32,11 +54,11 @@ class EtudePaiementResource extends Resource
                 Forms\Components\Section::make('Payment Information')
                     ->schema([
                         Forms\Components\Select::make('id_etudiant')
-                            ->label('Student')
-                            ->relationship('etudiant', 'nom')
+                            ->label(__('app.etudiant'))
+                            ->relationship('etudiant', 'matricule')
                             ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->nom} {$record->prenom} ({$record->matricule})")
                             ->required()
-                            ->searchable()
+                            ->searchable(['matricule'])
                             ->preload(),
                             
                         Forms\Components\Select::make('typepaye')
@@ -89,14 +111,19 @@ class EtudePaiementResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('etudiant.matricule')
-                    ->label('Student ID')
+                    ->label(__('app.matricule'))
                     ->searchable()
                     ->sortable(),
                     
                 Tables\Columns\TextColumn::make('etudiant.nom')
-                    ->label('Student')
+                    ->label(__('app.etudiant'))
                     ->formatStateUsing(fn ($record) => "{$record->etudiant->nom} {$record->etudiant->prenom}")
-                    ->searchable(['nom', 'prenom'])
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        return $query->whereHas('etudiant', function (Builder $query) use ($search) {
+                            $query->where('nom', 'like', "%{$search}%")
+                                ->orWhere('prenom', 'like', "%{$search}%");
+                        });
+                    })
                     ->sortable(),
                     
                 Tables\Columns\TextColumn::make('typepaye')
@@ -143,8 +170,9 @@ class EtudePaiementResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('id_etudiant')
-                    ->label('Student')
-                    ->relationship('etudiant', 'nom')
+                    ->label(__('app.etudiant'))
+                    ->relationship('etudiant', 'matricule')
+                    ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->nom} {$record->prenom} ({$record->matricule})")
                     ->searchable()
                     ->preload(),
                     
@@ -189,6 +217,21 @@ class EtudePaiementResource extends Resource
                     }),
             ])
             ->actions([
+                Tables\Actions\Action::make('printReceipt')
+                    ->label(__('app.imprimer_recu'))
+                    ->icon('heroicon-o-printer')
+                    ->color('info')
+                    ->action(function (EtudePaiement $record) {
+                        $record->load(['etudiant', 'etudiant.classe']);
+                        
+                        $pdf = Pdf::loadView('pdf.receipt', [
+                            'payment' => $record,
+                        ])->setPaper('a5', 'landscape');
+
+                        return response()->streamDownload(function () use ($pdf) {
+                            echo $pdf->output();
+                        }, "recu_paiement_{$record->id_paiements}.pdf");
+                    }),
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),

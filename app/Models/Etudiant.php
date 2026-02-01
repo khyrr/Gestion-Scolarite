@@ -12,15 +12,64 @@ class Etudiant extends Model
     use HasFactory, LogsActivity;
     
     protected $primaryKey = 'id_etudiant';
-    protected $fillable = ['matricule', 'nom', 'prenom', 'telephone', 'date_naissance', 'genre', 'adresse', 'email', 'id_classe'];
+    protected $fillable = [
+        'matricule',
+        'nom',
+        'prenom',
+        'telephone',
+        'adresse',
+        'date_naissance',
+        'genre',
+        'id_classe'
+    ];
     
     protected $casts = [
         'date_naissance' => 'datetime',
     ];
 
+    protected static function booted(): void
+    {
+        static::creating(function ($model) {
+            if (empty($model->matricule)) {
+                $model->matricule = self::generateMatricule();
+            }
+        });
+    }
+
+    public static function generateMatricule(): string
+    {
+        $year = date('Y');
+        $count = self::whereYear('created_at', $year)->count() + 1;
+        return $year . str_pad($count, 4, '0', STR_PAD_LEFT);
+    }
+
     public function user()
     {
         return $this->morphOne(User::class, 'profile');
+    }
+
+    /**
+     * Check if this student has a user account
+     */
+    public function hasAccount(): bool
+    {
+        return $this->user()->exists();
+    }
+
+    /**
+     * Get email from user account if exists
+     */
+    public function getEmailAttribute()
+    {
+        return $this->user?->email;
+    }
+
+    /**
+     * Get full name
+     */
+    public function getFullNameAttribute(): string
+    {
+        return trim("{$this->nom} {$this->prenom}");
     }
     
     public function classe()
@@ -38,11 +87,7 @@ class Etudiant extends Model
         return $this->hasMany(EtudePaiement::class, 'id_etudiant');
     }
     
-    // Helper method to get full name
-    public function getFullNameAttribute()
-    {
-        return $this->prenom . ' ' . $this->nom;
-    }
+
 
     // Route model binding key - use matricule in URLs
     public function getRouteKeyName()

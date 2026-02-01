@@ -17,9 +17,27 @@ class RoleResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-key';
     
-    protected static ?string $navigationGroup = 'System';
-    
     protected static ?int $navigationSort = 2;
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('app.systeme');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('app.roles');
+    }
+
+    public static function getPluralLabel(): string
+    {
+        return __('app.roles');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('app.role');
+    }
 
     public static function form(Form $form): Form
     {
@@ -79,11 +97,18 @@ class RoleResource extends Resource
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make()
-                    ->visible(fn ($record) => !in_array($record->name, ['super_admin', 'admin'])),
+                    ->visible(fn ($record) => !in_array($record->name, ['super_admin', 'admin', 'teacher', 'enseignant', 'student', 'etudiant'])),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->action(function (Tables\Actions\DeleteBulkAction $action) {
+                            $action->getRecords()->each(function ($record) {
+                                if (!in_array($record->name, ['super_admin', 'admin', 'teacher', 'enseignant', 'student', 'etudiant'])) {
+                                    $record->delete();
+                                }
+                            });
+                        }),
                 ]),
             ])
             ->defaultSort('name', 'asc');
@@ -100,6 +125,6 @@ class RoleResource extends Resource
     
     public static function canViewAny(): bool
     {
-        return auth()->user()->hasRole('super_admin');
+        return auth()->user()->hasRole('super_admin') || auth()->user()->can('manage settings');
     }
 }

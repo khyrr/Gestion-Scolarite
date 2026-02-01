@@ -113,13 +113,6 @@ class RolesAndPermissionsSeeder extends Seeder
         ]);
 
         $this->command->info('Roles and permissions created successfully!');
-
-        // Assign super_admin role to first admin user if exists
-        $firstAdmin = User::where('role', 'admin')->first();
-        if ($firstAdmin) {
-            $firstAdmin->assignRole('super_admin');
-            $this->command->info("Assigned super_admin role to: {$firstAdmin->email}");
-        }
     }
 }
 

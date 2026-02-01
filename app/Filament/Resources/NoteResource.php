@@ -4,6 +4,8 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\NoteResource\Pages;
 use App\Filament\Resources\NoteResource\RelationManagers;
+use App\Models\Evaluation;
+use App\Models\Etudiant;
 use App\Models\Note;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -12,8 +14,8 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-
-use App\Models\Evaluation;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class NoteResource extends Resource
 {
@@ -21,32 +23,88 @@ class NoteResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-trophy';
     
-    protected static ?string $navigationGroup = 'Academic Management';
-    
     protected static ?int $navigationSort = 5;
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('app.gestion_academique');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('app.notes');
+    }
+
+    public static function getPluralLabel(): string
+    {
+        return __('app.notes');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('app.note');
+    }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->hasRole('super_admin') || auth()->user()->can('manage grades');
+    }
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Grade Information')
+                Forms\Components\Section::make(__('app.note_information'))
                     ->schema([
                         Forms\Components\Select::make('id_etudiant')
-                            ->label('Student')
-                            ->relationship('etudiant', 'nom')
+                            ->label(__('app.etudiant'))
+                            ->relationship('etudiant', 'matricule')
                             ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->nom} {$record->prenom} ({$record->matricule})")
                             ->required()
-                            ->searchable()
-                            ->preload(),
+                            ->searchable(['matricule'])
+                            ->preload()
+                            ->afterStateUpdated(function ($state, callable $set) {
+                                if (! $state) {
+                                    $set('id_classe', null);
+                                    return;
+                                }
+
+                                $etudiant = Etudiant::find($state);
+
+                                $set('id_classe', $etudiant?->id_classe);
+                            }),
                             
                         Forms\Components\Select::make('id_evaluation')
-                            ->label('Evaluation')
-                            ->relationship('evaluation', 'titre')
-                            ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->titre} ({$record->matiere->nom_matiere})")
+                            ->label(__('app.evaluation'))
+                            ->options(static fn (callable $get) => self::getEvaluationOptions(
+                                $get('id_classe'),
+                                $get('id_evaluation'),
+                            ))
                             ->required()
                             ->searchable()
                             ->reactive()
+                            ->live()
                             ->preload()
+                            ->rules(function (callable $get, $record) {
+                                return [
+                                    function ($attribute, $value, $fail) use ($get, $record) {
+                                        if (! $value || ! $get('id_etudiant')) {
+                                            return;
+                                        }
+
+                                        $exists = Note::where('id_etudiant', $get('id_etudiant'))
+                                            ->where('id_evaluation', $value);
+
+                                        if ($record) {
+                                            $exists->where('id', '!=', $record->getKey());
+                                        }
+
+                                        if ($exists->exists()) {
+                                            $fail(__('app.note_deja_enregistree'));
+                                        }
+                                    },
+                                ];
+                            })
                             ->afterStateUpdated(function ($state, callable $set) {
                                 if ($state) {
                                     $evaluation = Evaluation::find($state);
@@ -60,18 +118,28 @@ class NoteResource extends Resource
                     ])
                     ->columns(2),
                     
-                Forms\Components\Section::make('Score')
+                Forms\Components\Section::make(__('app.note'))
                     ->schema([
                         Forms\Components\TextInput::make('note')
-                            ->label('Score')
+                            ->label(__('app.note'))
                             ->required()
                             ->numeric()
                             ->minValue(0)
-                            ->helperText('Score must not exceed evaluation max score')
-                            ->live(onBlur: true),
+                            ->maxValue(fn (callable $get) => self::getEvaluationNoteMax($get))
+                            ->helperText(fn (callable $get) => __('app.note_max_est', [
+                                'max' => self::getEvaluationNoteMax($get),
+                            ]))
+                            ->reactive()
+                            ->live(onBlur: true)
+                            ->rules(fn (callable $get) => [
+                                'required',
+                                'numeric',
+                                'min:0',
+                                'max:' . self::getEvaluationNoteMax($get),
+                            ]),
                             
                         Forms\Components\Textarea::make('commentaire')
-                            ->label('Comments')
+                            ->label(__('app.commentaire'))
                             ->rows(3)
                             ->columnSpanFull(),
                     ]),
@@ -91,25 +159,30 @@ class NoteResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('etudiant.matricule')
-                    ->label('Student ID')
+                    ->label(__('app.matricule'))
                     ->searchable()
                     ->sortable()
                     ->copyable(),
                     
                 Tables\Columns\TextColumn::make('etudiant.nom')
-                    ->label('Student')
+                    ->label(__('app.etudiant'))
                     ->formatStateUsing(fn ($record) => "{$record->etudiant->nom} {$record->etudiant->prenom}")
-                    ->searchable(['nom', 'prenom'])
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        return $query->whereHas('etudiant', function (Builder $query) use ($search) {
+                            $query->where('nom', 'like', "%{$search}%")
+                                ->orWhere('prenom', 'like', "%{$search}%");
+                        });
+                    })
                     ->sortable(),
                     
                 Tables\Columns\TextColumn::make('evaluation.titre')
-                    ->label('Evaluation')
+                    ->label(__('app.evaluation'))
                     ->searchable()
                     ->sortable()
-                    ->description(fn ($record) => $record->matiere->nom_matiere ?? 'N/A'),
+                    ->description(fn ($record) => __('app.' . ($record->matiere->code_matiere)) ?? 'N/A'),
                     
                 Tables\Columns\TextColumn::make('note')
-                    ->label('Score')
+                    ->label(__('app.note'))
                     ->numeric()
                     ->sortable()
                     ->badge()
@@ -123,12 +196,20 @@ class NoteResource extends Resource
                     ->formatStateUsing(function ($state, $record) {
                         $max = $record->evaluation->note_max ?? 20;
                         $percent = number_format(($state / $max) * 100, 1);
-                        return "{$state}/{$max} ({$percent}%)";
+                        return "{$state}/{$max}";
                     }),
                     
                 Tables\Columns\TextColumn::make('type')
-                    ->label('Type')
+                    ->label(__('app.type'))
                     ->badge()
+                    ->formatStateUsing(fn (?string $state) => match ($state) {
+                        'devoir' => __('app.devoir'),
+                        'interrogation' => __('app.interrogation'),
+                        'examen' => __('app.examen'),
+                        'controle' => __('app.controle'),
+                        'projet' => __('app.projet'),
+                            default => $state ?? __('app.type'),
+                    })
                     ->color(fn (string $state): string => match ($state) {
                         'examen' => 'danger',
                         'controle' => 'warning',
@@ -139,59 +220,55 @@ class NoteResource extends Resource
                     }),
                     
                 Tables\Columns\TextColumn::make('classe.nom_classe')
-                    ->label('Class')
+                    ->label(__('app.classe'))
                     ->sortable()
                     ->toggleable(),
                     
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Entered')
+                    ->label(__('app.cree_a'))
                     ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('id_etudiant')
-                    ->label('Student')
-                    ->relationship('etudiant', 'nom')
+                    ->label(__('app.etudiant'))
+                    ->relationship('etudiant', 'matricule')
+                    ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->nom} {$record->prenom} ({$record->matricule})")
                     ->searchable()
                     ->preload(),
                     
                 Tables\Filters\SelectFilter::make('id_evaluation')
-                    ->label('Evaluation')
+                    ->label(__('app.evaluation'))
                     ->relationship('evaluation', 'titre')
                     ->searchable()
                     ->preload(),
                     
                 Tables\Filters\SelectFilter::make('id_classe')
-                    ->label('Class')
+                    ->label(__('app.classe'))
                     ->relationship('classe', 'nom_classe')
                     ->searchable()
                     ->preload(),
                     
                 Tables\Filters\SelectFilter::make('type')
-                    ->label('Type')
+                    ->label(__('app.type'))
                     ->options([
-                        'devoir' => 'Homework',
-                        'interrogation' => 'Quiz',
-                        'examen' => 'Exam',
-                        'controle' => 'Test',
-                        'projet' => 'Project',
+                        'devoir' => __('app.devoir'),
+                        'interrogation' => __('app.interrogation'),
+                        'examen' => __('app.examen'),
+                        'controle' => __('app.controle'),
+                        'projet' => __('app.projet'),
                     ]),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make()
-                    ->label('Delete')
-                    ->modalHeading('Delete Grade')
-                    ->modalDescription('Are you sure you want to delete this grade? This action will be logged.')
-                    ->successNotificationTitle('Grade deleted'),
+                Tables\Actions\DeleteAction::make(),
+
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()
-                        ->modalHeading('Delete Grades')
-                        ->modalDescription('Are you sure? All deletions will be logged.'),
+                    Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
             ->defaultSort('created_at', 'desc');
@@ -211,5 +288,78 @@ class NoteResource extends Resource
             'create' => Pages\CreateNote::route('/create'),
             'edit' => Pages\EditNote::route('/{record}/edit'),
         ];
+    }
+
+    protected static function getEvaluationNoteMax(callable $get): int
+    {
+        return self::resolveEvaluationNoteMax($get('id_evaluation'));
+    }
+
+    protected static function getEvaluationOptions(?int $classeId, ?int $evaluationId = null): array
+    {
+        if (! $classeId && ! $evaluationId) {
+            return [];
+        }
+
+        $query = Evaluation::with('matiere')
+            ->orderBy('titre');
+
+        if ($classeId) {
+            $query->where('id_classe', $classeId);
+        } elseif ($evaluationId) {
+            $query->whereKey($evaluationId);
+        }
+
+        return $query->get()
+            ->mapWithKeys(fn (Evaluation $evaluation) => [
+                $evaluation->getKey() => "{$evaluation->titre} ({$evaluation->matiere->nom_matiere})",
+            ])
+            ->toArray();
+    }
+
+    protected static function resolveEvaluationNoteMax(?int $evaluationId): int
+    {
+        return Evaluation::find($evaluationId)?->note_max ?? 20;
+    }
+
+    public static function fillRequiredEvaluationReferences(array $data): array
+    {
+        if (empty($data['id_evaluation'])) {
+            return $data;
+        }
+
+        $evaluation = Evaluation::find($data['id_evaluation']);
+
+        if (! $evaluation) {
+            return $data;
+        }
+
+        return [
+            ...$data,
+            'id_matiere' => $data['id_matiere'] ?? $evaluation->id_matiere,
+            'id_classe' => $data['id_classe'] ?? $evaluation->id_classe,
+            'type' => $data['type'] ?? $evaluation->type,
+        ];
+    }
+
+    public static function ensureUniqueNoteCombination(array $data, ?int $ignoreId = null): void
+    {
+        if (empty($data['id_etudiant']) || empty($data['id_evaluation'])) {
+            return;
+        }
+
+        $query = Note::query()
+            ->where('id_etudiant', $data['id_etudiant'])
+            ->where('id_evaluation', $data['id_evaluation']);
+
+        if ($ignoreId) {
+            $query->whereKeyNot($ignoreId);
+        }
+
+        if ($query->exists()) {
+            throw ValidationException::withMessages([
+                'id_evaluation' => __('app.note_deja_enregistree'),
+            ]);
+        }
     }
 }

@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\AdministrateurResource\Pages;
 use App\Filament\Resources\AdministrateurResource\RelationManagers;
 use App\Models\Administrateur;
+use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -19,44 +20,143 @@ class AdministrateurResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-shield-check';
     
-    protected static ?string $navigationGroup = 'System';
-    
     protected static ?int $navigationSort = 1;
-    
-    protected static ?string $navigationLabel = 'Administrators';
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('app.systeme');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('app.gestion_admins');
+    }
+
+    public static function getPluralLabel(): string
+    {
+        return __('app.gestion_admins');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('app.administrateur');
+    }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->hasRole('super_admin') || auth()->user()->can('manage settings');
+    }
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Administrator Information')
+                Forms\Components\Section::make(__('app.informations_personnelles'))
                     ->schema([
                         Forms\Components\TextInput::make('nom')
-                            ->label('Last Name')
+                            ->label(__('app.nom'))
                             ->required()
                             ->maxLength(191),
                             
                         Forms\Components\TextInput::make('prenom')
-                            ->label('First Name')
+                            ->label(__('app.prenom'))
                             ->required()
                             ->maxLength(191),
                             
+                        Forms\Components\TextInput::make('telephone')
+                            ->label(__('app.telephone'))
+                            ->tel()
+                            ->maxLength(191),
+                            
+                        Forms\Components\Textarea::make('adresse')
+                            ->label(__('app.adresse'))
+                            ->rows(3)
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(2),
+                    
+                Forms\Components\Section::make(__('app.compte_utilisateur'))
+                    ->description(__('app.compte_utilisateur_description'))
+                    ->schema([
                         Forms\Components\TextInput::make('email')
-                            ->label('Email Address')
+                            ->label(__('app.email'))
                             ->email()
                             ->required()
-                            ->unique(ignoreRecord: true)
-                            ->maxLength(191),
+                            ->maxLength(191)
+                            ->hiddenOn('view'),
+                            
+                        Forms\Components\TextInput::make('email_display')
+                            ->label(__('app.email'))
+                            ->disabled()
+                            ->dehydrated(false)
+                            ->visibleOn('view')
+                            ->default(fn ($record) => $record->user?->email ?? '-'),
+                            
+                        Forms\Components\TextInput::make('password')
+                            ->label(__('app.password'))
+                            ->password()
+                            ->revealable()
+                            ->maxLength(191)
+                            ->required(fn (string $context): bool => $context === 'create')
+                            ->helperText(fn (string $context): ?string => $context === 'edit' ? __('app.leave_empty_to_keep_current') : null)
+                            ->hiddenOn('view'),
+
+                        Forms\Components\Select::make('role')
+                            ->label(__('app.role'))
+                            ->options([
+                                'admin' => __('app.admin'),
+                                'super_admin' => __('app.super_admin'),
+                            ])
+                            ->required()
+                            ->default('admin')
+                            ->hiddenOn('view'),
+                            
+                        Forms\Components\Placeholder::make('role_display')
+                            ->label(__('app.role'))
+                            ->content(fn ($record) => $record->user?->hasRole('super_admin') 
+                                ? __('app.super_admin')
+                                : __('app.admin'))
+                            ->visibleOn('view'),
+
+                        Forms\Components\Toggle::make('is_active')
+                            ->label(__('app.compte_actif'))
+                            ->default(true)
+                            ->hiddenOn('view'),
+                            
+                        Forms\Components\Placeholder::make('compte_status')
+                            ->label(__('app.statut'))
+                            ->content(fn ($record) => $record->user?->is_active 
+                                ? new \Illuminate\Support\HtmlString('<span class="text-success-600 font-semibold">' . __('app.actif') . '</span>')
+                                : new \Illuminate\Support\HtmlString('<span class="text-danger-600 font-semibold">' . __('app.inactif') . '</span>'))
+                            ->visibleOn('view'),
                     ])
-                    ->columns(3),
+                    ->columns(2),
                     
-                Forms\Components\Section::make('Two-Factor Authentication')
+                Forms\Components\Section::make(__('app.two_factor'))
                     ->schema([
                         Forms\Components\Toggle::make('two_factor_enabled')
-                            ->label('2FA Enabled')
-                            ->default(false),
+                            ->label(__('app.deux_facteurs_active_court'))
+                            ->default(false)
+                            ->hiddenOn('view'),
+                            
+                        Forms\Components\Placeholder::make('two_factor_status')
+                            ->label(__('app.deux_facteurs_active_court'))
+                            ->content(fn ($record) => $record->user?->two_factor_enabled 
+                                ? new \Illuminate\Support\HtmlString('<span class="text-success-600 font-semibold">✓ ' . __('app.actif') . '</span>')
+                                : new \Illuminate\Support\HtmlString('<span class="text-gray-600">✗ ' . __('app.inactif') . '</span>'))
+                            ->visibleOn('view'),
+                            
+                        Forms\Components\Textarea::make('two_factor_recovery_codes')
+                            ->label(__('app.codes_recuperation'))
+                            ->helperText(__('app.codes_recuperation_helper'))
+                            ->disabled()
+                            ->dehydrated(false)
+                            ->rows(8)
+                            ->visibleOn('view')
+                            ->hidden(fn ($record) => !$record->user?->two_factor_enabled || !$record->user?->two_factor_recovery_codes),
                     ])
-                    ->collapsed(),
+                    ->collapsed()
+                    ->collapsible(),
             ]);
     }
 
@@ -65,23 +165,34 @@ class AdministrateurResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('nom')
-                    ->label('Last Name')
+                    ->label(__('app.nom'))
                     ->searchable()
                     ->sortable(),
                     
                 Tables\Columns\TextColumn::make('prenom')
-                    ->label('First Name')
+                    ->label(__('app.prenom'))
                     ->searchable()
                     ->sortable(),
                     
-                Tables\Columns\TextColumn::make('email')
-                    ->label('Email')
+                Tables\Columns\TextColumn::make('user.email')
+                    ->label(__('app.email'))
                     ->searchable()
                     ->copyable()
                     ->icon('heroicon-o-envelope'),
                     
-                Tables\Columns\IconColumn::make('two_factor_enabled')
-                    ->label('2FA')
+                Tables\Columns\TextColumn::make('user.roles.name')
+                    ->label(__('app.role'))
+                    ->formatStateUsing(fn (?string $state): string => $state ? __("app.{$state}") : '-')
+                    ->badge()
+                    ->color('primary'),
+
+                Tables\Columns\IconColumn::make('user.is_active')
+                    ->label(__('app.actif'))
+                    ->boolean()
+                    ->sortable(),
+                    
+                Tables\Columns\IconColumn::make('user.two_factor_enabled')
+                    ->label(__('app.two_factor'))
                     ->boolean()
                     ->trueIcon('heroicon-o-shield-check')
                     ->falseIcon('heroicon-o-shield-exclamation')
@@ -89,17 +200,19 @@ class AdministrateurResource extends Resource
                     ->falseColor('warning'),
                     
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Created')
+                    ->label(__('app.date_creation'))
                     ->dateTime('d/m/Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\TernaryFilter::make('two_factor_enabled')
-                    ->label('2FA Status')
-                    ->placeholder('All administrators')
-                    ->trueLabel('2FA Enabled')
-                    ->falseLabel('2FA Disabled'),
+                Tables\Filters\TernaryFilter::make('user.is_active')
+                    ->label(__('app.statut')),
+                Tables\Filters\TernaryFilter::make('user.two_factor_enabled')
+                    ->label(__('app.two_factor'))
+                    ->placeholder(__('app.voir_tout'))
+                    ->trueLabel(__('app.oui'))
+                    ->falseLabel(__('app.non')),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
@@ -127,6 +240,7 @@ class AdministrateurResource extends Resource
             'index' => Pages\ListAdministrateurs::route('/'),
             'create' => Pages\CreateAdministrateur::route('/create'),
             'edit' => Pages\EditAdministrateur::route('/{record}/edit'),
+            'view' => Pages\ViewAdministrateur::route('/{record}'),
         ];
     }
 }

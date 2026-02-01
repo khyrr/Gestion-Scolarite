@@ -6,7 +6,6 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use App\Models\Administrateur;
 use App\Services\TwoFactorService;
-use App\Models\ActivityLog;
 use Illuminate\Support\Facades\Hash;
 
 class AdminTwoFactorRegenerateTest extends TestCase
@@ -42,11 +41,7 @@ class AdminTwoFactorRegenerateTest extends TestCase
         $this->assertEquals($secret, $admin->two_factor_secret, 'old secret should remain in database');
         $this->assertNotEmpty($admin->two_factor_recovery_codes);
 
-        $this->assertDatabaseHas('activity_logs', [
-            'user_type' => 'admin',
-            'action' => '2fa_regenerate_initiated',
-            'resource' => 'administrateur',
-        ]);
+        $this->assertTrue(\DB::table(config('activitylog.table_name'))->where('description', 'like', '%Initiated 2FA regeneration%')->exists());
     }
 
     /** @test */

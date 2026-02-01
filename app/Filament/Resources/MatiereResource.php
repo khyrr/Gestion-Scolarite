@@ -19,31 +19,54 @@ class MatiereResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-book-open';
     
-    protected static ?string $navigationGroup = 'Academic Management';
-    
     protected static ?int $navigationSort = 2;
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('app.gestion_academique');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('app.matieres');
+    }
+
+    public static function getPluralLabel(): string
+    {
+        return __('app.matieres');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('app.matiere');
+    }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->hasRole('super_admin') || auth()->user()->can('manage courses');
+    }
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Subject Information')
+                Forms\Components\Section::make(__('app.informations_matiere'))
                     ->schema([
                         Forms\Components\TextInput::make('nom_matiere')
-                            ->label('Subject Name')
+                            ->label(__('app.nom_matiere'))
                             ->required()
                             ->maxLength(191)
-                            ->placeholder('e.g., Mathematics, Physics'),
+                            ->placeholder(__('app.placeholder_nom_matiere')),
                             
                         Forms\Components\TextInput::make('code_matiere')
-                            ->label('Subject Code')
+                            ->label(__('app.code_matiere'))
                             ->required()
                             ->unique(ignoreRecord: true)
                             ->maxLength(191)
-                            ->placeholder('e.g., MATH101'),
+                            ->placeholder(__('app.placeholder_code_matiere')),
                             
                         Forms\Components\TextInput::make('coefficient')
-                            ->label('Coefficient/Weight')
+                            ->label(__('app.coefficient'))
                             ->required()
                             ->numeric()
                             ->default(1)
@@ -51,16 +74,16 @@ class MatiereResource extends Resource
                             ->maxValue(10),
                             
                         Forms\Components\Toggle::make('active')
-                            ->label('Active')
+                            ->label(__('app.actif'))
                             ->default(true)
                             ->required(),
                     ])
                     ->columns(2),
                     
-                Forms\Components\Section::make('Description')
+                Forms\Components\Section::make(__('app.description'))
                     ->schema([
                         Forms\Components\Textarea::make('description')
-                            ->label('Subject Description')
+                            ->label(__('app.description'))
                             ->rows(4)
                             ->columnSpanFull(),
                     ]),
@@ -72,26 +95,35 @@ class MatiereResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('code_matiere')
-                    ->label('Code')
+                    ->label(__('app.code_matiere'))
                     ->searchable()
                     ->sortable()
                     ->badge()
                     ->color('primary'),
                     
+                
                 Tables\Columns\TextColumn::make('nom_matiere')
-                    ->label('Subject Name')
+                    ->label(__('app.nom_matiere'))
+                    ->formatStateUsing(fn ($record) =>
+                            !empty($record->code_matiere)
+                                ? __("app." . $record->code_matiere)
+                                : $record->nom_matiere
+                        )
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->badge()
+                    ->color('primary'),
+                
                     
                 Tables\Columns\TextColumn::make('coefficient')
-                    ->label('Coefficient')
-                    ->numeric()
+                    ->label(__('app.coefficient'))
+                    
                     ->sortable()
                     ->badge()
                     ->color('warning'),
                     
                 Tables\Columns\IconColumn::make('active')
-                    ->label('Status')
+                    ->label(__('app.actif'))
                     ->boolean()
                     ->trueIcon('heroicon-o-check-circle')
                     ->falseIcon('heroicon-o-x-circle')
@@ -99,20 +131,20 @@ class MatiereResource extends Resource
                     ->falseColor('danger'),
                     
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Created')
+                    ->label(__('app.cree_a'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                     
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Updated')
+                    ->label(__('app.mis_a_jour_le'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\TernaryFilter::make('active')
-                    ->label('Status')
+                    ->label(__('app.actif'))
                     ->placeholder('All subjects')
                     ->trueLabel('Active only')
                     ->falseLabel('Inactive only'),

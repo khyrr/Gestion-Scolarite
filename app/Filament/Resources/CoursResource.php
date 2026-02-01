@@ -19,33 +19,57 @@ class CoursResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-calendar-days';
     
-    protected static ?string $navigationGroup = 'Academic Management';
-    
     protected static ?int $navigationSort = 3;
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('app.gestion_academique');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('app.cours');
+    }
+
+    public static function getPluralLabel(): string
+    {
+        return __('app.cours');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('app.cours');
+    }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->hasRole('super_admin') || auth()->user()->can('manage courses');
+    }
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Course Details')
+                Forms\Components\Section::make(__('app.details_cours'))
                     ->schema([
                         Forms\Components\Select::make('id_matiere')
-                            ->label('Subject')
-                            ->relationship('matiere', 'nom_matiere')
+                            ->label(__('app.matiere'))
+                            ->relationship('matiere', 'code_matiere')
+                            ->getOptionLabelFromRecordUsing(fn ($record) => __("app.{$record->code_matiere}"))
                             ->required()
                             ->searchable()
                             ->preload(),
                             
                         Forms\Components\Select::make('id_enseignant')
-                            ->label('Teacher')
-                            ->relationship('enseignant', 'nom')
+                            ->label(__('app.enseignant'))
+                            ->relationship('enseignant', 'id_enseignant')
                             ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->nom} {$record->prenom}")
                             ->required()
-                            ->searchable()
+                            ->searchable(['id_enseignant'])
                             ->preload(),
                             
                         Forms\Components\Select::make('id_classe')
-                            ->label('Class')
+                            ->label(__('app.classe'))
                             ->relationship('classe', 'nom_classe')
                             ->required()
                             ->searchable()
@@ -53,109 +77,138 @@ class CoursResource extends Resource
                     ])
                     ->columns(3),
                     
-                Forms\Components\Section::make('Schedule')
+                Forms\Components\Section::make(__('app.horaire'))
                     ->schema([
                         Forms\Components\Select::make('jour')
-                            ->label('Day of Week')
+                            ->label(__('app.jour_semaine'))
                             ->required()
                             ->options([
-                                'Lundi' => 'Monday',
-                                'Mardi' => 'Tuesday',
-                                'Mercredi' => 'Wednesday',
-                                'Jeudi' => 'Thursday',
-                                'Vendredi' => 'Friday',
-                                'Samedi' => 'Saturday',
+                                'lundi' => __('app.lundi'),
+                                'mardi' => __('app.mardi'),
+                                'mercredi' => __('app.mercredi'),
+                                'jeudi' => __('app.jeudi'),
+                                'vendredi' => __('app.vendredi'),
+                                'samedi' => __('app.samedi'),
                             ]),
                             
-                        Forms\Components\TimePicker::make('date_debut')
-                            ->label('Start Time')
+                        Forms\Components\TextInput::make('date_debut')
+                            ->label(__('app.heure_debut'))
                             ->required()
-                            ->seconds(false),
-                            
-                        Forms\Components\TimePicker::make('date_fin')
-                            ->label('End Time')
+                            ->type('text')
+                            ->inputMode('numeric')
+                            ->extraInputAttributes([
+                                'data-timepicker' => 'true',
+                                'data-time-format' => self::getTimeFormat(),
+                            ])
+                            ->rules(['required', 'date_format:' . self::getTimeFormat()]),
+
+                        Forms\Components\TextInput::make('date_fin')
+                            ->label(__('app.heure_fin'))
                             ->required()
-                            ->seconds(false)
-                            ->after('date_debut'),
+                            ->type('text')
+                            ->inputMode('numeric')
+                            ->extraInputAttributes([
+                                'data-timepicker' => 'true',
+                                'data-time-format' => self::getTimeFormat(),
+                            ])
+                            ->rules(['required', 'date_format:' . self::getTimeFormat(), 'after:date_debut']),
                     ])
                     ->columns(3),
                     
-                Forms\Components\Section::make('Description')
+                Forms\Components\Section::make(__('app.description'))
                     ->schema([
                         Forms\Components\Textarea::make('description')
-                            ->label('Course Description')
+                            ->label(__('app.description_cours'))
                             ->rows(3)
                             ->columnSpanFull(),
                     ]),
             ]);
     }
 
+    protected static function getTimeFormat(): string
+    {
+        return config('app.time_format', 'H:i');
+    }
+
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('matiere.nom_matiere')
-                    ->label('Subject')
+                Tables\Columns\TextColumn::make('matiere.code_matiere')
+                    ->label(__('app.matiere'))
+                    ->formatStateUsing(fn ($record) => __("app." . $record->matiere->code_matiere))
                     ->searchable()
                     ->sortable()
                     ->badge()
                     ->color('primary'),
                     
                 Tables\Columns\TextColumn::make('enseignant.nom')
-                    ->label('Teacher')
+                    ->label(__('app.enseignant'))
                     ->formatStateUsing(fn ($record) => "{$record->enseignant->nom} {$record->enseignant->prenom}")
-                    ->searchable(['nom', 'prenom'])
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        return $query->whereHas('enseignant', function (Builder $query) use ($search) {
+                            $query->where('nom', 'like', "%{$search}%")
+                                ->orWhere('prenom', 'like', "%{$search}%");
+                        });
+                    })
                     ->sortable(),
                     
                 Tables\Columns\TextColumn::make('classe.nom_classe')
-                    ->label('Class')
+                    ->label(__('app.classe'))
                     ->searchable()
                     ->sortable()
                     ->badge()
                     ->color('info'),
                     
                 Tables\Columns\TextColumn::make('jour')
-                    ->label('Day')
+                    ->label(__('app.jour_semaine'))
                     ->badge()
+                    ->formatStateUsing(fn (?string $state) => $state ? __("app.{$state}") : __('app.jour_semaine'))
                     ->color('warning'),
                     
                 Tables\Columns\TextColumn::make('date_debut')
-                    ->label('Start')
-                    ->time('H:i'),
-                    
+                    ->label(__('app.heure_debut'))
+                    ->time(self::getTimeFormat()),
+
                 Tables\Columns\TextColumn::make('date_fin')
-                    ->label('End')
-                    ->time('H:i'),
+                    ->label(__('app.heure_fin'))
+                    ->time(self::getTimeFormat()),
                     
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Created')
+                    ->label(__('app.cree_a'))
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->label(__('app.mis_a_jour_le'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('id_enseignant')
-                    ->label('Teacher')
-                    ->relationship('enseignant', 'nom')
+                    ->label(__('app.enseignant'))
+                    ->relationship('enseignant', 'id_enseignant')
+                    ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->nom} {$record->prenom}")
                     ->searchable()
                     ->preload(),
                     
                 Tables\Filters\SelectFilter::make('id_classe')
-                    ->label('Class')
+                    ->label(__('app.classe'))
                     ->relationship('classe', 'nom_classe')
                     ->searchable()
                     ->preload(),
                     
                 Tables\Filters\SelectFilter::make('jour')
-                    ->label('Day')
+                    ->label(__('app.jour_semaine'))
                     ->options([
-                        'Lundi' => 'Monday',
-                        'Mardi' => 'Tuesday',
-                        'Mercredi' => 'Wednesday',
-                        'Jeudi' => 'Thursday',
-                        'Vendredi' => 'Friday',
-                        'Samedi' => 'Saturday',
-                    ]),
+                                'lundi' => __('app.lundi'),
+                                'mardi' => __('app.mardi'),
+                                'mercredi' => __('app.mercredi'),
+                                'jeudi' => __('app.jeudi'),
+                                'vendredi' => __('app.vendredi'),
+                                'samedi' => __('app.samedi'),
+                            ]),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),

@@ -13,7 +13,7 @@ class ListActivityLogs extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            // Read-only activity logs - no create action
         ];
     }
 }

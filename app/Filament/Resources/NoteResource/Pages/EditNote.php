@@ -16,4 +16,13 @@ class EditNote extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
+
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        $ignoreId = $this->getRecord()?->getKey();
+
+        NoteResource::ensureUniqueNoteCombination($data, $ignoreId);
+
+        return NoteResource::fillRequiredEvaluationReferences($data);
+    }
 }

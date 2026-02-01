@@ -2,90 +2,284 @@
 
 namespace App\Services;
 
+use App\Models\User;
+use Endroid\QrCode\Builder\Builder;
+use Endroid\QrCode\Encoding\Encoding;
+use Endroid\QrCode\Writer\SvgWriter;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\RateLimiter;
+use Laravel\Fortify\RecoveryCode;
+use PragmaRX\Google2FA\Google2FA;
+
 class TwoFactorService
 {
-    // Time step for TOTP (seconds)
-    public const STEP = 30;
+    protected Google2FA $google2fa;
 
-    // Number of digits for OTP
-    public const DIGITS = 6;
-
-    /**
-     * Generate a base32 secret. (Not cryptographically perfect but sufficient for seeding.)
-     */
-    public static function generateSecret(int $length = 16): string
+    public function __construct()
     {
-        $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'; // RFC4648 base32 alphabet
-        $secret = '';
-        for ($i = 0; $i < $length; $i++) {
-            $secret .= $chars[random_int(0, strlen($chars) - 1)];
+        $this->google2fa = new Google2FA();
+    }
+
+    public function enable(User $user): void
+    {
+        $user->forceFill([
+            'two_factor_secret' => encrypt($this->google2fa->generateSecretKey()),
+            'two_factor_recovery_codes' => encrypt(json_encode($this->generateRecoveryCodes())),
+            'two_factor_confirmed_at' => null,
+        ])->save();
+    }
+
+    public function confirm(User $user, string $code): bool
+    {
+        if (! $this->verify($user, $code)) {
+            return false;
         }
-        return $secret;
+
+        $user->forceFill([
+            'two_factor_confirmed_at' => now(),
+        ])->save();
+
+        // Session flag: verified now
+        $this->markAsVerified($user);
+        $this->clearFailedAttempts($user);
+
+        return true;
+    }
+
+    public function disable(User $user): void
+    {
+        $user->forceFill([
+            'two_factor_secret' => null,
+            'two_factor_recovery_codes' => null,
+            'two_factor_confirmed_at' => null,
+        ])->save();
+
+        $this->clearVerificationStatus();
+        $this->clearFailedAttempts($user);
+    }
+
+    public function isEnabled(User $user): bool
+    {
+        return filled($user->two_factor_secret);
+    }
+
+    public function isConfirmed(User $user): bool
+    {
+        return filled($user->two_factor_confirmed_at);
     }
 
     /**
-     * Decode base32 to binary string
+     * Verify TOTP code.
      */
-    public static function base32Decode(string $b32): string
+    public function verify(User $user, string $code): bool
     {
-        $alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-        $b32 = strtoupper($b32);
-        $l = strlen($b32);
-        $n = 0;
-        $j = 0;
-        $binary = '';
+        if (! $this->isEnabled($user)) {
+            return false;
+        }
 
-        for ($i = 0; $i < $l; $i++) {
-            $n = $n << 5; // Move buffer left by 5 to make room
-            $n = $n + strpos($alphabet, $b32[$i]);
-            $j += 5; // Keep track of number of bits in buffer
+        $secretEncrypted = $user->two_factor_secret;
 
-            if ($j >= 8) {
-                $j -= 8;
-                $binary .= chr(($n & (0xFF << $j)) >> $j);
+        if (blank($secretEncrypted)) {
+            return false;
+        }
+
+        $secret = decrypt($secretEncrypted);
+
+        // window = 2 => tolerance time drift
+        return $this->google2fa->verifyKey($secret, $this->normalizeCode($code), 2);
+    }
+
+    /**
+     * Verify a recovery code (constant-time + remove after use).
+     */
+    public function verifyRecoveryCode(User $user, string $code): bool
+    {
+        $codes = $this->getRecoveryCodes($user);
+        if (empty($codes)) {
+            return false;
+        }
+
+        $code = $this->normalizeCode($code);
+
+        $matchIndex = null;
+        foreach ($codes as $i => $stored) {
+            if (is_string($stored) && hash_equals($stored, $code)) {
+                $matchIndex = $i;
+                break;
             }
         }
 
-        return $binary;
-    }
-
-    /**
-     * Generate a TOTP code for a secret at the current time.
-     */
-    public static function generateCode(string $secret, int $time = null): string
-    {
-        $time = $time ?? time();
-        $counter = floor($time / self::STEP);
-        $key = self::base32Decode($secret);
-
-        // pack counter into binary (8 byte big endian)
-        $counterBin = pack('N*', 0) . pack('N*', $counter & 0xffffffff);
-
-        $hash = hash_hmac('sha1', $counterBin, $key, true);
-
-        $offset = ord(substr($hash, -1)) & 0x0F;
-        $binary = (ord($hash[$offset]) & 0x7f) << 24 |
-                  (ord($hash[$offset + 1]) & 0xff) << 16 |
-                  (ord($hash[$offset + 2]) & 0xff) << 8 |
-                  (ord($hash[$offset + 3]) & 0xff);
-
-        $otp = $binary % pow(10, self::DIGITS);
-
-        return str_pad((string)$otp, self::DIGITS, '0', STR_PAD_LEFT);
-    }
-
-    /**
-     * Verify a provided code against a secret, allowing a small window
-     * of +/- 1 time step.
-     */
-    public static function verifyCode(string $secret, string $code, int $window = 1): bool
-    {
-        $time = time();
-        for ($i = -$window; $i <= $window; $i++) {
-            if (hash_equals(self::generateCode($secret, $time + ($i * self::STEP)), $code)) {
-                return true;
-            }
+        if ($matchIndex === null) {
+            return false;
         }
-        return false;
+
+        // remove used recovery code
+        unset($codes[$matchIndex]);
+        $codes = array_values($codes);
+
+        $user->forceFill([
+            'two_factor_recovery_codes' => encrypt(json_encode($codes)),
+        ])->save();
+
+        return true;
+    }
+
+    public function regenerateRecoveryCodes(User $user): array
+    {
+        $codes = $this->generateRecoveryCodes();
+
+        $user->forceFill([
+            'two_factor_recovery_codes' => encrypt(json_encode($codes)),
+        ])->save();
+
+        return $codes;
+    }
+
+    /**
+     * Generate QR code for 2FA setup.
+     */
+    public function qrCodeInline(User $user): string
+    {
+        if (! $this->isEnabled($user)) {
+            $this->enable($user);
+            $user->refresh();
+        }
+
+        $secret = decrypt($user->two_factor_secret);
+
+        $qrCodeUrl = $this->google2fa->getQRCodeUrl(
+            config('app.name'),
+            $user->email,
+            $secret
+        );
+
+        $result = Builder::create()
+            ->writer(new SvgWriter())
+            ->data($qrCodeUrl)
+            ->encoding(new Encoding('UTF-8'))
+            ->size(200)
+            ->margin(10)
+            ->build();
+
+        return $result->getString();
+    }
+
+    /**
+     * Only show secret during setup.
+     */
+    public function getSecretKeyForSetup(User $user): ?string
+    {
+        if (! $this->isEnabled($user)) {
+            return null;
+        }
+
+        // optional: only allow if not confirmed
+        if ($this->isConfirmed($user)) {
+            return null;
+        }
+
+        return decrypt($user->two_factor_secret);
+    }
+
+    public function getRecoveryCodes(User $user): array
+    {
+        if (blank($user->two_factor_recovery_codes)) {
+            return [];
+        }
+
+        $decoded = json_decode(decrypt($user->two_factor_recovery_codes), true);
+
+        return is_array($decoded) ? $decoded : [];
+    }
+
+    // ----------------------------
+    // Session verified flag
+    // ----------------------------
+
+    public function markAsVerified(User $user): void
+    {
+        // prevent session fixation
+        request()->session()->regenerate();
+
+        session([
+            'filament_2fa_verified_at' => now()->timestamp,
+            'filament_2fa_user_id' => $user->id,
+        ]);
+    }
+
+    public function isRecentlyVerified(User $user): bool
+    {
+        $verifiedAt = session('filament_2fa_verified_at');
+        $userId = session('filament_2fa_user_id');
+
+        if (! $verifiedAt || $userId !== $user->id) {
+            return false;
+        }
+
+        $reconfirmMinutes = (int) config('security.reconfirm_minutes', 30);
+
+        // If 0 => always ask challenge
+        if ($reconfirmMinutes <= 0) {
+            return false;
+        }
+
+        return now()->timestamp - $verifiedAt < ($reconfirmMinutes * 60);
+    }
+
+    public function clearVerificationStatus(): void
+    {
+        session()->forget(['filament_2fa_verified_at', 'filament_2fa_user_id']);
+    }
+
+    // ----------------------------
+    // Rate limiting (Laravel native)
+    // ----------------------------
+
+    public function ensureNotRateLimited(User $user): void
+    {
+        $key = $this->rateLimitKey($user);
+        $maxAttempts = (int) config('security.max_failed_attempts', 5);
+        $decaySeconds = (int) config('security.rate_limit_decay_seconds', 60);
+
+        if (RateLimiter::tooManyAttempts($key, $maxAttempts)) {
+            abort(429, 'Too many 2FA attempts. Please try again later.');
+        }
+
+        // hit is done when verification fails
+        // RateLimiter::hit($key, $decaySeconds);
+    }
+
+    public function incrementFailedAttempts(User $user): void
+    {
+        $key = $this->rateLimitKey($user);
+        $decaySeconds = (int) config('security.rate_limit_decay_seconds', 60);
+
+        RateLimiter::hit($key, $decaySeconds);
+    }
+
+    public function clearFailedAttempts(User $user): void
+    {
+        RateLimiter::clear($this->rateLimitKey($user));
+    }
+
+    protected function rateLimitKey(User $user): string
+    {
+        return '2fa:attempts:user:' . $user->id;
+    }
+
+    // ----------------------------
+    // Helpers
+    // ----------------------------
+
+    protected function generateRecoveryCodes(): array
+    {
+        $count = (int) config('security.recovery_codes_count', 8);
+
+        return Collection::times($count, fn () => RecoveryCode::generate())->all();
+    }
+
+    protected function normalizeCode(string $code): string
+    {
+        return preg_replace('/\s+/', '', trim($code)) ?? '';
     }
 }

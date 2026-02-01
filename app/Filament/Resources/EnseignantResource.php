@@ -5,13 +5,16 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\EnseignantResource\Pages;
 use App\Filament\Resources\EnseignantResource\RelationManagers;
 use App\Models\Enseignant;
+use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\HtmlString;
 
 class EnseignantResource extends Resource
 {
@@ -19,47 +22,137 @@ class EnseignantResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
     
-    protected static ?string $navigationGroup = 'People';
-    
-    protected static ?int $navigationSort = 2;
-    
-    protected static ?string $recordTitleAttribute = 'nom';
+    protected static ?int $navigationSort = 1;
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('app.personnes');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('app.enseignants');
+    }
+
+    public static function getPluralLabel(): string
+    {
+        return __('app.enseignants');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('app.enseignant');
+    }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->hasRole('super_admin') || auth()->user()->can('manage teachers');
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()->hasRole('super_admin') || auth()->user()->can('manage teachers');
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return auth()->user()->hasRole('super_admin') || auth()->user()->can('manage teachers');
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return auth()->user()->hasRole('super_admin') || auth()->user()->can('manage teachers');
+    }
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Personal Information')
+                Forms\Components\Section::make(__('app.informations_personnelles'))
                     ->schema([
                         Forms\Components\TextInput::make('nom')
-                            ->label('Last Name')
+                            ->label(__('app.nom'))
                             ->required()
                             ->maxLength(191),
                             
                         Forms\Components\TextInput::make('prenom')
-                            ->label('First Name')
+                            ->label(__('app.prenom'))
                             ->required()
                             ->maxLength(191),
-                            
-                        Forms\Components\TextInput::make('email')
-                            ->label('Email Address')
-                            ->email()
-                            ->required()
-                            ->unique(ignoreRecord: true)
-                            ->maxLength(191),
-                            
-                        Forms\Components\TextInput::make('telephone')
-                            ->label('Phone Number')
-                            ->tel()
-                            ->required()
-                            ->maxLength(191),
-                            
-                        Forms\Components\Toggle::make('is_active')
-                            ->label('Active')
-                            ->default(true)
-                            ->required(),
                     ])
                     ->columns(2),
+
+                Forms\Components\Section::make(__('app.contact_information'))
+                    ->schema([
+                        Forms\Components\TextInput::make('telephone')
+                            ->label(__('app.telephone'))
+                            ->tel()
+                            ->maxLength(191),
+                        
+                        Forms\Components\Textarea::make('adresse')
+                            ->label(__('app.adresse'))
+                            ->rows(3)
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(2),
+                    
+                Forms\Components\Section::make(__('app.compte_utilisateur'))
+                    ->description(__('app.compte_utilisateur_description'))
+                    ->schema([
+                        Forms\Components\TextInput::make('email')
+                            ->label(__('app.email'))
+                            ->email()
+                            ->maxLength(191)
+                            ->helperText(__('app.leave_empty_for_no_account'))
+                            ->hiddenOn('view'),
+                            
+                        Forms\Components\TextInput::make('email_display')
+                            ->label(__('app.email'))
+                            ->disabled()
+                            ->dehydrated(false)
+                            ->visibleOn('view')
+                            ->default(fn ($record) => $record->user?->email ?? '-'),
+                                    
+                        Forms\Components\TextInput::make('password')
+                            ->label(__('app.password'))
+                            ->password()
+                            ->revealable()
+                            ->maxLength(191)
+                            ->helperText(__('app.leave_empty_to_keep_current'))
+                            ->hiddenOn('view'),
+                                    
+                        Forms\Components\Toggle::make('is_active')
+                            ->label(__('app.compte_actif'))
+                            ->default(true)
+                            ->hiddenOn('view'),
+                            
+                        Forms\Components\Placeholder::make('compte_status')
+                            ->label(__('app.statut'))
+                            ->content(fn ($record) => $record->user?->is_active 
+                                ? new \Illuminate\Support\HtmlString('<span class="text-success-600 font-semibold">' . __('app.actif') . '</span>')
+                                : new \Illuminate\Support\HtmlString('<span class="text-danger-600 font-semibold">' . __('app.inactif') . '</span>'))
+                            ->visibleOn('view'),
+                    ])
+                    ->columns(2),
+
+                Forms\Components\Section::make(__('app.affectations'))
+                    ->schema([
+                        Forms\Components\Placeholder::make('matieres_list')
+                            ->label(__('app.matieres'))
+                            ->content(fn (callable $get) => filled($get('matieres_list'))
+                                ? new HtmlString($get('matieres_list'))
+                                : __('app.aucune_matiere'))
+                            ->extraAttributes(['class' => 'gap-2 flex flex-wrap']),
+                        
+                        Forms\Components\Placeholder::make('classes_list')
+                            ->label(__('app.classes_assignees'))
+                            ->content(fn (callable $get) => filled($get('classes_list'))
+                                ? new HtmlString($get('classes_list'))
+                                : __('app.aucune_classe_assignee'))
+                            ->extraAttributes(['class' => 'gap-2 flex flex-wrap']),
+                    ])
+                    ->columns(1)
+                    ->visibleOn('view'),
             ]);
     }
 
@@ -68,59 +161,61 @@ class EnseignantResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('nom')
-                    ->label('Last Name')
+                    ->label(__('app.nom'))
                     ->searchable()
                     ->sortable(),
                     
                 Tables\Columns\TextColumn::make('prenom')
-                    ->label('First Name')
+                    ->label(__('app.prenom'))
                     ->searchable()
                     ->sortable(),
                     
-                Tables\Columns\TextColumn::make('email')
-                    ->label('Email')
+                Tables\Columns\TextColumn::make('user.email')
+                    ->label(__('app.email'))
                     ->searchable()
                     ->copyable()
-                    ->icon('heroicon-o-envelope'),
+                    ->icon('heroicon-o-envelope')
+                    ->default('-'),
                     
                 Tables\Columns\TextColumn::make('telephone')
-                    ->label('Phone')
+                    ->label(__('app.telephone'))
                     ->searchable()
                     ->copyable()
                     ->icon('heroicon-o-phone'),
-                    
+
+                Tables\Columns\TextColumn::make('matieres')
+                    ->label(__('app.matieres'))
+                    ->formatStateUsing(fn ($record) => $record->matieres->pluck('nom_matiere')->join(', ') ?: __('app.aucune_matiere'))
+                    ->wrap()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
                 Tables\Columns\TextColumn::make('cours_count')
-                    ->label('Courses')
+                    ->label(__('app.cours'))
                     ->counts('cours')
                     ->badge()
                     ->color('info'),
                     
-                Tables\Columns\IconColumn::make('is_active')
-                    ->label('Status')
+                Tables\Columns\IconColumn::make('user.is_active')
+                    ->label(__('app.statut'))
                     ->boolean()
                     ->trueIcon('heroicon-o-check-circle')
                     ->falseIcon('heroicon-o-x-circle')
                     ->trueColor('success')
-                    ->falseColor('danger'),
+                    ->falseColor('danger')
+                    ->default(false),
                     
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Created')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                    
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Updated')
+                    ->label(__('app.date_creation'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\TernaryFilter::make('is_active')
-                    ->label('Status')
-                    ->placeholder('All teachers')
-                    ->trueLabel('Active only')
-                    ->falseLabel('Inactive only'),
+                Tables\Filters\TernaryFilter::make('user.is_active')
+                    ->label(__('app.statut'))
+                    ->placeholder(__('app.voir_tout'))
+                    ->trueLabel(__('app.oui'))
+                    ->falseLabel(__('app.non')),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
@@ -131,16 +226,16 @@ class EnseignantResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\BulkAction::make('activate')
-                        ->label('Activate')
+                        ->label(__('app.activer'))
                         ->icon('heroicon-o-check-circle')
                         ->color('success')
-                        ->action(fn ($records) => $records->each->update(['is_active' => true]))
+                        ->action(fn ($records) => $records->each(fn ($record) => $record->user->update(['is_active' => true])))
                         ->deselectRecordsAfterCompletion(),
                     Tables\Actions\BulkAction::make('deactivate')
-                        ->label('Deactivate')
+                        ->label(__('app.desactiver'))
                         ->icon('heroicon-o-x-circle')
                         ->color('danger')
-                        ->action(fn ($records) => $records->each->update(['is_active' => false]))
+                        ->action(fn ($records) => $records->each(fn ($record) => $record->user->update(['is_active' => false])))
                         ->deselectRecordsAfterCompletion(),
                 ]),
             ])
@@ -160,6 +255,7 @@ class EnseignantResource extends Resource
             'index' => Pages\ListEnseignants::route('/'),
             'create' => Pages\CreateEnseignant::route('/create'),
             'edit' => Pages\EditEnseignant::route('/{record}/edit'),
+            'view' => Pages\ViewEnseignant::route('/{record}'),
         ];
     }
 }

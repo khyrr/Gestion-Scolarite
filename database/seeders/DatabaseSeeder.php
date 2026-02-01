@@ -16,12 +16,13 @@ class DatabaseSeeder extends Seeder
 
         // Seed in order of dependencies
         $this->call([
+            RolesAndPermissionsSeeder::class, // Must run first for Spatie roles
             AdministrateursSeeder::class,
             ClassesSeeder::class,
             EnseignantsSeeder::class,
             EtudiantsSeeder::class,
-            MatieresSeeder::class, // New: Seed subjects first
-            EnseignantMatiereClasseSeeder::class, // New: Then teacher-subject-class assignments
+            MatieresSeeder::class,
+            EnseignantMatiereClasseSeeder::class,
             CoursSeeder::class,
             EvaluationsSeeder::class,
             NotesSeeder::class,
@@ -38,8 +39,8 @@ class DatabaseSeeder extends Seeder
         $this->command->info('   - Users (Login Accounts): ' . \App\Models\User::count());
         $this->command->line('');
         $this->command->info('🔑 Default login credentials:');
-        $this->command->info('   Admin: admin@ecole.com / password123');
-        $this->command->info('   Teacher: elmoctar@ecole.com / password123');
+        $this->command->info('   Super Admin: admin@ecole.com / password123');
+        $this->command->info('   Teacher: elmoctar@ecole.com / teacher123');
         $this->command->line('');
         $this->command->info('📚 Students access grades via public search using matricule');
         $this->command->info('   Example matricule: ETU0001, ETU0002, etc.');

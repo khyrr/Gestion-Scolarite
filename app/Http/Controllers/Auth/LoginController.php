@@ -51,21 +51,21 @@ class LoginController extends Controller
             return '/';
         }
         
-        // Role-based redirect
-        switch ($user->role) {
-            case 'super_admin':
-            case 'admin':
-                return route('admin.dashboard');
-            case 'teacher':
-            case 'enseignant':
-                return route('enseignant.dashboard');
-            case 'student':
-            case 'etudiant':
-                // return route('etudiant.dashboard');
-                return '/';
-            default:
-                return '/';
+        // Role-based redirect using Spatie
+        if ($user->hasAnyRole(['super_admin', 'admin'])) {
+            return route('admin.dashboard');
         }
+        
+        if ($user->hasAnyRole(['teacher', 'enseignant'])) {
+            return route('enseignant.dashboard');
+        }
+        
+        if ($user->hasAnyRole(['student', 'etudiant'])) {
+            // return route('etudiant.dashboard');
+            return '/';
+        }
+        
+        return '/';
     }
 
     // Removed guard() method to use default web guard
@@ -125,7 +125,7 @@ class LoginController extends Controller
             }
 
             // 2FA Logic for Admins
-            if ($user->isAdmin() && $user->profile && $user->profile->two_factor_enabled) {
+            if ($user->isAdmin() && $user->two_factor_enabled) {
                 session()->forget('admin_2fa_passed');
                 session(['admin_2fa_pending' => true]);
                 return redirect()->route('admin.2fa.challenge');

@@ -19,50 +19,54 @@ class AdministrateursSeeder extends Seeder
             [
                 'nom' => 'Directeur Principal',
                 'prenom' => 'Mohamed',
+                'telephone' => '+222 20 00 11 22',
+                'adresse' => 'Tevragh Zeina, Nouakchott',
                 'email' => 'admin@ecole.com',
-                'mot_de_passe' => Hash::make('password123'),
+                'password' => 'password123',
                 'role' => 'super_admin',
-                'created_at' => now(),
-                'updated_at' => now(),
             ],
             [
                 'nom' => 'Secrétaire Générale',
                 'prenom' => 'Fatima',
+                'telephone' => '+222 20 00 11 23',
+                'adresse' => 'Ksar, Nouakchott',
                 'email' => 'secretaire@ecole.com',
-                'mot_de_passe' => Hash::make('password123'),
+                'password' => 'password123',
                 'role' => 'admin',
-                'created_at' => now(),
-                'updated_at' => now(),
             ],
             [
                 'nom' => 'Comptable',
                 'prenom' => 'Ahmed',
+                'telephone' => '+222 20 00 11 24',
+                'adresse' => 'El Mina, Nouakchott',
                 'email' => 'comptable@ecole.com',
-                'mot_de_passe' => Hash::make('password123'),
+                'password' => 'password123',
                 'role' => 'admin',
-                'created_at' => now(),
-                'updated_at' => now(),
             ]
         ];
 
-        foreach ($administrators as $adminData) {
-            // Create Administrator record in administrateurs table
-            Administrateur::create($adminData);
+        foreach ($administrators as $data) {
+            // Create Administrator profile record
+            $admin = Administrateur::create([
+                'nom' => $data['nom'],
+                'prenom' => $data['prenom'],
+                'telephone' => $data['telephone'],
+                'adresse' => $data['adresse'],
+            ]);
 
-            // Create User account for authentication (clean auth system)
-            User::updateOrCreate(
-                ['email' => $adminData['email']],
-                [
-                    'name' => $adminData['prenom'] . ' ' . $adminData['nom'],
-                    'prenom' => $adminData['prenom'],
-                    'nom' => $adminData['nom'],
-                    'email' => $adminData['email'],
-                    'password' => $adminData['mot_de_passe'],
-                    'role' => 'admin',
-                    'is_active' => true,
-                    'email_verified_at' => now(),
-                ]
-            );
+            // Create User account with polymorphic relationship
+            $user = User::create([
+                'name' => trim($data['prenom'] . ' ' . $data['nom']),
+                'email' => $data['email'],
+                'password' => Hash::make($data['password']),
+                'is_active' => true,
+                'email_verified_at' => now(),
+                'profile_type' => Administrateur::class,
+                'profile_id' => $admin->id_administrateur,
+            ]);
+
+            // Assign role using Spatie
+            $user->assignRole($data['role']);
         }
     }
 }

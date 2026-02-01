@@ -6,7 +6,6 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use App\Models\Administrateur;
 use App\Models\AdminAllowedIp;
-use App\Models\ActivityLog;
 use Illuminate\Support\Facades\Hash;
 
 class AdminIpAuditAndTwoFactorTest extends TestCase
@@ -60,7 +59,7 @@ class AdminIpAuditAndTwoFactorTest extends TestCase
                ->assertRedirect();
 
           $this->assertDatabaseHas('admin_allowed_ips', ['ip_address' => '198.51.100.7']);
-          $this->assertDatabaseHas('activity_logs', ['user_type' => 'admin', 'action' => 'create', 'resource' => 'admin_allowed_ip']);
+          $this->assertTrue(\DB::table(config('activitylog.table_name'))->where('description', 'like', 'Added allowed IP%')->exists());
 
           // toggle (update)
           $entry = AdminAllowedIp::firstWhere('ip_address', '198.51.100.7');
@@ -72,7 +71,7 @@ class AdminIpAuditAndTwoFactorTest extends TestCase
 
           $entry->refresh();
           $this->assertFalse($entry->is_active);
-          $this->assertDatabaseHas('activity_logs', ['user_type' => 'admin', 'action' => 'update', 'resource' => 'admin_allowed_ip']);
+          $this->assertTrue(\DB::table(config('activitylog.table_name'))->where('description', 'like', 'Toggled IP%')->exists());
 
           // destroy (delete)
           $this->actingAs($admin, 'admin')
@@ -81,7 +80,7 @@ class AdminIpAuditAndTwoFactorTest extends TestCase
                ->assertRedirect();
 
           $this->assertDatabaseMissing('admin_allowed_ips', ['ip_address' => '198.51.100.7']);
-          $this->assertDatabaseHas('activity_logs', ['user_type' => 'admin', 'action' => 'delete', 'resource' => 'admin_allowed_ip']);
+          $this->assertTrue(\DB::table(config('activitylog.table_name'))->where('description', 'like', 'Deleted allowed IP%')->exists());
      }
 
      /** @test */

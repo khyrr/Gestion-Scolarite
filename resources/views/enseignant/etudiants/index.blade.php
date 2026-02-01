@@ -92,7 +92,7 @@
                                             </td>
                                         @endif
                                         <td>
-                                            <span class="badge bg-{{ $student->genre == 'masculin' ? 'info' : 'secondary' }}">
+                                            <span class="badge bg-{{ $student->genre == 'M' ? 'info' : 'secondary' }}">
                                                 {{ __('app.' . strtolower($student->genre)) }}
                                             </span>
                                         </td>

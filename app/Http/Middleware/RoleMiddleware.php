@@ -6,7 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Log;
-use App\Models\ActivityLog;
+use App\Services\ActivityLogger;
 
 class RoleMiddleware
 {
@@ -33,33 +33,36 @@ class RoleMiddleware
         
         // Check if user has the required role
         if (!$this->hasRole($user, $role)) {
+            $userRoles = $user->getRoleNames()->implode(', ') ?: 'none';
+            
             Log::warning('Access denied: User attempted to access restricted route', [
                 'user_id' => $user->id,
-                'user_role' => $user->role,
+                'user_role' => $userRoles,
                 'required_role' => $role,
                 'url' => $request->fullUrl(),
                 'ip' => $request->ip(),
             ]);
 
-            ActivityLog::create([
-                'user_type' => get_class($user),
-                'user_id' => $user->id,
-                'action' => 'access_denied',
-                'resource' => $request->path(),
-                'description' => "Unauthorized access attempt. Required role: {$role}. User role: {$user->role}",
-                'ip_address' => $request->ip(),
-                'user_agent' => $request->userAgent(),
-            ]);
+            ActivityLogger::log(
+                get_class($user),
+                $user->id,
+                'access_denied',
+                $request->path(),
+                null,
+                "Unauthorized access attempt. Required role: {$role}. User role: {$userRoles}",
+                null,
+                $request
+            );
 
             if ($request->expectsJson()) {
                 return response()->json([
                     'message' => __('app.unauthorized_access')
                 ], 403);
             }
-            if ($user->role === 'admin') {
+            if ($user->hasAnyRole(['admin', 'super_admin'])) {
                 return redirect()->route('admin.dashboard')->with('error', __('app.acces_refuse'));
             }
-            if ($user->role === 'teacher' || $user->role === 'enseignant') {
+            if ($user->hasAnyRole(['teacher', 'enseignant'])) {
                 return redirect()->route('enseignant.dashboard')->with('error', __('app.acces_refuse'));
             }
 

@@ -15,26 +15,36 @@ class Administrateur extends Model
     protected $fillable = [
         'nom',
         'prenom',
-        'email',
-        'password',
-        'role',
-        'two_factor_secret',
-        'two_factor_enabled',
-        'two_factor_recovery_codes',
+        'telephone',
+        'adresse',
     ];
 
     protected $hidden = [
-        'password',
-        'remember_token',
-        'two_factor_secret',
+        // Auth data is now in User model
     ];
 
     protected $casts = [
-        'two_factor_enabled' => 'boolean',
+        // Move to User if needed
     ];
 
     public function user()
     {
         return $this->morphOne(User::class, 'profile');
+    }
+
+    /**
+     * Helper to check if admin has a user account
+     */
+    public function hasAccount(): bool
+    {
+        return $this->user !== null;
+    }
+
+    /**
+     * Get full name
+     */
+    public function getFullNameAttribute(): string
+    {
+        return trim("{$this->prenom} {$this->nom}");
     }
 }

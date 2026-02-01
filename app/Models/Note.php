@@ -4,9 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class Note extends Model
 {
+    use HasFactory, LogsActivity;
+    
     protected $primaryKey = 'id_note';
     protected $fillable = ['note','type','id_matiere','id_etudiant','id_evaluation','id_classe','commentaire'];
     
@@ -36,6 +40,18 @@ class Note extends Model
     public function matiere()
     {
         return $this->belongsTo(Matiere::class, 'id_matiere', 'id_matiere');
+    }
+
+    /**
+     * Configure activity logging
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['note', 'id_etudiant', 'id_evaluation', 'commentaire'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->setDescriptionForEvent(fn(string $eventName) => "Grade {$eventName}");
     }
     
     use HasFactory;

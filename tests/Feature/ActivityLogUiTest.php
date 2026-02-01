@@ -5,7 +5,7 @@ namespace Tests\Feature;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use App\Models\Administrateur;
-use App\Models\ActivityLog;
+use Spatie\Activitylog\Models\Activity as ActivityModel;
 use Illuminate\Support\Facades\Hash;
 
 class ActivityLogUiTest extends TestCase
@@ -24,8 +24,8 @@ class ActivityLogUiTest extends TestCase
         ]);
 
         // create sample logs
-        ActivityLog::create(['user_type' => 'admin', 'user_id' => $admin->id_administrateur, 'action' => 'login', 'description' => 'Test login', 'ip_address' => '127.0.0.1']);
-        ActivityLog::create(['user_type' => 'teacher', 'user_id' => 1, 'action' => 'failed_login', 'description' => 'failed', 'ip_address' => '1.2.3.4']);
+        activity()->withProperties(['ip' => '127.0.0.1', 'resource' => 'administrateur'])->log('Test login');
+        activity()->withProperties(['ip' => '1.2.3.4', 'resource' => 'enseignant'])->log('failed');
 
         $this->actingAs($admin, 'admin')
              ->get(route('admin.logs.index'))
@@ -68,7 +68,7 @@ class ActivityLogUiTest extends TestCase
             'role' => 'super_admin',
         ]);
 
-        ActivityLog::create(['user_type' => 'admin', 'user_id' => $admin->id_administrateur, 'action' => 'login', 'description' => 'Test login', 'ip_address' => '127.0.0.1']);
+        activity()->withProperties(['ip' => '127.0.0.1', 'resource' => 'administrateur'])->log('Test login');
 
         $response = $this->actingAs($admin, 'admin')->get(route('admin.logs.export'));
         $response->assertStatus(200);

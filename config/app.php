@@ -74,6 +74,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Default Time Format
+    |--------------------------------------------------------------------------
+    |
+    | This format is consumed by the school administration UI when showing
+    | or validating course times. It is customizable via an environment
+    | variable so each tenant can match their preferred notation.
+    |
+    */
+
+    'time_format' => env('GESTION_TIME_FORMAT', 'H:i'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Locale Configuration
     |--------------------------------------------------------------------------
     |
@@ -167,6 +180,9 @@ return [
         App\Providers\AuthServiceProvider::class,
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
+        App\Providers\FortifyServiceProvider::class,
+        App\Providers\Filament\AdminPanelProvider::class,
+        App\Providers\Filament\LanguageSwitchServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
     ])->toArray(),
 

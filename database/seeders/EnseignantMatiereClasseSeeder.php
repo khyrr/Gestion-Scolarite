@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use App\Models\User;
+use App\Models\Enseignant;
 use App\Models\Matiere;
 use App\Models\Classe;
 
@@ -17,7 +17,7 @@ class EnseignantMatiereClasseSeeder extends Seeder
     public function run(): void
     {
         // Get teachers, subjects, and classes
-        $teachers = User::where('role', 'enseignant')->get();
+        $teachers = Enseignant::all();
         $matieres = Matiere::all();
         $classes = Classe::all();
 
@@ -26,22 +26,52 @@ class EnseignantMatiereClasseSeeder extends Seeder
             return;
         }
 
-        // Sample assignments - you can customize these based on your needs
+        // Sample assignments - assign ALL teachers to subjects
         $assignments = [
-            // Teacher 1 - Assign multiple subjects to multiple classes
+            // Sidi Mohamed El Moctar - Math and Physics
             [
-                'teacher_email' => 'elmoctar@ecole.com',
-                'subjects' => ['MATH', 'PHY'], // Mathématiques and Sciences Physiques
-                'classes' => ['CP1', 'CP2']
+                'teacher_nom' => 'El Moctar',
+                'teacher_prenom' => 'Sidi Mohamed',
+                'subjects' => ['MATH', 'PHY'],
+                'classes' => ['6ème A', '6ème B', '5ème A']
             ],
-            // You can add more teachers here
+            // Aminetou Mint Mohamedou - French and English
+            [
+                'teacher_nom' => 'Mint Mohamedou',
+                'teacher_prenom' => 'Aminetou',
+                'subjects' => ['FR', 'ANG'],
+                'classes' => ['6ème A', '6ème B', 'CM2']
+            ],
+            // Oumar Ould Baba - Physics and Sciences
+            [
+                'teacher_nom' => 'Ould Baba',
+                'teacher_prenom' => 'Oumar',
+                'subjects' => ['PHY', 'SVT'],
+                'classes' => ['5ème A', 'Terminale S']
+            ],
+            // Khadija Mint Ahmed - History and Civics
+            [
+                'teacher_nom' => 'Mint Ahmed',
+                'teacher_prenom' => 'Khadija',
+                'subjects' => ['HG', 'EC'],
+                'classes' => ['6ème A', '5ème A', 'Terminale S']
+            ],
+            // Mohamed Lemine Ould Sid Ahmed - Informatics and Arts
+            [
+                'teacher_nom' => 'Ould Sid Ahmed',
+                'teacher_prenom' => 'Mohamed Lemine',
+                'subjects' => ['INFO', 'ART', 'EPS'],
+                'classes' => ['CM2', '6ème A', '6ème B']
+            ],
         ];
 
         foreach ($assignments as $assignment) {
-            $teacher = $teachers->where('email', $assignment['teacher_email'])->first();
+            $teacher = $teachers->where('nom', $assignment['teacher_nom'])
+                                ->where('prenom', $assignment['teacher_prenom'])
+                                ->first();
             
             if (!$teacher) {
-                $this->command->warn("Teacher with email {$assignment['teacher_email']} not found.");
+                $this->command->warn("Teacher {$assignment['teacher_prenom']} {$assignment['teacher_nom']} not found.");
                 continue;
             }
 
@@ -61,17 +91,9 @@ class EnseignantMatiereClasseSeeder extends Seeder
                         continue;
                     }
 
-                    // Find the corresponding enseignant record
-                    $enseignant = \App\Models\Enseignant::where('email', $teacher->email)->first();
-                    
-                    if (!$enseignant) {
-                        $this->command->warn("Enseignant record not found for teacher {$teacher->name}");
-                        continue;
-                    }
-
                     // Insert the assignment if it doesn't exist
                     DB::table('enseignant_matiere_classe')->insertOrIgnore([
-                        'id_enseignant' => $enseignant->id_enseignant,
+                        'id_enseignant' => $teacher->id_enseignant,
                         'id_matiere' => $matiere->id_matiere,
                         'id_classe' => $classe->id_classe,
                         'active' => true,
@@ -80,46 +102,11 @@ class EnseignantMatiereClasseSeeder extends Seeder
                     ]);
 
                     $this->command->info("Assigned {$teacher->name} to teach {$matiere->nom_matiere} in {$classe->nom_classe}");
-                }
-            }
-        }
-
-        // Auto-assign remaining teachers to random subjects and classes (optional)
-        $enseignants = \App\Models\Enseignant::all();
-        $unassignedTeachers = $teachers->filter(function ($teacher) use ($enseignants) {
-            $enseignant = $enseignants->where('email', $teacher->email)->first();
-            if (!$enseignant) return false;
-            
-            return DB::table('enseignant_matiere_classe')
-                     ->where('id_enseignant', $enseignant->id_enseignant)
-                     ->count() === 0;
-        });
-
-        foreach ($unassignedTeachers as $teacher) {
-            $enseignant = $enseignants->where('email', $teacher->email)->first();
-            if (!$enseignant) continue;
-            
-            // Assign 2-3 random subjects to 1-2 random classes
-            $randomMatieres = $matieres->random(min(3, $matieres->count()));
-            $randomClasses = $classes->random(min(2, $classes->count()));
-
-            foreach ($randomMatieres as $matiere) {
-                foreach ($randomClasses as $classe) {
-                    DB::table('enseignant_matiere_classe')->insertOrIgnore([
-                        'id_enseignant' => $enseignant->id_enseignant,
-                        'id_matiere' => $matiere->id_matiere,
-                        'id_classe' => $classe->id_classe,
-                        'active' => true,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
-
-                    $this->command->info("Auto-assigned {$teacher->name} to teach {$matiere->nom_matiere} in {$classe->nom_classe}");
-                }
+                }  
             }
         }
 
         $totalAssignments = DB::table('enseignant_matiere_classe')->count();
-        $this->command->info("Total teacher-subject-class assignments created: {$totalAssignments}");
+        $this->command->info("✅ All {$teachers->count()} teachers assigned! Total assignments: {$totalAssignments}");
     }
 }

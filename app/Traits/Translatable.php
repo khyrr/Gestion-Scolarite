@@ -45,7 +45,7 @@ trait Translatable
     /**
      * Check if model has attribute
      */
-    protected function hasAttribute($attribute)
+    public function hasAttribute($attribute)
     {
         return in_array($attribute, $this->fillable) || 
                array_key_exists($attribute, $this->attributes);

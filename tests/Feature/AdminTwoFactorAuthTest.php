@@ -63,7 +63,7 @@ class AdminTwoFactorAuthTest extends TestCase
         $this->assertTrue((bool) $admin->two_factor_enabled);
 
         // ensure an activity log was created for enabling 2FA
-        $this->assertDatabaseHas('activity_logs', ['action' => '2fa_enable', 'user_type' => 'admin', 'resource' => 'administrateur']);
+        $this->assertTrue(\DB::table(config('activitylog.table_name'))->where('description', 'like', '%Enabled two-factor%')->exists());
 
         // disable should be forbidden for non-super_admin
         $this->actingAs($admin, 'admin')
@@ -102,7 +102,7 @@ class AdminTwoFactorAuthTest extends TestCase
         $admin->refresh();
         $this->assertTrue((bool) $admin->two_factor_enabled);
 
-        $this->assertDatabaseHas('activity_logs', ['action' => '2fa_enable', 'user_type' => 'admin', 'resource' => 'administrateur']);
+        $this->assertTrue(\DB::table(config('activitylog.table_name'))->where('description', 'like', '%Enabled two-factor%')->exists());
 
         // now disable should be allowed
         $this->actingAs($admin, 'admin')
@@ -112,6 +112,6 @@ class AdminTwoFactorAuthTest extends TestCase
         $admin->refresh();
         $this->assertFalse((bool) $admin->two_factor_enabled);
 
-        $this->assertDatabaseHas('activity_logs', ['action' => '2fa_disable', 'user_type' => 'admin', 'resource' => 'administrateur']);
+        $this->assertTrue(\DB::table(config('activitylog.table_name'))->where('description', 'like', '%Disabled two-factor%')->exists());
     }
 }

@@ -175,15 +175,14 @@ class EnseignantService
                 // Add default time slots (can be customized later)
                 'jour' => 'Lundi', // Default day
                 'date_debut' => '08:00:00',
-                'date_fin' => '09:00:00'
+                'date_fin' => '10:00:00'
             ];
             $formattedCourses->push($course);
         }
 
         $organizedCourses = [];
         $timeSlots = [
-            ['time' => '08:00-09:00', 'period' => 'morning'],
-            ['time' => '09:00-10:00', 'period' => 'morning'],
+            ['time' => '08:00-10:00', 'period' => 'morning'],
             ['time' => '10:00-10:30', 'period' => 'pause'],
             ['time' => '10:30-11:30', 'period' => 'morning'],
             ['time' => '11:30-12:30', 'period' => 'morning'],

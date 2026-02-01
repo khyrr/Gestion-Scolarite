@@ -27,7 +27,7 @@ class HomeController extends Controller
         $user = Auth::user();
         
         // Redirect users to their appropriate dashboard based on role
-        if (auth()->check() && auth()->user()->role === 'enseignant') {
+        if (auth()->check() && auth()->user()->hasAnyRole(['enseignant', 'teacher'])) {
             return redirect()->route('enseignant.dashboard');
         }
         

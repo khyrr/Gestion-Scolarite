@@ -148,7 +148,7 @@
                             $initials = collect(explode(' ', $userName))->map(fn($word) => mb_substr($word, 0, 1))->take(2)->join('');
                             
                             $profileRoute = '#';
-                            if (auth()->check() && method_exists(auth()->user(), 'hasRole') && auth()->user()->hasRole('enseignant')) {
+                            if (auth()->check() && method_exists(auth()->user(), 'hasRole') && auth()->user()->hasRole('teacher')) {
                                 $profileRoute = route('enseignant.profil');
                             }
                         @endphp

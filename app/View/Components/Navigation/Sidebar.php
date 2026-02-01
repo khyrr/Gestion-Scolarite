@@ -107,7 +107,7 @@ class Sidebar extends Component
                     ];
 
                     // IP Security is sensitive and should be managed only by super_admin
-                    if (($user->role ?? '') === 'super_admin') {
+                    if ($user->hasRole('super_admin')) {
                         $children[] = [
                             'title' => __('app.securite_ip'),
                             'route' => 'admin.settings.ip',
@@ -131,7 +131,7 @@ class Sidebar extends Component
                 }
 
             // Only append the admin-management tools for super_admins
-            if (($user->role ?? '') === 'super_admin') {
+            if ($user->hasRole('super_admin')) {
                 $menu[] = [
                     'title' => __('app.gestion_admins'),
                     'icon' => 'fas fa-users-cog',
@@ -228,7 +228,7 @@ class Sidebar extends Component
         }
 
         // Teacher Menu - Limited Access
-        if ($user->hasRole('enseignant')) {
+        if ($user->hasRole('teacher')) {
             return [
                 [
                     'title' => __('app.tableau_de_bord'),

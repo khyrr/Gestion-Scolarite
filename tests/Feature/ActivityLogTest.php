@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use App\Models\Administrateur;
-use App\Models\ActivityLog;
 use Illuminate\Support\Facades\Hash;
 
 class ActivityLogTest extends TestCase
@@ -26,10 +25,8 @@ class ActivityLogTest extends TestCase
         $this->post(route('admin.login.submit'), ['email' => 'alogin@example.com', 'password' => 'secret123'])
              ->assertRedirect();
 
-        $this->assertDatabaseHas('activity_logs', [
-            'user_type' => 'admin',
-            'action' => 'login',
-            'resource' => 'administrateur',
+        $this->assertDatabaseHas(config('activitylog.table_name'), [
+            'description' => 'Admin login',
         ]);
     }
 
@@ -54,10 +51,8 @@ class ActivityLogTest extends TestCase
                 'role' => 'admin',
              ])->assertRedirect();
 
-        $this->assertDatabaseHas('activity_logs', [
-            'user_type' => 'admin',
-            'action' => 'create',
-            'resource' => 'administrateur',
-        ]);
+        $this->assertTrue(
+            \DB::table(config('activitylog.table_name'))->where('description', 'like', 'Created new admin%')->exists()
+        );
     }
 }

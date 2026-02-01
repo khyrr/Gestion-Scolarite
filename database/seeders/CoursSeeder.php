@@ -63,7 +63,7 @@ class CoursSeeder extends Seeder
     private function getWeeklySchedule(): array
     {
         $jours = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi'];
-        $heuresDebut = ['08:00', '09:00', '10:00', '11:00', '14:00', '15:00', '16:00'];
+        $heuresDebut = ['08:00', '10:00', '12:00', '14:00', '16:00'];
         
         // Create 1-2 sessions per week for each subject
         $schedules = [];
@@ -79,8 +79,8 @@ class CoursSeeder extends Seeder
             $jour = $availableJours[array_rand($availableJours)];
             $dateDebut = $heuresDebut[array_rand($heuresDebut)];
             
-            // Add 1 hour to start time for end time  
-            $dateFin = date('H:i', strtotime($dateDebut . ' +1 hour'));
+            // Add 2 hours to start time for end time  
+            $dateFin = date(self::getTimeFormat(), strtotime($dateDebut . ' +2 hour'));
             
             $schedules[] = [
                 'jour' => $jour,

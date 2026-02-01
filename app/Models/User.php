@@ -7,10 +7,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, HasRoles, LogsActivity;
 
     /**
      * The attributes that are mass assignable.
@@ -19,15 +22,15 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
-        'prenom',
-        'nom',
         'email',
         'password',
-        'role',
         'telephone',
         'is_active',
         'profile_type',
         'profile_id',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
+        'two_factor_enabled',
     ];
 
     /**
@@ -38,6 +41,7 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'two_factor_secret',
     ];
 
     /**
@@ -49,6 +53,7 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'is_active' => 'boolean',
+        'two_factor_enabled' => 'boolean',
     ];
 
     /**
@@ -64,7 +69,7 @@ class User extends Authenticatable
      */
     public function isAdmin(): bool
     {
-        return $this->role === 'admin' || $this->role === 'super_admin';
+        return $this->hasAnyRole(['admin', 'super_admin']);
     }
 
     /**
@@ -72,7 +77,7 @@ class User extends Authenticatable
      */
     public function isTeacher(): bool
     {
-        return $this->role === 'teacher' || $this->role === 'enseignant';
+        return $this->hasAnyRole(['teacher', 'enseignant']);
     }
 
     /**
@@ -88,36 +93,35 @@ class User extends Authenticatable
      */
     public function isStudent(): bool
     {
-        return $this->role === 'student' || $this->role === 'etudiant';
+        return $this->hasAnyRole(['student', 'etudiant']);
     }
 
 
 
     /**
-     * Check if user has a specific role
+     * Get user's name from profile or database
      */
-    public function hasRole(string $role): bool
+    public function getNameAttribute($value): string
     {
-        if ($this->role === 'super_admin' && $role === 'admin') {
-            return true;
+        // If name is set in database, use it
+        if ($value) {
+            return $value;
         }
-        return $this->role === $role;
+        
+        // Otherwise, get from profile
+        if ($this->profile) {
+            return trim(($this->profile->prenom ?? '') . ' ' . ($this->profile->nom ?? ''));
+        }
+        
+        return '';
     }
 
     /**
-     * Check if user has any of the given roles
-     */
-    public function hasAnyRole(array $roles): bool
-    {
-        return in_array($this->role, $roles);
-    }
-
-    /**
-     * Get user's full name
+     * Get user's full name (alias for name)
      */
     public function getFullNameAttribute(): string
     {
-        return trim($this->prenom . ' ' . $this->nom);
+        return $this->name;
     }
 
     /**
@@ -232,7 +236,7 @@ class User extends Authenticatable
      */
     public function scopeRole($query, $role)
     {
-        return $query->where('role', $role);
+        return $query->role($role);
     }
 
     /**
@@ -240,7 +244,7 @@ class User extends Authenticatable
      */
     public static function getAdmins()
     {
-        return self::where('role', 'admin')->active()->get();
+        return self::role('admin')->active()->get();
     }
 
     /**
@@ -257,5 +261,16 @@ class User extends Authenticatable
     public static function getEtudiants()
     {
         return self::where('role', 'etudiant')->active()->get();
+    }
+
+    /**
+     * Configure activity logging
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['name', 'email', 'role', 'is_active'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }

@@ -12,7 +12,7 @@ return [
     |
     */
 
-    'prefix' => env('ADMIN_PREFIX', 'control-panel'),
+    // 'prefix' => env('ADMIN_PREFIX', 'control-panel'),
 
 
     /*
@@ -30,9 +30,9 @@ return [
     |
     */
 
-    'security' => [
-        'ip_whitelist_enabled' => (bool) env('ADMIN_IP_WHITELIST_ENABLED', false),
-        'ip_whitelist_reject_status' => (int) env('ADMIN_IP_WHITELIST_REJECT_STATUS', 404),
-    ],
+    // 'security' => [
+    //     'ip_whitelist_enabled' => (bool) env('ADMIN_IP_WHITELIST_ENABLED', false),
+    //     'ip_whitelist_reject_status' => (int) env('SECURITY_IP_BLOCK_MODE', 404),
+    // ],
 
 ];

@@ -23,15 +23,9 @@ class RedirectIfAuthenticated
             if (Auth::guard($guard)->check()) {
                 $user = Auth::guard($guard)->user();
                 
-                if ($user->isAdmin()) {
-                    return redirect()->route('admin.dashboard');
-                }
-                
-                if ($user->isTeacher()) {
-                    return redirect()->route('enseignant.dashboard');
-                }
-                
-                return redirect(RouteServiceProvider::HOME);
+                // Use the RoleRedirectService for consistent redirect logic
+                $redirectPath = \App\Services\RoleRedirectService::getRedirectPath($user);
+                return redirect($redirectPath);
             }
         }
 

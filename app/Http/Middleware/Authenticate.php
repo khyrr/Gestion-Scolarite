@@ -16,12 +16,7 @@ class Authenticate extends Middleware
             return null;
         }
 
-        // Match both the literal 'admin' URI and the configured admin prefix
-        $adminPrefix = trim(config('admin.prefix', 'admin'), '/');
-        if ($request->is('admin') || $request->is('admin/*') || ($adminPrefix && ($request->is($adminPrefix) || $request->is($adminPrefix.'/*')))) {
-            return route('admin.login');
-        }
-
-        return route('enseignant.connexion');
+        // Use the RoleRedirectService for consistent login URL determination
+        return \App\Services\RoleRedirectService::getLoginUrl($request);
     }
 }

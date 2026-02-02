@@ -31,6 +31,12 @@ Route::get('/langue/{locale}', function ($locale) {
 |--------------------------------------------------------------------------
 */
 Route::get('/', function () {
+    // If user is authenticated, redirect to appropriate panel
+    if (auth()->check()) {
+        $redirectPath = \App\Services\RoleRedirectService::getRedirectPath(auth()->user());
+        return redirect($redirectPath);
+    }
+    
     return view('welcome');
 })->name('accueil');
 

@@ -41,7 +41,7 @@ class CoursSeeder extends Seeder
 
         foreach ($assignments as $assignment) {
             // Create multiple course sessions per week for each assignment
-            $weeklySchedules = $this->getWeeklySchedule();
+            $weeklySchedules = $this->getWeeklySchedule($assignment->nom_matiere);
             
             foreach ($weeklySchedules as $schedule) {
                 Cours::create([
@@ -57,35 +57,51 @@ class CoursSeeder extends Seeder
         }
 
         $coursCount = Cours::count();
-        $this->command->info("Created {$coursCount} course sessions.");
+        $this->command->info("✅ Created {$coursCount} course sessions.");
     }
 
-    private function getWeeklySchedule(): array
+    private function getWeeklySchedule(string $matiere): array
     {
         $jours = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi'];
-        $heuresDebut = ['08:00', '10:00', '12:00', '14:00', '16:00'];
         
-        // Create 1-2 sessions per week for each subject
+        // Different subjects get different time allocations
+        $subjectSchedules = [
+            'Mathématiques' => ['sessions' => 3, 'duration' => 2],
+            'Français' => ['sessions' => 3, 'duration' => 2],
+            'Anglais' => ['sessions' => 2, 'duration' => 2],
+            'Sciences Physiques' => ['sessions' => 2, 'duration' => 2],
+            'Histoire-Géographie' => ['sessions' => 2, 'duration' => 1.5],
+            'Éducation Physique' => ['sessions' => 2, 'duration' => 2],
+            'Arts Plastiques' => ['sessions' => 1, 'duration' => 2],
+        ];
+        
+        // Default schedule for unlisted subjects
+        $schedule = $subjectSchedules[$matiere] ?? ['sessions' => 2, 'duration' => 1.5];
+        
         $schedules = [];
-        $sessionCount = rand(1, 2);
+        $usedJours = [];
         
-        for ($i = 0; $i < $sessionCount; $i++) {
+        for ($i = 0; $i < $schedule['sessions']; $i++) {
             // Avoid duplicate days for the same subject
-            $availableJours = array_diff($jours, array_column($schedules, 'jour'));
+            $availableJours = array_diff($jours, $usedJours);
             if (empty($availableJours)) {
                 break;
             }
             
             $jour = $availableJours[array_rand($availableJours)];
-            $dateDebut = $heuresDebut[array_rand($heuresDebut)];
+            $usedJours[] = $jour;
             
-            // Add 2 hours to start time for end time  
-            $dateFin = date(self::getTimeFormat(), strtotime($dateDebut . ' +2 hour'));
+            // Generate realistic school hours
+            $startTimes = ['08:00', '10:00', '13:30', '15:30'];
+            $dateDebut = $startTimes[array_rand($startTimes)];
+            
+            // Calculate end time based on duration
+            $endTime = date('H:i', strtotime($dateDebut . ' +' . ($schedule['duration'] * 60) . ' minutes'));
             
             $schedules[] = [
                 'jour' => $jour,
                 'date_debut' => $dateDebut,
-                'date_fin' => $dateFin,
+                'date_fin' => $endTime,
             ];
         }
         

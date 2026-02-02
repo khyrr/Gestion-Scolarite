@@ -76,6 +76,8 @@ return Application::configure(basePath: dirname(__DIR__))
             // Your custom middlewares (keep as-is if they exist)
             // 'admin.ip' => \App\Http\Middleware\Legacy\IpWhitelistMiddleware::class,
             'auth.teacher' => \App\Http\Middleware\TeacherMiddleware::class,
+            'ensure.teacher' => \App\Http\Middleware\EnsureTeacherRole::class,
+            'ensure.admin' => \App\Http\Middleware\EnsureAdminRole::class,
             // 'require.2fa' => \App\Http\Middleware\Legacy\RequireTwoFactor::class,
             // 'require.2fa.challenge' => \App\Http\Middleware\Legacy\Require2FAChallenge::class,
             // 'require.super_admin' => \App\Http\Middleware\Legacy\RequireSuperAdmin::class,

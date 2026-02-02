@@ -9,6 +9,11 @@ class ActivityTimeline extends Widget
 {
     protected static ?int $sort = 4;
 
+    public static function canView(): bool
+    {
+        return auth()->user()->hasRole(['super_admin', 'admin', 'director']);
+    }
+
     protected int | string | array $columnSpan = 'half';
 
     protected static string $view = 'filament.widgets.activity-timeline';

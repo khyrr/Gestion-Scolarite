@@ -21,14 +21,13 @@ class EtudiantPolicy
      */
     public function view(User $user, Etudiant $etudiant): bool
     {
-        // Admins and teachers can view all students
-        if ($user->hasPermissionTo('view students')) {
-            return true;
+        // Students can only view their own data
+        if ($user->profile_type === 'App\Models\Etudiant') {
+            return $user->profile_id === $etudiant->id;
         }
         
-        // Students can only view their own data
-        return $user->profile_type === 'App\\Models\\Etudiant' 
-            && $user->profile_id === $etudiant->id_etudiant;
+        // All other roles with permission can view students
+        return $user->hasPermissionTo('view students');
     }
 
     /**

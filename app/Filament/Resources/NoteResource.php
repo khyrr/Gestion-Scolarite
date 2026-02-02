@@ -13,6 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -47,7 +48,43 @@ class NoteResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()->hasRole('super_admin') || auth()->user()->can('manage grades');
+        return auth()->user()->hasPermissionTo('view grades');
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()->hasPermissionTo('create grades');
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return auth()->user()->hasPermissionTo('edit grades');
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return auth()->user()->hasPermissionTo('delete grades');
+    }
+
+    /**
+     * Check if a teacher can access a specific note
+     */
+    private static function canTeacherAccessNote(Model $note): bool
+    {
+        $user = auth()->user();
+        
+        if (!$user->hasRole('enseignant')) {
+            return false;
+        }
+        
+        $enseignant = $user->profile;
+        if (!$enseignant) {
+            return false;
+        }
+        
+        // Check if the note's student is in teacher's classes
+        $teacherClasses = $enseignant->classes()->pluck('id_classe');
+        return $teacherClasses->contains($note->etudiant->id_classe);
     }
 
     public static function form(Form $form): Form
@@ -55,10 +92,31 @@ class NoteResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Section::make(__('app.note_information'))
+                    ->visible(fn () => auth()->user()->hasPermissionTo('create grades') || auth()->user()->hasPermissionTo('edit grades'))
                     ->schema([
                         Forms\Components\Select::make('id_etudiant')
                             ->label(__('app.etudiant'))
-                            ->relationship('etudiant', 'matricule')
+                            ->relationship('etudiant', 'matricule', function (Builder $query) {
+                                $user = auth()->user();
+                                
+                                // Admins can select any student
+                                if ($user->hasRole('super_admin')) {
+                                    return $query;
+                                }
+                                
+                                // Teachers can only select students from their classes
+                                if ($user->hasRole(['teacher', 'enseignant'])) {
+                                    $enseignant = $user->profile;
+                                    if ($enseignant) {
+                                        $teacherClasses = $enseignant->classes()->pluck('classes.id_classe');
+                                        $query->whereIn('id_classe', $teacherClasses);
+                                    } else {
+                                        $query->whereRaw('1 = 0');
+                                    }
+                                }
+                                
+                                return $query;
+                            })
                             ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->nom} {$record->prenom} ({$record->matricule})")
                             ->required()
                             ->searchable(['matricule'])
@@ -119,6 +177,7 @@ class NoteResource extends Resource
                     ->columns(2),
                     
                 Forms\Components\Section::make(__('app.note'))
+                    ->visible(fn () => auth()->user()->hasPermissionTo('create grades') || auth()->user()->hasPermissionTo('edit grades'))
                     ->schema([
                         Forms\Components\TextInput::make('note')
                             ->label(__('app.note'))
@@ -142,7 +201,36 @@ class NoteResource extends Resource
                             ->label(__('app.commentaire'))
                             ->rows(3)
                             ->columnSpanFull(),
-                    ]),
+                    ])
+                    ->columns(1),
+                    
+                // Read-only grade view for teachers with view-only permissions
+                Forms\Components\Section::make(__('app.consultation_note'))
+                    ->visible(fn () => auth()->user()->hasPermissionTo('view grades') && !auth()->user()->hasPermissionTo('create grades') && !auth()->user()->hasPermissionTo('edit grades'))
+                    ->schema([
+                        Forms\Components\Placeholder::make('etudiant_info')
+                            ->label(__('app.etudiant'))
+                            ->content(fn ($record) => $record->etudiant 
+                                ? new \Illuminate\Support\HtmlString('<div class="space-y-1"><div class="font-medium text-gray-900">' . $record->etudiant->nom . ' ' . $record->etudiant->prenom . '</div><div class="text-sm text-gray-500">Matricule: ' . $record->etudiant->matricule . '</div></div>')
+                                : '-'),
+                                
+                        Forms\Components\Placeholder::make('evaluation_info')
+                            ->label(__('app.evaluation'))
+                            ->content(fn ($record) => $record->evaluation 
+                                ? new \Illuminate\Support\HtmlString('<div class="space-y-1"><div class="font-medium text-gray-900">' . $record->evaluation->nom . '</div><div class="text-sm text-gray-500">' . ucfirst($record->evaluation->type) . ' - ' . $record->evaluation->matiere->nom . '</div></div>')
+                                : '-'),
+                                
+                        Forms\Components\Placeholder::make('note_display')
+                            ->label(__('app.note_obtenue'))
+                            ->content(fn ($record) => new \Illuminate\Support\HtmlString('<div class="flex items-center space-x-2"><span class="text-2xl font-bold text-blue-600">' . $record->note . '</span><span class="text-gray-500">/ ' . ($record->evaluation?->note_max ?? 20) . '</span></div>')),
+                            
+                        Forms\Components\Placeholder::make('commentaire_display')
+                            ->label(__('app.commentaire'))
+                            ->content(fn ($record) => $record->commentaire 
+                                ? new \Illuminate\Support\HtmlString('<div class="text-sm text-gray-700 bg-gray-50 p-3 rounded-md">' . nl2br(e($record->commentaire)) . '</div>')
+                                : new \Illuminate\Support\HtmlString('<div class="text-sm text-gray-500 italic">Aucun commentaire</div>')),
+                    ])
+                    ->columns(2),
                     
                 Forms\Components\Section::make('Auto-filled')
                     ->schema([
@@ -157,6 +245,39 @@ class NoteResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(function (Builder $query) {
+                $user = auth()->user();
+                
+                // Admins see all notes
+                if ($user->hasRole('super_admin')) {
+                    return $query;
+                }
+                
+                // Teachers see only notes from students in their classes
+                if ($user->hasRole(['teacher', 'enseignant'])) {
+                    $enseignant = $user->profile;
+                    if ($enseignant) {
+                        $teacherClasses = $enseignant->classes()->pluck('classes.id_classe');
+                        $query->whereHas('etudiant', function (Builder $q) use ($teacherClasses) {
+                            $q->whereIn('id_classe', $teacherClasses);
+                        });
+                    } else {
+                        $query->whereRaw('1 = 0');
+                    }
+                }
+                
+                // Students see only their own notes
+                if ($user->hasRole('etudiant')) {
+                    $etudiant = $user->profile;
+                    if ($etudiant) {
+                        $query->where('id_etudiant', $etudiant->id_etudiant);
+                    } else {
+                        $query->whereRaw('1 = 0');
+                    }
+                }
+                
+                return $query;
+            })
             ->columns([
                 Tables\Columns\TextColumn::make('etudiant.matricule')
                     ->label(__('app.matricule'))

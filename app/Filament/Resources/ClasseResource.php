@@ -11,10 +11,13 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Concerns\HasRoleBasedAccess;
 
 class ClasseResource extends Resource
 {
+    use HasRoleBasedAccess;
     protected static ?string $model = Classe::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
@@ -43,7 +46,22 @@ class ClasseResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()->hasRole('super_admin') || auth()->user()->can('manage classes');
+        return auth()->user()->hasPermissionTo('view classes');
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()->hasPermissionTo('create classes');
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return auth()->user()->hasPermissionTo('edit classes');
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return auth()->user()->hasPermissionTo('delete classes');
     }
 
     public static function form(Form $form): Form
@@ -51,6 +69,7 @@ class ClasseResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Section::make(__('app.informations_classe'))
+                    ->visible(fn () => auth()->user()->hasPermissionTo('create classes') || auth()->user()->hasPermissionTo('edit classes'))
                     ->schema([
                         Forms\Components\TextInput::make('nom_classe')
                             ->label(__('app.nom_classe'))
@@ -65,12 +84,32 @@ class ClasseResource extends Resource
                             ->placeholder(__('app.placeholder_niveau')),
                     ])
                     ->columns(2),
+                    
+                // Read-only class view for users with view-only permissions
+                Forms\Components\Section::make(__('app.consultation_classe'))
+                    ->visible(fn () => auth()->user()->hasPermissionTo('view classes') && !auth()->user()->hasPermissionTo('create classes') && !auth()->user()->hasPermissionTo('edit classes'))
+                    ->schema([
+                        Forms\Components\Placeholder::make('nom_classe_display')
+                            ->label(__('app.nom_classe'))
+                            ->content(fn ($record) => new \Illuminate\Support\HtmlString('<span class="text-lg font-semibold text-blue-600">' . $record->nom_classe . '</span>')),
+                            
+                        Forms\Components\Placeholder::make('niveau_display')
+                            ->label(__('app.niveau'))
+                            ->content(fn ($record) => new \Illuminate\Support\HtmlString('<span class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium bg-indigo-50 text-indigo-700 ring-1 ring-inset ring-indigo-700/10">📚 ' . $record->niveau . '</span>')),
+                    ])
+                    ->columns(2),
             ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(function (Builder $query) {
+                return static::applyRoleBasedTableScope($query, [
+                    'classColumn' => 'id_classe',
+                    'studentScope' => false, // Students don't directly manage classes
+                ]);
+            })
             ->columns([
                 Tables\Columns\TextColumn::make('nom_classe')
                     ->label(__('app.nom_classe'))
@@ -119,6 +158,12 @@ class ClasseResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
+                Tables\Actions\Action::make('view-timetable')
+                    ->label(__('app.emploi_temps'))
+                    ->icon('heroicon-o-calendar-days')
+                    ->color('info')
+                    ->url(fn (Classe $record): string => static::getUrl('view-timetable', ['record' => $record])),
+                    
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
@@ -143,6 +188,7 @@ class ClasseResource extends Resource
             'index' => Pages\ListClasses::route('/'),
             'create' => Pages\CreateClasse::route('/create'),
             'edit' => Pages\EditClasse::route('/{record}/edit'),
+            'view-timetable' => Pages\ViewClasseTimetable::route('/{record}/timetable')
         ];
     }
 }

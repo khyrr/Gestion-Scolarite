@@ -10,9 +10,17 @@ use App\Models\Cours;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Filament\Forms;
 use Illuminate\Support\Facades\Blade;
+use Filament\Facades\Filament;
 
 class Dashboard extends BaseDashboard
 {
+    public static function canAccess(): bool
+    {
+        $user = auth()->user();
+        
+        // Allow access for administrative roles and teachers
+        return $user->hasRole(['super_admin', 'admin', 'director', 'academic_coordinator', 'teacher', 'secretary', 'accountant']);
+    }
     public function getTitle(): string | Htmlable
     {
         return __('app.tableau_de_bord');
@@ -25,6 +33,13 @@ class Dashboard extends BaseDashboard
 
     protected function getHeaderActions(): array
     {
+        $user = auth()->user();
+        
+        // Only admins and teachers should see dashboard actions
+        if (!$user->hasRole(['super_admin', 'admin', 'director', 'academic_coordinator', 'teacher'])) {
+            return [];
+        }
+        
         return [
             Action::make('printTimetable')
                 ->label(__('app.emploi_temps'))
@@ -33,7 +48,24 @@ class Dashboard extends BaseDashboard
                 ->form([
                     Forms\Components\Select::make('id_classe')
                         ->label(__('app.classe'))
-                        ->options(Classe::pluck('nom_classe', 'id_classe'))
+                        ->options(function () {
+                            $user = auth()->user();
+                            
+                            // Admins see all classes
+                            if ($user->hasRole(['super_admin', 'admin', 'director'])) {
+                                return Classe::pluck('nom_classe', 'id_classe');
+                            }
+                            
+                            // Teachers see only their classes
+                            if ($user->hasRole('teacher')) {
+                                $enseignant = $user->profile;
+                                if ($enseignant) {
+                                    return $enseignant->classes()->pluck('nom_classe', 'classes.id_classe');
+                                }
+                            }
+                            
+                            return [];
+                        })
                         ->required()
                         ->searchable()
                         ->live(),
@@ -75,5 +107,56 @@ class Dashboard extends BaseDashboard
                     }, "emploi_du_temps_{$classe->nom_classe}.pdf");
                 }),
         ];
+    }
+
+    public function getWidgets(): array
+    {
+        $user = auth()->user();
+        
+        if ($user && $user->hasRole('teacher')) {
+            // Teacher widgets
+            return [
+                \App\Filament\Widgets\TeacherStatsOverview::class,
+                \App\Filament\Widgets\TeacherTodaySchedule::class,
+                \App\Filament\Widgets\TeacherUpcomingEvaluations::class,
+                \App\Filament\Widgets\TeacherRecentNotes::class,
+                \App\Filament\Widgets\TeacherStudentPerformance::class,
+                \App\Filament\Widgets\TeacherStudentsByClass::class,
+            ];
+        }
+        
+        if ($user && $user->hasRole('secretary')) {
+            // Secretary widgets - focused on student administration
+            return [
+                \App\Filament\Widgets\StatsOverview::class,
+                \App\Filament\Widgets\StudentsByClassChart::class,
+                \App\Filament\Widgets\DailyScheduleWidget::class,
+                \App\Filament\Widgets\StudentChart::class,
+            ];
+        }
+        
+        if ($user && $user->hasRole('accountant')) {
+            // Accountant widgets - focused on financial data
+            return [
+                \App\Filament\Widgets\StatsOverview::class,
+                \App\Filament\Widgets\PaymentsChart::class,
+                \App\Filament\Widgets\StudentsByClassChart::class,
+            ];
+        }
+        
+        // Admin widgets (super_admin, admin, director, academic_coordinator)
+        return [
+            \App\Filament\Widgets\StatsOverview::class,
+            \App\Filament\Widgets\StudentChart::class,
+            \App\Filament\Widgets\StudentsByClassChart::class,
+            \App\Filament\Widgets\DailyScheduleWidget::class,
+            \App\Filament\Widgets\ActivityTimeline::class,
+            \App\Filament\Widgets\PaymentsChart::class,
+        ];
+    }
+
+    public function getColumns(): int|string|array
+    {
+        return 2;
     }
 }

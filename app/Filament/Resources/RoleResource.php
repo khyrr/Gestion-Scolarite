@@ -39,6 +39,26 @@ class RoleResource extends Resource
         return __('app.role');
     }
 
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->hasPermissionTo('manage roles');
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()->hasPermissionTo('manage roles');
+    }
+
+    public static function canEdit($record): bool
+    {
+        return auth()->user()->hasPermissionTo('manage roles');
+    }
+
+    public static function canDelete($record): bool
+    {
+        return auth()->user()->hasPermissionTo('manage roles');
+    }
+
     public static function form(Form $form): Form
     {
         return $form
@@ -121,10 +141,5 @@ class RoleResource extends Resource
             'create' => Pages\CreateRole::route('/create'),
             'edit' => Pages\EditRole::route('/{record}/edit'),
         ];
-    }
-    
-    public static function canViewAny(): bool
-    {
-        return auth()->user()->hasRole('super_admin') || auth()->user()->can('manage settings');
     }
 }

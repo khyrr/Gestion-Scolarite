@@ -46,22 +46,22 @@ class EnseignantResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()->hasRole('super_admin') || auth()->user()->can('manage teachers');
+        return auth()->user()->hasPermissionTo('view teachers');
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()->hasRole('super_admin') || auth()->user()->can('manage teachers');
+        return auth()->user()->hasPermissionTo('create teachers');
     }
 
     public static function canEdit(Model $record): bool
     {
-        return auth()->user()->hasRole('super_admin') || auth()->user()->can('manage teachers');
+        return auth()->user()->hasPermissionTo('edit teachers');
     }
 
     public static function canDelete(Model $record): bool
     {
-        return auth()->user()->hasRole('super_admin') || auth()->user()->can('manage teachers');
+        return auth()->user()->hasPermissionTo('delete teachers');
     }
 
     public static function form(Form $form): Form
@@ -96,7 +96,26 @@ class EnseignantResource extends Resource
                     ])
                     ->columns(2),
                     
+                Forms\Components\Section::make(__('app.informations_compte'))
+                    ->visible(fn () => !auth()->user()->hasPermissionTo('manage users'))
+                    ->description(__('app.informations_compte_lecture_seule'))
+                    ->schema([
+                        Forms\Components\Placeholder::make('email_readonly')
+                            ->label(__('app.email'))
+                            ->content(fn ($record) => $record->user?->email ?? __('app.aucun_compte'))
+                            ->visibleOn(['edit', 'view']),
+                            
+                        Forms\Components\Placeholder::make('account_status_readonly')
+                            ->label(__('app.statut_compte'))
+                            ->content(fn ($record) => $record->user?->is_active 
+                                ? new \Illuminate\Support\HtmlString('<span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">' . __('app.actif') . '</span>')
+                                : new \Illuminate\Support\HtmlString('<span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">' . __('app.inactif') . '</span>'))
+                            ->visibleOn(['edit', 'view']),
+                    ])
+                    ->columns(2),
+                    
                 Forms\Components\Section::make(__('app.compte_utilisateur'))
+                    ->visible(fn () => auth()->user()->hasPermissionTo('manage users'))
                     ->description(__('app.compte_utilisateur_description'))
                     ->schema([
                         Forms\Components\TextInput::make('email')
@@ -219,24 +238,29 @@ class EnseignantResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->visible(fn () => auth()->user()->hasPermissionTo('edit teachers')),
+                Tables\Actions\DeleteAction::make()
+                    ->visible(fn () => auth()->user()->hasPermissionTo('delete teachers')),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->visible(fn () => auth()->user()->hasPermissionTo('delete teachers')),
                     Tables\Actions\BulkAction::make('activate')
                         ->label(__('app.activer'))
                         ->icon('heroicon-o-check-circle')
                         ->color('success')
-                        ->action(fn ($records) => $records->each(fn ($record) => $record->user->update(['is_active' => true])))
-                        ->deselectRecordsAfterCompletion(),
+                        ->action(fn ($records) => $records->each(fn ($record) => $record->user?->update(['is_active' => true])))
+                        ->deselectRecordsAfterCompletion()
+                        ->visible(fn () => auth()->user()->hasPermissionTo('manage users')),
                     Tables\Actions\BulkAction::make('deactivate')
                         ->label(__('app.desactiver'))
                         ->icon('heroicon-o-x-circle')
                         ->color('danger')
-                        ->action(fn ($records) => $records->each(fn ($record) => $record->user->update(['is_active' => false])))
-                        ->deselectRecordsAfterCompletion(),
+                        ->action(fn ($records) => $records->each(fn ($record) => $record->user?->update(['is_active' => false])))
+                        ->deselectRecordsAfterCompletion()
+                        ->visible(fn () => auth()->user()->hasPermissionTo('manage users')),
                 ]),
             ])
             ->defaultSort('nom', 'asc');

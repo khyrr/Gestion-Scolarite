@@ -11,6 +11,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class EvaluationResource extends Resource
@@ -43,7 +44,22 @@ class EvaluationResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()->hasRole('super_admin') || auth()->user()->can('manage evaluations');
+        return auth()->user()->hasPermissionTo('view evaluations');
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()->hasPermissionTo('create evaluations');
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return auth()->user()->hasPermissionTo('edit evaluations');
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return auth()->user()->hasPermissionTo('delete evaluations');
     }
 
     public static function form(Form $form): Form
@@ -51,6 +67,7 @@ class EvaluationResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Section::make('Evaluation Details')
+                    ->visible(fn () => auth()->user()->hasPermissionTo('create evaluations') || auth()->user()->hasPermissionTo('edit evaluations'))
                     ->schema([
                         Forms\Components\TextInput::make('titre')
                             ->label('Title')
@@ -85,6 +102,7 @@ class EvaluationResource extends Resource
                     ->columns(2),
                     
                 Forms\Components\Section::make('Grading')
+                    ->visible(fn () => auth()->user()->hasPermissionTo('create evaluations') || auth()->user()->hasPermissionTo('edit evaluations'))
                     ->schema([
                         Forms\Components\TextInput::make('note_max')
                             ->label(__('app.note_maximum'))
@@ -99,6 +117,36 @@ class EvaluationResource extends Resource
                             ->label(__('app.date_evaluation'))
                             ->required()
                             ->displayFormat('d/m/Y'),
+                    ])
+                    ->columns(2),
+                    
+                // Read-only evaluation view for users with view-only permissions
+                Forms\Components\Section::make(__('app.consultation_evaluation'))
+                    ->visible(fn () => auth()->user()->hasPermissionTo('view evaluations') && !auth()->user()->hasPermissionTo('create evaluations') && !auth()->user()->hasPermissionTo('edit evaluations'))
+                    ->schema([
+                        Forms\Components\Placeholder::make('titre_display')
+                            ->label(__('app.titre'))
+                            ->content(fn ($record) => $record->titre ?: new \Illuminate\Support\HtmlString('<em class="text-gray-500">Sans titre</em>')),
+                            
+                        Forms\Components\Placeholder::make('type_display')
+                            ->label(__('app.type'))
+                            ->content(fn ($record) => new \Illuminate\Support\HtmlString('<span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-700/10">' . ucfirst($record->type) . '</span>')),
+                            
+                        Forms\Components\Placeholder::make('matiere_display')
+                            ->label(__('app.matiere'))
+                            ->content(fn ($record) => $record->matiere?->nom_matiere ?: '-'),
+                            
+                        Forms\Components\Placeholder::make('classe_display')
+                            ->label(__('app.classe'))
+                            ->content(fn ($record) => $record->classe?->nom_classe ?: '-'),
+                            
+                        Forms\Components\Placeholder::make('note_max_display')
+                            ->label(__('app.note_maximum'))
+                            ->content(fn ($record) => new \Illuminate\Support\HtmlString('<span class="text-lg font-semibold text-green-600">' . $record->note_max . '</span> points')),
+                            
+                        Forms\Components\Placeholder::make('date_display')
+                            ->label(__('app.date_evaluation'))
+                            ->content(fn ($record) => $record->date ? $record->date->format('d/m/Y') : '-'),
                     ])
                     ->columns(2),
             ]);

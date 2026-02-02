@@ -9,14 +9,44 @@ class StudentsByClassChart extends ChartWidget
 {
     protected static ?int $sort = 3;
 
+    public static function canView(): bool
+    {
+        return auth()->user()->hasRole(['super_admin', 'admin', 'director', 'academic_coordinator', 'teacher', 'secretary']);
+    }
+
     public function getHeading(): string
     {
+        $user = auth()->user();
+        if ($user->hasRole('teacher')) {
+            return __('app.mes_etudiants_par_classe');
+        }
         return __('app.etudiants_par_classe');
     }
 
     protected function getData(): array
     {
-        $classes = Classe::withCount('etudiants')->get();
+        $user = auth()->user();
+        
+        if ($user->hasRole('super_admin')) {
+            // Admins see all classes
+            $classes = Classe::withCount('etudiants')->get();
+        } else if ($user->hasRole('teacher')) {
+            // Teachers see only their classes
+            $enseignant = $user->profile;
+            if (!$enseignant) {
+                return [
+                    'datasets' => [],
+                    'labels' => [],
+                ];
+            }
+            
+            $classes = $enseignant->classes()->withCount('etudiants')->get();
+        } else {
+            return [
+                'datasets' => [],
+                'labels' => [],
+            ];
+        }
 
         return [
             'datasets' => [

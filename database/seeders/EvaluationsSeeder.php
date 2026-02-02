@@ -9,6 +9,7 @@ use App\Models\Matiere;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class EvaluationsSeeder extends Seeder
 {
@@ -17,95 +18,152 @@ class EvaluationsSeeder extends Seeder
      */
     public function run(): void
     {
-        $courses = Cours::with(['classe', 'enseignant', 'matiere'])->get();
+        // Get all active teacher-subject-class combinations
+        $assignments = DB::table('enseignant_matiere_classe')
+                         ->where('enseignant_matiere_classe.active', true)
+                         ->join('matieres', 'enseignant_matiere_classe.id_matiere', '=', 'matieres.id_matiere')
+                         ->join('classes', 'enseignant_matiere_classe.id_classe', '=', 'classes.id_classe')
+                         ->select(
+                             'enseignant_matiere_classe.id_matiere',
+                             'enseignant_matiere_classe.id_classe',
+                             'matieres.nom_matiere',
+                             'classes.nom_classe'
+                         )
+                         ->get();
 
-        if ($courses->isEmpty()) {
-            $this->command->warn('No courses found. Run CoursSeeder first.');
+        if ($assignments->isEmpty()) {
+            $this->command->warn('No teacher-subject-class assignments found. Run EnseignantMatiereClasseSeeder first.');
             return;
         }
 
-        // Create evaluations for each course
-        foreach ($courses as $cours) {
-            // Create 2-3 evaluations per course per semester
-            $evaluationsCount = rand(2, 3);
-            
-            for ($i = 0; $i < $evaluationsCount; $i++) {
-                $evaluationType = $this->getRandomEvaluationType();
-                $date = $this->getRandomEvaluationDate();
-                
-                $evaluationDates = $this->getEvaluationDates($date);
-                
-                Evaluation::create([
-                    'id_matiere' => $cours->id_matiere,
-                    'titre' => ucfirst($evaluationType) . ' de ' . $cours->matiere->nom_matiere . ' - Séance ' . ($i + 1),
-                    'type' => $evaluationType,
-                    'date' => $date,
-                    'date_debut' => $evaluationDates['date_debut'],
-                    'date_fin' => $evaluationDates['date_fin'],
-                    'id_classe' => $cours->id_classe,
-                    'note_max' => $this->getBaremeForType($evaluationType), // Dynamic maximum note
-                ]);
-            }
+        $this->command->info("Creating evaluations for {$assignments->count()} subject-class combinations...");
+
+        // Create evaluations for each subject-class combination
+        foreach ($assignments as $assignment) {
+            // Create evaluations for different periods of the academic year
+            $this->createTrimesterEvaluations($assignment, 1); // First trimester
+            $this->createTrimesterEvaluations($assignment, 2); // Second trimester
+            $this->createTrimesterEvaluations($assignment, 3); // Third trimester
         }
 
         $evaluationCount = Evaluation::count();
-        $this->command->info("Created {$evaluationCount} evaluations.");
+        $this->command->info("✅ Created {$evaluationCount} evaluations.");
     }
-
-    private function getRandomEvaluationType(): string
+    
+    private function createTrimesterEvaluations($assignment, int $trimester): void
     {
-        $types = ['devoir', 'controle', 'examen'];
-        return $types[array_rand($types)];
-    }
-
-    private function getRandomEvaluationDate(): Carbon
-    {
-        // Generate dates from last 3 months
-        $startDate = Carbon::now()->subMonths(3);
-        $endDate = Carbon::now()->subDays(1);
+        $trimesterDates = $this->getTrimesterDates($trimester);
         
-        return Carbon::createFromTimestamp(
-            rand($startDate->timestamp, $endDate->timestamp)
-        );
-    }
-
-    private function getDurationForType(string $type): int
-    {
-        $durations = [
-            'devoir' => 120,      // 2 hours
-            'controle' => 60,     // 1 hour
-            'examen' => 180,      // 3 hours
-            'interrogation' => 30  // 30 minutes
+        // Create different types of evaluations per trimester
+        $evaluationTypes = [
+            ['type' => 'controle', 'count' => 2, 'max_note' => 20],
+            ['type' => 'devoir', 'count' => 1, 'max_note' => 20],
         ];
-
-        return $durations[$type] ?? 60;
+        
+        // Add exam for important subjects in trimester 3
+        if ($trimester == 3 && $this->isMainSubject($assignment->nom_matiere)) {
+            $evaluationTypes[] = ['type' => 'examen', 'count' => 1, 'max_note' => 20];
+        }
+        
+        foreach ($evaluationTypes as $evalType) {
+            for ($i = 0; $i < $evalType['count']; $i++) {
+                $date = $this->getRandomDateInTrimester($trimesterDates);
+                $evaluationDates = $this->getEvaluationTimes($evalType['type']);
+                
+                Evaluation::create([
+                    'id_matiere' => $assignment->id_matiere,
+                    'titre' => $this->generateEvaluationTitle($assignment->nom_matiere, $evalType['type'], $trimester, $i + 1),
+                    'type' => $evalType['type'],
+                    'date' => $date,
+                    'date_debut' => $evaluationDates['date_debut'],
+                    'date_fin' => $evaluationDates['date_fin'],
+                    'id_classe' => $assignment->id_classe,
+                    'note_max' => $evalType['max_note'],
+                ]);
+            }
+        }
     }
-
-    private function getBaremeForType(string $type): int
+    
+    private function getTrimesterDates(int $trimester): array
     {
-        $baremes = [
-            'devoir' => 20,
-            'controle' => 20,
-            'examen' => 20,
-            'interrogation' => 10
+        $currentYear = date('Y');
+        
+        switch ($trimester) {
+            case 1:
+                return [
+                    'start' => Carbon::create($currentYear, 10, 1),
+                    'end' => Carbon::create($currentYear, 12, 31)
+                ];
+            case 2:
+                return [
+                    'start' => Carbon::create($currentYear + 1, 1, 1),
+                    'end' => Carbon::create($currentYear + 1, 4, 30)
+                ];
+            case 3:
+                return [
+                    'start' => Carbon::create($currentYear + 1, 5, 1),
+                    'end' => Carbon::create($currentYear + 1, 7, 31)
+                ];
+            default:
+                return [
+                    'start' => Carbon::now()->subMonths(3),
+                    'end' => Carbon::now()->subDays(1)
+                ];
+        }
+    }
+    
+    private function getRandomDateInTrimester(array $dates): Carbon
+    {
+        $start = $dates['start']->timestamp;
+        $end = $dates['end']->timestamp;
+        
+        // Avoid weekends
+        do {
+            $randomTimestamp = rand($start, $end);
+            $date = Carbon::createFromTimestamp($randomTimestamp);
+        } while ($date->isWeekend());
+        
+        return $date;
+    }
+    
+    private function isMainSubject(string $subject): bool
+    {
+        $mainSubjects = [
+            'Mathématiques', 'Français', 'Anglais', 'Sciences Physiques',
+            'Histoire-Géographie', 'Sciences de la Vie et de la Terre'
         ];
-
-        return $baremes[$type] ?? 20;
+        
+        return in_array($subject, $mainSubjects);
+    }
+    
+    private function generateEvaluationTitle(string $matiere, string $type, int $trimester, int $numero): string
+    {
+        $typeNames = [
+            'controle' => 'Contrôle',
+            'devoir' => 'Devoir Surveillé',
+            'examen' => 'Examen'
+        ];
+        
+        $typeName = $typeNames[$type] ?? ucfirst($type);
+        
+        return "{$typeName} {$numero} - {$matiere} (T{$trimester})";
     }
 
-    private function getEvaluationDates($date): array
+    private function getEvaluationTimes(string $type): array
     {
-        // Generate realistic evaluation times
-        $startHours = [8, 9, 10, 13, 14, 15]; // Common exam start times
-        $startHour = $startHours[array_rand($startHours)];
-        $startMinute = [0, 30][array_rand([0, 30])]; // Either :00 or :30
+        // Generate realistic evaluation times based on type
+        $timeSlots = [
+            'controle' => ['start' => '08:00', 'duration' => 60],  // 1 hour
+            'devoir' => ['start' => '08:00', 'duration' => 120],   // 2 hours
+            'examen' => ['start' => '08:00', 'duration' => 180],   // 3 hours
+        ];
         
-        $startTime = sprintf('%02d:%02d:00', $startHour, $startMinute);
+        $slot = $timeSlots[$type] ?? $timeSlots['controle'];
         
-        // Calculate end time based on duration (1-3 hours)
-        $duration = rand(1, 3); // hours
-        $endHour = $startHour + $duration;
-        $endTime = sprintf('%02d:%02d:00', $endHour, $startMinute);
+        $startTimes = ['08:00', '10:00', '14:00'];
+        $startTime = $startTimes[array_rand($startTimes)];
+        
+        $endTime = date('H:i', strtotime($startTime . ' +' . $slot['duration'] . ' minutes'));
         
         return [
             'date_debut' => $startTime,

@@ -13,9 +13,60 @@ class EtudePaiement extends Model
     
     protected $dates = ['date_paiement'];
     
+    protected $casts = [
+        'date_paiement' => 'date',
+        'montant' => 'decimal:2',
+    ];
+    
     public function etudiant()
     {
         return $this->belongsTo(Etudiant::class, 'id_etudiant');
+    }
+    
+    /**
+     * Generate payment receipt number
+     */
+    public function getReceiptNumberAttribute(): string
+    {
+        return 'REC-' . str_pad($this->id_paiements, 6, '0', STR_PAD_LEFT);
+    }
+    
+    /**
+     * Get formatted payment amount
+     */
+    public function getFormattedAmountAttribute(): string
+    {
+        return '$' . number_format($this->montant, 2);
+    }
+    
+    /**
+     * Get payment type label
+     */
+    public function getTypeLabel(): string
+    {
+        return match($this->typepaye) {
+            'scolarite' => 'Tuition Fee',
+            'inscription' => 'Registration Fee',
+            'examen' => 'Exam Fee',
+            'uniforme' => 'Uniform',
+            'transport' => 'Transportation',
+            'cantine' => 'Cafeteria',
+            'autre' => 'Other',
+            default => ucfirst($this->typepaye),
+        };
+    }
+    
+    /**
+     * Get payment status badge
+     */
+    public function getStatusBadge(): string
+    {
+        return match($this->statut) {
+            'paye' => '<span class="badge-success">Paid</span>',
+            'non_paye' => '<span class="badge-warning">Pending</span>',
+            'partiel' => '<span class="badge-info">Partial</span>',
+            default => ucfirst($this->statut),
+        };
     }
     
     use HasFactory;

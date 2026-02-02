@@ -79,4 +79,20 @@ return [
     'school_address' => env('SCHOOL_ADDRESS', ''),
     'school_phone' => env('SCHOOL_PHONE', ''),
     'school_email' => env('SCHOOL_EMAIL', ''),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Matricule Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configuration for automatic student matricule generation
+    | Supports multi-tenant systems with unique school codes
+    |
+    */
+    'matricule' => [
+        'school_code' => env('SCHOOL_CODE', 'SCH'),
+        'format' => '{school_code}{year}{sequence}', // e.g., SCH26001
+        'sequence_length' => 4, // Number of digits for sequence
+        'year_format' => 'y', // 'y' for 2-digit year, 'Y' for 4-digit
+    ],
 ];

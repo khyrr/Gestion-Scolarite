@@ -68,6 +68,12 @@ class AdminPanelProvider extends PanelProvider
                     fn () => view('filament.loading-overlay')
                 );
             })
+            ->brandName(function () {
+                $user = auth()->user();
+                if (!$user) return config('app.name');
+                
+                return __('app.administration_panel');
+            })
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -82,6 +88,8 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+                \App\Http\Middleware\EnsureAdminRole::class,
+            ])
+            ->spa();
     }
 }

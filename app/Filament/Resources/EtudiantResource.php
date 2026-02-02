@@ -15,9 +15,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 use App\Models\Classe;
+use App\Filament\Concerns\HasRoleBasedAccess;
 
 class EtudiantResource extends Resource
 {
+    use HasRoleBasedAccess;
     protected static ?string $model = Etudiant::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
@@ -46,22 +48,44 @@ class EtudiantResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()->hasRole('super_admin') || auth()->user()->can('manage students');
+        return auth()->user()->hasPermissionTo('view students');
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()->hasRole('super_admin') || auth()->user()->can('manage students');
+        return auth()->user()->hasPermissionTo('create students');
     }
 
     public static function canEdit(Model $record): bool
     {
-        return auth()->user()->hasRole('super_admin') || auth()->user()->can('manage students');
+        return auth()->user()->hasPermissionTo('edit students');
     }
 
     public static function canDelete(Model $record): bool
     {
-        return auth()->user()->hasRole('super_admin') || auth()->user()->can('manage students');
+        return auth()->user()->hasPermissionTo('delete students');
+    }
+
+    /**
+     * Check if a teacher can access a specific student
+     */
+    private static function canTeacherAccessStudent(Model $student): bool
+    {
+        $user = auth()->user();
+        
+        if (!$user->hasRole(['teacher', 'enseignant'])) {
+            return false;
+        }
+        
+        // Get the teacher's profile
+        $enseignant = $user->profile;
+        if (!$enseignant) {
+            return false;
+        }
+        
+        // Check if the student is in any of the teacher's classes
+        $teacherClasses = $enseignant->classes()->pluck('id_classe');
+        return $teacherClasses->contains($student->id_classe);
     }
 
     public static function form(Form $form): Form
@@ -74,9 +98,7 @@ class EtudiantResource extends Resource
                             ->label(__('app.matricule'))
                             ->disabled()
                             ->dehydrated(false)
-                            ->placeholder(__('app.placeholder_matricule'))
-                            ->helperText(__('app.matricule_auto_generated'))
-                            ->visibleOn('edit'),
+                            ->placeholder(__('app.placeholder_matricule')),
                             
                         Forms\Components\TextInput::make('nom')
                             ->label(__('app.nom'))
@@ -104,14 +126,42 @@ class EtudiantResource extends Resource
                             
                         Forms\Components\Select::make('id_classe')
                             ->label(__('app.classe'))
-                            ->relationship('classe', 'nom_classe')
+                            ->relationship('classe', 'nom_classe', function (Builder $query) {
+                                return static::applyRoleBasedRelationScope($query, [
+                                    'classColumn' => 'id_classe'
+                                ]);
+                            })
                             ->required()
                             ->searchable()
                             ->preload(),
                     ])
                     ->columns(2),
                     
+                Forms\Components\Section::make(__('app.informations_compte'))
+                    ->visible(fn () => !auth()->user()->hasPermissionTo('manage users'))
+                    ->description(__('app.informations_compte_lecture_seule'))
+                    ->schema([
+                        Forms\Components\Placeholder::make('contact_readonly')
+                            ->label(__('app.telephone'))
+                            ->content(fn ($record) => $record->telephone ?? __('app.non_renseigne'))
+                            ->visibleOn(['edit', 'view']),
+                            
+                        Forms\Components\Placeholder::make('email_readonly')
+                            ->label(__('app.email'))
+                            ->content(fn ($record) => $record->user?->email ?? __('app.aucun_compte'))
+                            ->visibleOn(['edit', 'view']),
+                            
+                        Forms\Components\Placeholder::make('account_status_readonly')
+                            ->label(__('app.statut_compte'))
+                            ->content(fn ($record) => $record->user?->is_active 
+                                ? new \Illuminate\Support\HtmlString('<span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">' . __('app.actif') . '</span>')
+                                : new \Illuminate\Support\HtmlString('<span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">' . __('app.inactif') . '</span>'))
+                            ->visibleOn(['edit', 'view']),
+                    ])
+                    ->columns(2),
+                    
                 Forms\Components\Section::make(__('app.contact_information'))
+                    ->visible(fn () => auth()->user()->hasPermissionTo('manage users'))
                     ->schema([
                         Forms\Components\TextInput::make('telephone')
                             ->label(__('app.telephone'))
@@ -127,6 +177,7 @@ class EtudiantResource extends Resource
                     
                 Forms\Components\Section::make(__('app.compte_utilisateur'))
                     ->description(__('app.compte_utilisateur_description'))
+                    ->visible(fn () => auth()->user()->hasPermissionTo('manage users'))
                     ->schema([
                         Forms\Components\TextInput::make('email')
                             ->label(__('app.email'))
@@ -169,6 +220,12 @@ class EtudiantResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(function (Builder $query) {
+                return static::applyRoleBasedTableScope($query, [
+                    'classColumn' => 'id_classe',
+                    'studentIdColumn' => 'id_etudiant'
+                ]);
+            })
             ->striped()
             ->columns([
                 Tables\Columns\TextColumn::make('matricule')
@@ -214,21 +271,24 @@ class EtudiantResource extends Resource
                         'M' => 'blue',
                         'F' => 'pink',
                         default => 'gray',
-                    }),
+                    })
+                    ->toggleable(),
                     
                 Tables\Columns\TextColumn::make('telephone')
                     ->label(__('app.telephone'))
                     ->searchable()
                     ->toggleable()
                     ->copyable()
-                    ->icon('heroicon-o-phone'),
+                    ->icon('heroicon-o-phone')
+                    ->visible(fn () => auth()->user()->hasRole('super_admin') || auth()->user()->can('manage students')),
 
                 Tables\Columns\IconColumn::make('user.is_active')
                     ->label(__('app.compte_actif'))
                     ->boolean()
                     ->sortable()
                     ->toggleable()
-                    ->default(false),
+                    ->default(false)
+                    ->visible(fn () => auth()->user()->hasRole('super_admin') || auth()->user()->can('manage accounts')),
                     
                 Tables\Columns\TextColumn::make('user.email')
                     ->label(__('app.email'))
@@ -236,7 +296,8 @@ class EtudiantResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->copyable()
                     ->icon('heroicon-o-envelope')
-                    ->default(__('app.aucun_compte')),
+                    ->default(__('app.aucun_compte'))
+                    ->visible(fn () => auth()->user()->hasRole('super_admin') || auth()->user()->can('manage accounts')),
                     
                 Tables\Columns\TextColumn::make('notes_count')
                     ->label(__('app.notes'))
@@ -249,12 +310,17 @@ class EtudiantResource extends Resource
                     ->label(__('app.date_creation'))
                     ->dateTime('d/m/Y')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->visible(fn () => auth()->user()->hasRole('super_admin') || auth()->user()->can('manage students')),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('id_classe')
                     ->label(__('app.classe'))
-                    ->relationship('classe', 'nom_classe')
+                    ->relationship('classe', 'nom_classe', function (Builder $query) {
+                        return static::applyRoleBasedRelationScope($query, [
+                            'classColumn' => 'id_classe'
+                        ]);
+                    })
                     ->searchable()
                     ->preload(),
                     
@@ -266,13 +332,22 @@ class EtudiantResource extends Resource
                     ]),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\ViewAction::make()
+                    ->visible(function (Model $record) {
+                        if (auth()->user()->hasRole(['teacher', 'enseignant'])) {
+                            return static::canTeacherAccessStudent($record);
+                        }
+                        return static::canView($record);
+                    }),
+                Tables\Actions\EditAction::make()
+                    ->visible(fn (Model $record) => auth()->user()->hasPermissionTo('edit students')),
+                Tables\Actions\DeleteAction::make()
+                    ->visible(fn (Model $record) => auth()->user()->hasPermissionTo('delete students')),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
+                        ->visible(fn () => auth()->user()->hasPermissionTo('delete students'))
                 ]),
             ])
             ->defaultSort('nom', 'asc');

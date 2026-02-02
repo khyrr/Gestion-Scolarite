@@ -182,6 +182,7 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\FortifyServiceProvider::class,
         App\Providers\Filament\AdminPanelProvider::class,
+        App\Providers\Filament\TeacherPanelProvider::class,
         App\Providers\Filament\LanguageSwitchServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
     ])->toArray(),
@@ -200,5 +201,18 @@ return [
     'aliases' => Facade::defaultAliases()->merge([
         // 'Example' => App\Facades\Example::class,
     ])->toArray(),
+
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Application Currency
+    |--------------------------------------------------------------------------
+    |  | This value determines the default currency used across the application
+    | for displaying monetary values. You may set this value to any of the
+    | supported currency codes.
+    | |--------------------------------------------------------------------------
+    */
+    'currency' => env('APP_CURRENCY', 'MRU'),
 
 ];

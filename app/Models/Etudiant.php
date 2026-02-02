@@ -38,9 +38,43 @@ class Etudiant extends Model
 
     public static function generateMatricule(): string
     {
-        $year = date('Y');
-        $count = self::whereYear('created_at', $year)->count() + 1;
-        return $year . str_pad($count, 4, '0', STR_PAD_LEFT);
+        // Get school configuration
+        $config = config('school.matricule');
+        $schoolCode = $config['school_code'];
+        $yearFormat = $config['year_format'];
+        $sequenceLength = $config['sequence_length'];
+        
+        // Generate year based on format
+        $year = date($yearFormat);
+        
+        // Create the prefix pattern
+        $prefix = $schoolCode . $year;
+        $pattern = $prefix . '%';
+        
+        // Find the last matricule with this prefix to ensure continuity
+        $lastStudent = self::where('matricule', 'LIKE', $pattern)
+                           ->orderBy('matricule', 'desc')
+                           ->first();
+        
+        // Calculate next sequence number
+        if ($lastStudent) {
+            // Extract the sequence number from the last matricule
+            $lastSequence = (int) substr($lastStudent->matricule, strlen($prefix));
+            $nextSequence = $lastSequence + 1;
+        } else {
+            $nextSequence = 1;
+        }
+        
+        // Generate the complete matricule
+        $matricule = $prefix . str_pad($nextSequence, $sequenceLength, '0', STR_PAD_LEFT);
+        
+        // Double-check uniqueness (safety net)
+        while (self::where('matricule', $matricule)->exists()) {
+            $nextSequence++;
+            $matricule = $prefix . str_pad($nextSequence, $sequenceLength, '0', STR_PAD_LEFT);
+        }
+        
+        return $matricule;
     }
 
     public function user()

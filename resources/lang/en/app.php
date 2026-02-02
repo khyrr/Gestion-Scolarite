@@ -26,11 +26,19 @@ return [
     'export_csv' => 'Export CSV',
     'personnes' => 'People',
     'systeme' => 'System',
+    
+    // ===========================================
+    // BRANDING & PORTALS
+    // ===========================================
+    'administration_panel' => 'Administration Panel',
+    'teacher_portal' => 'Teacher Portal',
+    'student_portal' => 'Student Portal',
 
     // ===========================================
     // GESTION ACADÉMIQUE
     // ===========================================
     'gestion_academique' => 'Academic Management',
+    'mes_classes' => 'My Classes',
     'classes' => 'Classes',
     'etudiants' => 'Students',
     'etudiant' => 'Student',

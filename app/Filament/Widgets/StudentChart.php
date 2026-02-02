@@ -10,6 +10,11 @@ class StudentChart extends ChartWidget
 {
     protected static ?int $sort = 2;
 
+    public static function canView(): bool
+    {
+        return auth()->user()->hasRole(['super_admin', 'admin', 'director', 'academic_coordinator', 'teacher', 'secretary']);
+    }
+
     // protected int | string | array $columnSpan = [
     //     'xl' => 0.5,
     //     'lg' => 0.5,
@@ -19,12 +24,40 @@ class StudentChart extends ChartWidget
 
     public function getHeading(): string
     {
+        $user = auth()->user();
+        if ($user->hasRole('teacher')) {
+            return __('app.repartition_mes_etudiants');
+        }
         return __('app.repartition_etudiants');
     }
 
     protected function getData(): array
     {
-        $data = Etudiant::select('genre', DB::raw('count(*) as total'))
+        $user = auth()->user();
+        
+        if ($user->hasRole('super_admin')) {
+            // Admins see all students
+            $query = Etudiant::query();
+        } else if ($user->hasRole('teacher')) {
+            // Teachers see only their students
+            $enseignant = $user->profile;
+            if (!$enseignant) {
+                return [
+                    'datasets' => [],
+                    'labels' => [],
+                ];
+            }
+            
+            $teacherClasses = $enseignant->classes()->pluck('classes.id_classe');
+            $query = Etudiant::whereIn('id_classe', $teacherClasses);
+        } else {
+            return [
+                'datasets' => [],
+                'labels' => [],
+            ];
+        }
+        
+        $data = $query->select('genre', DB::raw('count(*) as total'))
             ->groupBy('genre')
             ->pluck('total', 'genre')
             ->toArray();

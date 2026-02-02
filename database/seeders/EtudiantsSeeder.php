@@ -4,8 +4,10 @@ namespace Database\Seeders;
 
 use App\Models\Etudiant;
 use App\Models\Classe;
+use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class EtudiantsSeeder extends Seeder
 {
@@ -21,161 +23,272 @@ class EtudiantsSeeder extends Seeder
             return;
         }
 
-        $students = [
-            // Students for 6ème A
+        // Sample of realistic students for demonstration
+        $this->createSampleStudents($classes);
+        
+        // Generate additional random students for each class
+        $this->generateRandomStudents($classes);
+        
+        $this->command->info('✅ Created ' . Etudiant::count() . ' students with matricules');
+    }
+    
+    private function createSampleStudents($classes): void
+    {
+        $sampleStudents = [
+            // CP Students (Age 6-7)
             [
                 'nom' => 'Ba',
                 'prenom' => 'Aissata',
                 'telephone' => '+222 30 11 22 33',
-                'adresse' => 'Tevragh Zeina, Nouakchott',
-                'date_naissance' => '2010-03-15',
+                'adresse' => 'Tevragh Zeina, Quartier 5, Nouakchott',
+                'date_naissance' => '2018-03-15',
                 'genre' => 'F',
-                'id_classe' => $classes->where('nom_classe', '6ème A')->first()?->id_classe,
+                'classe' => 'CP',
+                'has_account' => false,
             ],
             [
                 'nom' => 'Ould Ahmed',
                 'prenom' => 'Mohamed Salem',
-                'telephone' => '+222 30 11 22 34',
-                'adresse' => 'Ksar, Nouakchott',
-                'date_naissance' => '2010-07-22',
+                'telephone' => '+222 30 11 22 34', 
+                'adresse' => 'Ksar, Rue 42-156, Nouakchott',
+                'date_naissance' => '2017-11-22',
                 'genre' => 'M',
-                'id_classe' => $classes->where('nom_classe', '6ème A')->first()?->id_classe,
+                'classe' => 'CP',
+                'has_account' => false,
             ],
+            
+            // CM2 Students (Age 10-11)
             [
                 'nom' => 'Mint Sidi',
                 'prenom' => 'Fatimata',
                 'telephone' => '+222 30 11 22 35',
-                'adresse' => 'El Mina, Nouakchott',
-                'date_naissance' => '2010-11-08',
+                'adresse' => 'El Mina, Bloc B, Nouakchott',
+                'date_naissance' => '2013-08-12',
                 'genre' => 'F',
-                'id_classe' => $classes->where('nom_classe', '6ème A')->first()?->id_classe,
+                'classe' => 'CM2',
+                'has_account' => false,
+            ],
+            [
+                'nom' => 'Diallo',
+                'prenom' => 'Amadou',
+                'telephone' => '+222 30 11 22 36',
+                'adresse' => 'Medina, Secteur 3, Nouakchott',
+                'date_naissance' => '2013-04-25',
+                'genre' => 'M',
+                'classe' => 'CM2',
+                'has_account' => true,
+                'email' => 'amadou.diallo@student.ecole.com',
             ],
             
-            // Students for 6ème B
-            [
-                'nom' => 'Ould Baba',
-                'prenom' => 'Ahmed Mahmoud',
-                'telephone' => '+222 30 11 22 36',
-                'adresse' => 'Sebkha, Nouakchott',
-                'date_naissance' => '2010-01-12',
-                'genre' => 'M',
-                'id_classe' => $classes->where('nom_classe', '6ème B')->first()?->id_classe,
-            ],
+            // 6ème Students (Age 11-12)
             [
                 'nom' => 'Sy',
                 'prenom' => 'Mariama',
                 'telephone' => '+222 30 11 22 37',
-                'adresse' => 'Arafat, Nouakchott',
-                'date_naissance' => '2010-05-30',
+                'adresse' => 'Arafat, Ilot K, Nouakchott',
+                'date_naissance' => '2012-05-30',
                 'genre' => 'F',
-                'id_classe' => $classes->where('nom_classe', '6ème B')->first()?->id_classe,
+                'classe' => '6ème A',
+                'has_account' => true,
+                'email' => 'mariama.sy@student.ecole.com',
             ],
-            
-            // Students for 5ème A
             [
-                'nom' => 'Ould Mohamed',
-                'prenom' => 'Sidi Mohamed',
+                'nom' => 'Ould Baba',
+                'prenom' => 'Ahmed Mahmoud',
                 'telephone' => '+222 30 11 22 38',
-                'adresse' => 'Toujounine, Nouakchott',
-                'date_naissance' => '2009-09-14',
+                'adresse' => 'Sebkha, Secteur 12, Nouakchott',
+                'date_naissance' => '2012-01-12',
                 'genre' => 'M',
-                'id_classe' => $classes->where('nom_classe', '5ème A')->first()?->id_classe,
-            ],
-            [
-                'nom' => 'Mint Vall',
-                'prenom' => 'Aïcha',
-                'telephone' => '+222 30 11 22 39',
-                'adresse' => 'Dar Naim, Nouakchott',
-                'date_naissance' => '2009-02-28',
-                'genre' => 'F',
-                'id_classe' => $classes->where('nom_classe', '5ème A')->first()?->id_classe,
+                'classe' => '6ème B',
+                'has_account' => true,
+                'email' => 'ahmed.ouldbaba@student.ecole.com',
             ],
             
-            // Students for Terminale S
+            // Terminale Students (Age 17-18)
             [
                 'nom' => 'Kane',
                 'prenom' => 'Ousmane',
-                'telephone' => '+222 30 11 22 40',
-                'adresse' => 'Riad, Nouakchott',
-                'date_naissance' => '2005-12-10',
+                'telephone' => '+222 30 11 22 39',
+                'adresse' => 'Riad, Villa 245, Nouakchott',
+                'date_naissance' => '2007-12-10',
                 'genre' => 'M',
-                'id_classe' => $classes->where('nom_classe', 'Terminale S')->first()?->id_classe,
+                'classe' => 'Terminale S',
+                'has_account' => true,
+                'email' => 'ousmane.kane@student.ecole.com',
             ],
             [
                 'nom' => 'Mint Ebnou',
                 'prenom' => 'Khadijetou',
-                'telephone' => '+222 30 11 22 41',
-                'adresse' => 'Hay Saken, Nouakchott',
-                'date_naissance' => '2005-08-16',
+                'telephone' => '+222 30 11 22 40',
+                'adresse' => 'Hay Saken, Lot 156, Nouakchott',
+                'date_naissance' => '2007-08-16',
                 'genre' => 'F',
-                'id_classe' => $classes->where('nom_classe', 'Terminale S')->first()?->id_classe,
+                'classe' => 'Terminale L',
+                'has_account' => true,
+                'email' => 'khadijetou.ebnou@student.ecole.com',
             ],
-            
-            // Students for CM2
-            [
-                'nom' => 'Diallo',
-                'prenom' => 'Amadou',
-                'telephone' => '+222 30 11 22 42',
-                'adresse' => 'Medina, Nouakchott',
-                'date_naissance' => '2012-04-25',
-                'genre' => 'M',
-                'id_classe' => $classes->where('nom_classe', 'CM2')->first()?->id_classe,
-            ],
-        ];
-
-        foreach ($students as $index => $studentData) {
-            if ($studentData['id_classe']) {
-                // Add matricule to student data
-                $studentData['matricule'] = 'ETU' . str_pad($index + 1, 4, '0', STR_PAD_LEFT);
-                
-                // Create Student record only (no User account for students)
-                Etudiant::create($studentData);
-            }
-        }
-
-        // Note: Random student generation temporarily disabled to avoid email duplicates
-        // Can be re-enabled after implementing proper email uniqueness checks
-    }
-
-    private function getRandomFirstName(): string
-    {
-        $names = [
-            'Mohamed', 'Ahmed', 'Sidi', 'Oumar', 'Abdallahi', 'Mohamed Lemine', 'Salem', 'Mahmoud',
-            'Fatimata', 'Aissata', 'Mariem', 'Khadija', 'Aminetou', 'Aïcha', 'Khadijetou',
-            'Amadou', 'Ousmane', 'Ibrahim', 'Youssef', 'Hassan'
         ];
         
-        return $names[array_rand($names)];
+        foreach ($sampleStudents as $studentData) {
+            $classe = $classes->where('nom_classe', $studentData['classe'])->first();
+            if (!$classe) continue;
+            
+            // Create student
+            $etudiant = Etudiant::create([
+                'nom' => $studentData['nom'],
+                'prenom' => $studentData['prenom'], 
+                'telephone' => $studentData['telephone'],
+                'adresse' => $studentData['adresse'],
+                'date_naissance' => $studentData['date_naissance'],
+                'genre' => $studentData['genre'],
+                'id_classe' => $classe->id_classe,
+                // matricule will be auto-generated
+            ]);
+            
+            // Create user account if specified
+            if ($studentData['has_account'] && isset($studentData['email'])) {
+                $user = User::create([
+                    'name' => trim($studentData['prenom'] . ' ' . $studentData['nom']),
+                    'email' => $studentData['email'],
+                    'password' => Hash::make('student123'),
+                    'is_active' => true,
+                    'email_verified_at' => now(),
+                    'profile_type' => Etudiant::class,
+                    'profile_id' => $etudiant->id_etudiant,
+                ]);
+                
+                $user->assignRole('student');
+            }
+        }
     }
-
-    private function getRandomLastName(): string
+    
+    private function generateRandomStudents($classes): void
+    {
+        foreach ($classes as $classe) {
+            // Generate 8-15 students per class
+            $studentsCount = rand(8, 15);
+            
+            for ($i = 0; $i < $studentsCount; $i++) {
+                $genre = rand(1, 2) == 1 ? 'M' : 'F';
+                $nom = $this->getRandomMauritanianLastName();
+                $prenom = $this->getRandomMauritanianFirstName($genre);
+                $birthDate = $this->calculateBirthDate($classe->niveau);
+                
+                // Only create accounts for older students (niveau >= 12)
+                $hasAccount = $classe->niveau >= 12 && rand(1, 100) <= 30; // 30% chance
+                
+                $etudiant = Etudiant::create([
+                    'nom' => $nom,
+                    'prenom' => $prenom,
+                    'telephone' => $this->generatePhoneNumber(),
+                    'adresse' => $this->getRandomAddress(),
+                    'date_naissance' => $birthDate,
+                    'genre' => $genre,
+                    'id_classe' => $classe->id_classe,
+                ]);
+                
+                // Create user account if needed
+                if ($hasAccount) {
+                    $email = strtolower($prenom) . '.' . strtolower(str_replace(' ', '', $nom)) . '@student.ecole.com';
+                    $email = $this->ensureUniqueEmail($email);
+                    
+                    $user = User::create([
+                        'name' => trim($prenom . ' ' . $nom),
+                        'email' => $email,
+                        'password' => Hash::make('student123'),
+                        'is_active' => rand(1, 100) <= 90, // 90% active
+                        'email_verified_at' => now(),
+                        'profile_type' => Etudiant::class,
+                        'profile_id' => $etudiant->id_etudiant,
+                    ]);
+                    
+                    $user->assignRole('student');
+                }
+            }
+        }
+    }
+    
+    private function getRandomMauritanianFirstName(string $genre): string
+    {
+        $maleNames = [
+            'Mohamed', 'Ahmed', 'Sidi', 'Oumar', 'Abdallahi', 'Mohamed Lemine', 'Salem', 'Mahmoud',
+            'Amadou', 'Ousmane', 'Ibrahim', 'Youssef', 'Hassan', 'Moctar', 'Cheikh', 'Brahim',
+            'Moustapha', 'Sid Ahmed', 'Mohamed Vall', 'Ely', 'Yahya', 'Isselmou'
+        ];
+        
+        $femaleNames = [
+            'Fatimata', 'Aissata', 'Mariem', 'Khadija', 'Aminetou', 'Aïcha', 'Khadijetou',
+            'Maryam', 'Coumba', 'Zeynab', 'Habiba', 'Selma', 'Rokia', 'Safiatou',
+            'Nana', 'Véronique', 'Maimouna', 'Hawwa'
+        ];
+        
+        return $genre === 'M' ? $maleNames[array_rand($maleNames)] : $femaleNames[array_rand($femaleNames)];
+    }
+    
+    private function getRandomMauritanianLastName(): string
     {
         $lastNames = [
             'Ould Ahmed', 'Mint Sidi', 'Ba', 'Sy', 'Kane', 'Diallo', 'Ould Baba', 'Mint Vall',
-            'Ould Mohamed', 'Mint Ebnou', 'Ould Abdallahi', 'Mint Mohamedou', 'Touré', 'Sow'
+            'Ould Mohamed', 'Mint Ebnou', 'Ould Abdallahi', 'Mint Mohamedou', 'Touré', 'Sow',
+            'Ould Salem', 'Mint Ahmed', 'Camara', 'Traoré', 'Ould Cheikh', 'Mint Moctar',
+            'Ould Brahim', 'Mint Yahya', 'Ould Sid Ahmed', 'Mint Isselmou', 'Yall', 'Thiam'
         ];
         
         return $lastNames[array_rand($lastNames)];
     }
-
+    
     private function getRandomAddress(): string
     {
-        $addresses = [
-            'Tevragh Zeina, Nouakchott', 'Ksar, Nouakchott', 'El Mina, Nouakchott',
-            'Sebkha, Nouakchott', 'Arafat, Nouakchott', 'Toujounine, Nouakchott',
-            'Dar Naim, Nouakchott', 'Riad, Nouakchott', 'Hay Saken, Nouakchott', 'Medina, Nouakchott'
+        $neighborhoods = [
+            'Tevragh Zeina', 'Ksar', 'El Mina', 'Sebkha', 'Arafat', 'Toujounine',
+            'Dar Naim', 'Riad', 'Hay Saken', 'Medina', 'Cinquième', 'Sixième'
         ];
         
-        return $addresses[array_rand($addresses)];
+        $streets = [
+            'Quartier %d', 'Secteur %d', 'Bloc %s', 'Ilot %s', 'Villa %d', 'Lot %d',
+            'Rue %s', 'Avenue %s'
+        ];
+        
+        $neighborhood = $neighborhoods[array_rand($neighborhoods)];
+        $street = sprintf($streets[array_rand($streets)], 
+            in_array('%s', [$streets[array_rand($streets)]]) ? chr(65 + rand(0, 10)) : rand(1, 500)
+        );
+        
+        return $neighborhood . ', ' . $street . ', Nouakchott';
     }
-
-    private function getRandomBirthDate(int $niveau): string
+    
+    private function generatePhoneNumber(): string
     {
-        $baseYear = 2024 - $niveau - 5; // Approximate age calculation
-        $year = $baseYear + rand(-1, 1); // Add some variation
+        $prefixes = ['30', '31', '32', '33', '34', '36', '37', '38', '39'];
+        $prefix = $prefixes[array_rand($prefixes)];
+        $number = sprintf('%02d %02d %02d', rand(10, 99), rand(10, 99), rand(10, 99));
+        
+        return '+222 ' . $prefix . ' ' . $number;
+    }
+    
+    private function calculateBirthDate(int $niveau): string
+    {
+        // Calculate appropriate age based on grade level
+        $baseAge = $niveau + 2; // Approximate age formula
+        $currentYear = date('Y');
+        $birthYear = $currentYear - $baseAge + rand(-1, 1); // Add some variation
+        
         $month = rand(1, 12);
         $day = rand(1, 28);
         
-        return sprintf('%d-%02d-%02d', $year, $month, $day);
+        return sprintf('%d-%02d-%02d', $birthYear, $month, $day);
+    }
+    
+    private function ensureUniqueEmail(string $email): string
+    {
+        $originalEmail = $email;
+        $counter = 1;
+        
+        while (User::where('email', $email)->exists()) {
+            $email = str_replace('@', $counter . '@', $originalEmail);
+            $counter++;
+        }
+        
+        return $email;
     }
 }

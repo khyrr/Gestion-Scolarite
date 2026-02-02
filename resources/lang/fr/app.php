@@ -35,11 +35,19 @@ return [
     'export_csv' => 'Exporter CSV',
     'personnes' => 'Personnes',
     'systeme' => 'Système',
+    
+    // ===========================================
+    // BRANDING & PORTALS
+    // ===========================================
+    'administration_panel' => 'Panneau d\'Administration',
+    'teacher_portal' => 'Portail Enseignant',
+    'student_portal' => 'Portail Étudiant',
 
     // ===========================================
     // GESTION ACADÉMIQUE
     // ===========================================
     'gestion_academique' => 'Gestion Académique',
+    'mes_classes' => 'Mes Classes',
     'classes' => 'Classes',
     'etudiants' => 'Étudiants',
     'etudiant' => 'Étudiant',
@@ -326,7 +334,7 @@ return [
     // ===========================================
     // GENRE
     // ===========================================
-    'M' => 'M',
+    'M' => 'Masculin',
     'F' => 'Féminin',
 
     // ===========================================

@@ -44,7 +44,22 @@ class AdministrateurResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()->hasRole('super_admin') || auth()->user()->can('manage settings');
+        return auth()->user()->hasPermissionTo('manage users');
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()->hasPermissionTo('manage users');
+    }
+
+    public static function canEdit($record): bool
+    {
+        return auth()->user()->hasPermissionTo('manage users');
+    }
+
+    public static function canDelete($record): bool
+    {
+        return auth()->user()->hasPermissionTo('manage users');
     }
 
     public static function form(Form $form): Form
@@ -77,6 +92,7 @@ class AdministrateurResource extends Resource
                     
                 Forms\Components\Section::make(__('app.compte_utilisateur'))
                     ->description(__('app.compte_utilisateur_description'))
+                    ->visible(fn () => auth()->user()->hasPermissionTo('manage users'))
                     ->schema([
                         Forms\Components\TextInput::make('email')
                             ->label(__('app.email'))
@@ -132,7 +148,40 @@ class AdministrateurResource extends Resource
                     ])
                     ->columns(2),
                     
+                // Read-only account information for users without manage users permission
+                Forms\Components\Section::make(__('app.compte_utilisateur'))
+                    ->description(__('app.informations_compte_readonly'))
+                    ->visible(fn () => !auth()->user()->hasPermissionTo('manage users'))
+                    ->schema([
+                        Forms\Components\TextInput::make('user.email')
+                            ->label(__('app.email'))
+                            ->disabled()
+                            ->dehydrated(false)
+                            ->default(fn ($record) => $record->user?->email ?? '-'),
+                            
+                        Forms\Components\Placeholder::make('role_display')
+                            ->label(__('app.role'))
+                            ->content(fn ($record) => $record->user?->hasRole('super_admin') 
+                                ? new \Illuminate\Support\HtmlString('<span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-purple-50 text-purple-700 ring-1 ring-inset ring-purple-700/10">🔐 ' . __('app.super_admin') . '</span>')
+                                : new \Illuminate\Support\HtmlString('<span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-700/10">👨‍💼 ' . __('app.admin') . '</span>')),
+                            
+                        Forms\Components\Placeholder::make('compte_status')
+                            ->label(__('app.statut_compte'))
+                            ->content(fn ($record) => $record->user?->is_active 
+                                ? new \Illuminate\Support\HtmlString('<span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-green-50 text-green-700 ring-1 ring-inset ring-green-700/10">✅ ' . __('app.actif') . '</span>')
+                                : new \Illuminate\Support\HtmlString('<span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-red-50 text-red-700 ring-1 ring-inset ring-red-700/10">❌ ' . __('app.inactif') . '</span>')),
+                            
+                        Forms\Components\Placeholder::make('two_factor_status_readonly')
+                            ->label(__('app.authentication_2fa'))
+                            ->content(fn ($record) => $record->user?->two_factor_enabled 
+                                ? new \Illuminate\Support\HtmlString('<span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-green-50 text-green-700 ring-1 ring-inset ring-green-700/10">🔐 ' . __('app.actif') . '</span>')
+                                : new \Illuminate\Support\HtmlString('<span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-700/10">🔓 ' . __('app.inactif') . '</span>')),
+                    ])
+                    ->columns(2),
+                    
                 Forms\Components\Section::make(__('app.two_factor'))
+                    ->visible(fn () => auth()->user()->hasPermissionTo('manage users'))
+                    ->visible(fn () => auth()->user()->hasPermissionTo('manage users'))
                     ->schema([
                         Forms\Components\Toggle::make('two_factor_enabled')
                             ->label(__('app.deux_facteurs_active_court'))

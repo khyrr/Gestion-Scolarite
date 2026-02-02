@@ -39,6 +39,26 @@ class PermissionResource extends Resource
         return __('app.permission');
     }
 
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->hasPermissionTo('manage permissions');
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()->hasPermissionTo('manage permissions');
+    }
+
+    public static function canEdit($record): bool
+    {
+        return auth()->user()->hasPermissionTo('manage permissions');
+    }
+
+    public static function canDelete($record): bool
+    {
+        return auth()->user()->hasPermissionTo('manage permissions');
+    }
+
     public static function form(Form $form): Form
     {
         return $form
@@ -85,11 +105,6 @@ class PermissionResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
-    }
-
-    public static function canViewAny(): bool
-    {
-        return auth()->user()->hasRole('super_admin') || auth()->user()->can('manage settings');
     }
 
     public static function getRelations(): array

@@ -12,6 +12,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class EnseignPaiementResource extends Resource
 {
@@ -43,7 +44,22 @@ class EnseignPaiementResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()->hasRole('super_admin') || auth()->user()->can('manage payments');
+        return auth()->user()->hasPermissionTo('view payments');
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()->hasPermissionTo('create payments');
+    }
+
+    public static function canEdit($record): bool
+    {
+        return auth()->user()->hasPermissionTo('edit payments');
+    }
+
+    public static function canDelete($record): bool
+    {
+        return auth()->user()->hasPermissionTo('delete payments');
     }
 
     public static function form(Form $form): Form
@@ -53,27 +69,27 @@ class EnseignPaiementResource extends Resource
                 Forms\Components\Section::make('Payment Information')
                     ->schema([
                         Forms\Components\Select::make('user_id')
-                            ->label('Teacher')
+                            ->label(__('app.enseignant'))
                             ->relationship('enseignant', 'name')
                             ->required()
                             ->searchable()
                             ->preload(),
                             
                         Forms\Components\Select::make('typepaiement')
-                            ->label('Payment Type')
+                            ->label(__('app.type_paiement'))
                             ->required()
                             ->options([
-                                'salaire' => 'Salary',
-                                'prime' => 'Bonus',
-                                'avance' => 'Advance',
-                                'autre' => 'Other',
+                                'salaire' => __('app.salaire'),
+                                'prime' => __('app.prime'),
+                                'avance' => __('app.avance'),
+                                'autre' => __('app.autre'),
                             ]),
                             
                         Forms\Components\TextInput::make('montant')
-                            ->label('Amount')
+                            ->label(__('app.montant'))
                             ->required()
                             ->numeric()
-                            ->prefix('$')
+                            ->prefix(config('app.currency', 'MRU') . ' ')
                             ->minValue(0)
                             ->default(0.00),
                     ])
@@ -82,17 +98,17 @@ class EnseignPaiementResource extends Resource
                 Forms\Components\Section::make('Payment Status')
                     ->schema([
                         Forms\Components\Select::make('statut')
-                            ->label('Status')
+                            ->label(__('app.statut'))
                             ->required()
                             ->options([
-                                'pending' => 'Pending',
-                                'paid' => 'Paid',
-                                'cancelled' => 'Cancelled',
+                                'non_paye' => __('app.en_attente'),
+                                'paye' => __('app.paye'), 
+                                'partiel' => __('app.partiel'),
                             ])
-                            ->default('pending'),
+                            ->default('non_paye'),
                             
                         Forms\Components\DatePicker::make('date_paiement')
-                            ->label('Payment Date')
+                            ->label(__('app.date_paiement'))
                             ->displayFormat('d/m/Y')
                             ->default(now()),
                     ])
@@ -105,12 +121,12 @@ class EnseignPaiementResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('enseignant.name')
-                    ->label('Teacher')
+                    ->label(__('app.enseignant'))
                     ->searchable()
                     ->sortable(),
                     
                 Tables\Columns\TextColumn::make('typepaiement')
-                    ->label('Type')
+                    ->label(__('app.type_paiement'))
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'salaire' => 'success',
@@ -120,59 +136,60 @@ class EnseignPaiementResource extends Resource
                     }),
                     
                 Tables\Columns\TextColumn::make('montant')
-                    ->label('Amount')
-                    ->money('USD')
+                    ->label(__('app.montant'))
+                    ->money(config('app.currency', 'MRU'),locale: 'en')
                     ->sortable()
                     ->summarize([
                         Tables\Columns\Summarizers\Sum::make()
-                            ->money('USD'),
+                            ->money(config('app.currency', 'MRU'),locale: 'en')
+                            ->visible(fn () => auth()->user()->hasRole(['admin', 'super_admin'])),
                     ]),
                     
                 Tables\Columns\TextColumn::make('statut')
-                    ->label('Status')
+                    ->label(__('app.statut'))
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'paid' => 'success',
-                        'pending' => 'warning',
-                        'cancelled' => 'danger',
+                        'paye' => 'success',
+                        'non_paye' => 'warning',
+                        'partiel' => 'danger',
                         default => 'gray',
                     }),
                     
                 Tables\Columns\TextColumn::make('date_paiement')
-                    ->label('Payment Date')
+                    ->label(__('app.date_paiement'))
                     ->date('d/m/Y')
                     ->sortable(),
                     
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Created')
+                    ->label(__('app.cree_a'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('statut')
-                    ->label('Status')
+                    ->label(__('app.statut'))
                     ->options([
-                        'pending' => 'Pending',
-                        'paid' => 'Paid',
-                        'cancelled' => 'Cancelled',
+                        'non_paye' => __('app.en_attente'),
+                        'paye' => __('app.paye'),
+                        'partiel' => __('app.partiel'),
                     ]),
                     
                 Tables\Filters\SelectFilter::make('typepaiement')
-                    ->label('Payment Type')
+                    ->label(__('app.type_paiement'))
                     ->options([
-                        'salaire' => 'Salary',
-                        'prime' => 'Bonus',
-                        'avance' => 'Advance',
-                        'autre' => 'Other',
+                        'salaire' => __('app.salaire'),
+                        'prime' => __('app.prime'),
+                        'avance' => __('app.avance'),
+                        'autre' => __('app.autre'),
                     ]),
                     
                 Tables\Filters\Filter::make('date_paiement')
                     ->form([
                         Forms\Components\DatePicker::make('from')
-                            ->label('From Date'),
+                            ->label(__('app.from_date')),
                         Forms\Components\DatePicker::make('until')
-                            ->label('Until Date'),
+                            ->label(__('app.until_date')),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
@@ -187,6 +204,21 @@ class EnseignPaiementResource extends Resource
                     }),
             ])
             ->actions([
+                Tables\Actions\Action::make('printVoucher')
+                    ->label(__('app.imprimer_recu'))
+                    ->icon('heroicon-o-printer')
+                    ->color('info')
+                    ->action(function (EnseignPaiement $record) {
+                        $record->load(['enseignant']);
+                        
+                        $pdf = Pdf::loadView('pdf.voucher', [
+                            'payment' => $record,
+                        ])->setPaper('a4', 'portrait');
+
+                        return response()->streamDownload(function () use ($pdf) {
+                            echo $pdf->output();
+                        }, "bordereau_paiement_{$record->id_paiements}.pdf");
+                    }),
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
@@ -195,10 +227,10 @@ class EnseignPaiementResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\BulkAction::make('markAsPaid')
-                        ->label('Mark as Paid')
+                        ->label(__('app.marquer_comme_paye'))
                         ->icon('heroicon-o-check-circle')
                         ->color('success')
-                        ->action(fn ($records) => $records->each->update(['statut' => 'paid']))
+                        ->action(fn ($records) => $records->each->update(['statut' => 'paye']))
                         ->deselectRecordsAfterCompletion(),
                 ]),
             ])

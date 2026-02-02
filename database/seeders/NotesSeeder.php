@@ -18,52 +18,60 @@ class NotesSeeder extends Seeder
         $evaluations = Evaluation::with('classe')->get();
 
         if ($evaluations->isEmpty()) {
-            $this->command->warn('No completed evaluations found. Run EvaluationsSeeder first.');
+            $this->command->warn('No evaluations found. Run EvaluationsSeeder first.');
             return;
         }
+
+        $this->command->info("Creating grades for {$evaluations->count()} evaluations...");
 
         foreach ($evaluations as $evaluation) {
             // Get all students from the evaluation's class
             $students = Etudiant::where('id_classe', $evaluation->id_classe)->get();
 
+            if ($students->isEmpty()) {
+                continue;
+            }
+
             foreach ($students as $student) {
-                $bareme = 20; // Default scale
-                $note = $this->generateRealisticNote($bareme, $evaluation->type);
+                $note = $this->generateRealisticNote($evaluation->note_max, $evaluation->type);
                 
                 Note::create([
                     'note' => $note,
                     'id_matiere' => $evaluation->id_matiere,
                     'type' => $evaluation->type,
-                    'commentaire' => $this->generateComment($note, $bareme),
+                    'commentaire' => $this->generateComment($note, $evaluation->note_max, $evaluation->type),
                     'id_etudiant' => $student->id_etudiant,
                     'id_evaluation' => $evaluation->id_evaluation,
                     'id_classe' => $evaluation->id_classe,
                 ]);
             }
         }
+        
+        $notesCount = Note::count();
+        $this->command->info("✅ Created {$notesCount} student grades.");
     }
 
-    private function generateRealisticNote(int $bareme, string $evaluationType): float
+    private function generateRealisticNote(int $noteMax, string $evaluationType): float
     {
-        // Different grade distributions based on evaluation type
+        // Different grade distributions based on evaluation type and French grading system
         $distributions = [
             'controle' => [
-                'excellent' => 0.10,
-                'good' => 0.30,
-                'average' => 0.40,
-                'below' => 0.20
+                'excellent' => 0.12,  // 16-20 (12%)
+                'good' => 0.25,       // 14-15 (25%)
+                'average' => 0.35,    // 10-13 (35%)
+                'below' => 0.28       // 0-9 (28%)
             ],
             'devoir' => [
-                'excellent' => 0.12,
-                'good' => 0.28,
-                'average' => 0.38,
-                'below' => 0.22
+                'excellent' => 0.10,  // 16-20 (10%)
+                'good' => 0.22,       // 14-15 (22%)
+                'average' => 0.38,    // 10-13 (38%)
+                'below' => 0.30       // 0-9 (30%)
             ],
             'examen' => [
-                'excellent' => 0.08,
-                'good' => 0.22,
-                'average' => 0.45,
-                'below' => 0.25
+                'excellent' => 0.08,  // 16-20 (8%)
+                'good' => 0.18,       // 14-15 (18%)
+                'average' => 0.40,    // 10-13 (40%)
+                'below' => 0.34       // 0-9 (34%)
             ]
         ];
 
@@ -71,63 +79,77 @@ class NotesSeeder extends Seeder
         $rand = mt_rand() / mt_getrandmax();
 
         if ($rand < $dist['excellent']) {
-            // Excellent: 18-20 or 9-10
-            $min = $bareme * 0.90;
-            $max = $bareme;
+            // Excellent: 16-20
+            $min = $noteMax * 0.80;
+            $max = $noteMax;
         } elseif ($rand < $dist['excellent'] + $dist['good']) {
-            // Good: 14-17 or 7-8.5
-            $min = $bareme * 0.70;
-            $max = $bareme * 0.89;
+            // Good: 14-15
+            $min = $noteMax * 0.70;
+            $max = $noteMax * 0.79;
         } elseif ($rand < $dist['excellent'] + $dist['good'] + $dist['average']) {
-            // Average: 10-13 or 5-6.5
-            $min = $bareme * 0.50;
-            $max = $bareme * 0.69;
+            // Average: 10-13 (passing grade)
+            $min = $noteMax * 0.50;
+            $max = $noteMax * 0.69;
         } else {
-            // Below average: 0-9 or 0-4.5
+            // Below average: 0-9 (failing)
             $min = 0;
-            $max = $bareme * 0.49;
+            $max = $noteMax * 0.49;
         }
 
         $note = $min + (mt_rand() / mt_getrandmax()) * ($max - $min);
         
-        // Round to 0.5 or 1 point precision
-        return round($note * 2) / 2;
+        // Round to 0.25 precision (French system: 12.25, 12.5, 12.75, etc.)
+        return round($note * 4) / 4;
     }
 
-    private function generateComment(float $note, int $bareme): string
+    private function generateComment(float $note, int $noteMax, string $type): string
     {
-        $percentage = ($note / $bareme) * 100;
-
-        if ($percentage >= 90) {
+        $percentage = ($note / $noteMax) * 100;
+        
+        // French academic comments based on performance
+        if ($percentage >= 80) {
             $comments = [
-                'Excellent travail ! Félicitations.',
-                'Très belle performance, continuez ainsi.',
-                'Travail exemplaire, bravo !',
-                'Résultat remarquable, parfait.',
+                'Excellent travail, à continuer ainsi !',
+                'Très bonne maîtrise des notions.',
+                'Performance remarquable.',
+                'Très bien, félicitations !',
+                'Excellente compréhension du sujet.'
             ];
         } elseif ($percentage >= 70) {
             $comments = [
-                'Bon travail, bien maîtrisé.',
-                'Bonne compréhension du sujet.',
-                'Travail satisfaisant, continuez.',
-                'Bien joué, quelques points à améliorer.',
+                'Bon travail, quelques points à améliorer.',
+                'Bonne performance générale.',
+                'Bien, continuez vos efforts.',
+                'Bonnes connaissances, à approfondir.',
+                'Satisfaisant, peut mieux faire.'
             ];
         } elseif ($percentage >= 50) {
             $comments = [
-                'Travail moyen, peut mieux faire.',
-                'Efforts à poursuivre.',
-                'Quelques lacunes à combler.',
-                'Travail acceptable, à améliorer.',
+                'Travail moyen, des efforts à fournir.',
+                'Assez bien, amélioration nécessaire.',
+                'Acquis fragiles, revoir les bases.',
+                'Peut mieux faire, travaillez davantage.',
+                'Résultats moyens, plus de révision nécessaire.'
             ];
         } else {
             $comments = [
-                'Travail insuffisant, il faut réviser.',
-                'Beaucoup d\'efforts à fournir.',
-                'Nécessite plus de travail personnel.',
-                'Difficultés importantes, besoin d\'aide.',
+                'Travail insuffisant, revoir les leçons.',
+                'Difficultés importantes, aide nécessaire.',
+                'Notions non acquises, rattrapage indispensable.',
+                'Résultats préoccupants, soutien requis.',
+                'Travail à reprendre entièrement.'
             ];
         }
-
-        return $comments[array_rand($comments)];
+        
+        $baseComment = $comments[array_rand($comments)];
+        
+        // Add specific comments for evaluation type
+        if ($type === 'examen') {
+            $baseComment .= ' (Examen final)';
+        } elseif ($type === 'devoir' && $percentage < 50) {
+            $baseComment .= ' Préparez-vous mieux pour le prochain devoir.';
+        }
+        
+        return $baseComment;
     }
 }

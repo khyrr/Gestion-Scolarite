@@ -26,13 +26,31 @@ class AdministrateursSeeder extends Seeder
                 'role' => 'super_admin',
             ],
             [
-                'nom' => 'Secrétaire Générale',
+                'nom' => 'Directeur Académique',
+                'prenom' => 'Omar',
+                'telephone' => '+222 20 00 11 25',
+                'adresse' => 'Sebkha, Nouakchott',
+                'email' => 'directeur@ecole.com',
+                'password' => 'password123',
+                'role' => 'director',
+            ],
+            [
+                'nom' => 'Coordinatrice Pédagogique',
+                'prenom' => 'Aicha',
+                'telephone' => '+222 20 00 11 26',
+                'adresse' => 'Dar Naim, Nouakchott',
+                'email' => 'coordinatrice@ecole.com',
+                'password' => 'password123',
+                'role' => 'academic_coordinator',
+            ],
+            [
+                'nom' => 'Secrétaire',
                 'prenom' => 'Fatima',
                 'telephone' => '+222 20 00 11 23',
                 'adresse' => 'Ksar, Nouakchott',
                 'email' => 'secretaire@ecole.com',
                 'password' => 'password123',
-                'role' => 'admin',
+                'role' => 'secretary',
             ],
             [
                 'nom' => 'Comptable',
@@ -41,7 +59,7 @@ class AdministrateursSeeder extends Seeder
                 'adresse' => 'El Mina, Nouakchott',
                 'email' => 'comptable@ecole.com',
                 'password' => 'password123',
-                'role' => 'admin',
+                'role' => 'accountant',
             ]
         ];
 

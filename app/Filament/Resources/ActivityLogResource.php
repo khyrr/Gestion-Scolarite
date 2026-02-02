@@ -49,7 +49,22 @@ class ActivityLogResource extends Resource
             return false;
         }
 
-        return $user->hasRole('super_admin') || $user->can('manage settings');
+        return $user->hasPermissionTo('view activity logs');
+    }
+
+    public static function canCreate(): bool
+    {
+        return false; // Activity logs should not be manually created
+    }
+
+    public static function canEdit($record): bool
+    {
+        return false; // Activity logs should not be edited
+    }
+
+    public static function canDelete($record): bool
+    {
+        return false; // Activity logs should not be deleted for audit integrity
     }
 
     public static function form(Form $form): Form
@@ -196,21 +211,6 @@ class ActivityLogResource extends Resource
             ])
             ->bulkActions([])
             ->defaultSort('created_at', 'desc');
-    }
-
-    public static function canCreate(): bool
-    {
-        return false;
-    }
-
-    public static function canEdit($record): bool
-    {
-        return false;
-    }
-
-    public static function canDelete($record): bool
-    {
-        return false;
     }
 
     public static function getRelations(): array

@@ -12,6 +12,11 @@ class PaymentsChart extends ChartWidget
 {
     protected static ?int $sort = 5;
 
+    public static function canView(): bool
+    {
+        return auth()->user()->hasRole(['super_admin', 'admin', 'accountant']);
+    }
+
     public function getHeading(): string
     {
         return __('app.flux_financier');

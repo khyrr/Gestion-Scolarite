@@ -11,6 +11,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class MatiereResource extends Resource
@@ -43,7 +44,22 @@ class MatiereResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()->hasRole('super_admin') || auth()->user()->can('manage courses');
+        return auth()->user()->hasPermissionTo('view subjects');
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()->hasPermissionTo('create subjects');
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return auth()->user()->hasPermissionTo('edit subjects');
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return auth()->user()->hasPermissionTo('delete subjects');
     }
 
     public static function form(Form $form): Form

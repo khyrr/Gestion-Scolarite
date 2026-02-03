@@ -869,7 +869,29 @@ return [
     'note_maximum' => 'Note maximale',
     'etudiants_notees' => 'Étudiants notés',
     'note_information' => 'Note information',
-    'point' => ' Point'
+    'point' => ' Point',
+
+    // ===========================================
+    // GESTION DES PAGES
+    // ===========================================
+    'pages' => 'Pages',
+    'page' => 'Page',
+    'page_enabled' => 'Page Activée',
+    'page_disabled' => 'Page Désactivée',
+    'page_public' => 'Page Publique',
+    'page_private' => 'Page Privée',
+    'page_title' => 'Titre de la Page',
+    'page_slug' => 'Slug de la Page', 
+    'page_content' => 'Contenu de la Page',
+    'enable_selected' => 'Activer les Sélectionnées',
+    'disable_selected' => 'Désactiver les Sélectionnées',
+    'make_public' => 'Rendre Publique',
+    'make_private' => 'Rendre Privée',
+    'page_status' => 'Statut de la Page',
+    'enabled' => 'Activé',
+    'disabled' => 'Désactivé',
+    'public' => 'Public',
+    'private' => 'Privé',
 ];
 
 

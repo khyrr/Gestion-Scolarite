@@ -788,4 +788,26 @@ return [
     'cree_a' => 'Created at',
     'note_information' => 'Grade Information',
     'point' => ' Point',
+
+    // ===========================================
+    // PAGE MANAGEMENT
+    // ===========================================
+    'pages' => 'Pages',
+    'page' => 'Page',
+    'page_enabled' => 'Page Enabled',
+    'page_disabled' => 'Page Disabled',
+    'page_public' => 'Page Public',
+    'page_private' => 'Page Private',
+    'page_title' => 'Page Title',
+    'page_slug' => 'Page Slug', 
+    'page_content' => 'Page Content',
+    'enable_selected' => 'Enable Selected',
+    'disable_selected' => 'Disable Selected',
+    'make_public' => 'Make Public',
+    'make_private' => 'Make Private',
+    'page_status' => 'Page Status',
+    'enabled' => 'Enabled',
+    'disabled' => 'Disabled',
+    'public' => 'Public',
+    'private' => 'Private',
 ];

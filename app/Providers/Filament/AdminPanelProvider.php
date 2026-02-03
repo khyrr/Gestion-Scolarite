@@ -20,6 +20,8 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Filament\Navigation\NavigationGroup;
+use Filament\Navigation\MenuItem;
+use App\Filament\Pages\Account;
 
 
 class AdminPanelProvider extends PanelProvider
@@ -29,13 +31,13 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->default()
             ->navigationGroups([
-                NavigationGroup::make(__('app.dashboard')),
                 NavigationGroup::make(__('app.gestion_academique')),
                 NavigationGroup::make(__('app.personnes')),
                 NavigationGroup::make(__('app.gestion_financiere')),
                 NavigationGroup::make(__('app.systeme')),
                 NavigationGroup::make(__('app.securite')),
             ])
+            
             ->id('admin')
             ->path('admin')
             ->login()
@@ -49,12 +51,18 @@ class AdminPanelProvider extends PanelProvider
                 'blue' => Color::Blue,
                 'pink' => Color::Pink,
             ])
+            ->userMenuItems([
+            MenuItem::make()
+                ->label(__('app.mon_compte'))
+                ->url(fn (): string => \App\Filament\Pages\Account\Profile::getUrl())
+                ->icon('heroicon-o-user-circle'),
+            // ...
+            ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
                 \App\Filament\Pages\Dashboard::class,
             ])
-            ->profile(isSimple: false)
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
@@ -73,7 +81,8 @@ class AdminPanelProvider extends PanelProvider
                 if (!$user) return config('app.name');
                 
                 return __('app.administration_panel');
-            })
+            })->brandLogo(asset('images/admin_logo.png'))
+            ->favicon(asset('images/favicon.png'))
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -90,6 +99,8 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
                 \App\Http\Middleware\EnsureAdminRole::class,
             ])
-            ->spa();
+            ->spa()
+            ->font('Poppins')
+            ->sidebarFullyCollapsibleOnDesktop();
     }
 }

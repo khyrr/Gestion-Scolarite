@@ -1,0 +1,30 @@
+<?php
+
+namespace App\Filament\Pages;
+
+use Filament\Pages\Page;
+
+class Settings extends Page
+{
+    protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
+
+    protected static string $view = 'filament.pages.settings';
+
+    protected static ?string $title = 'Settings';
+    
+    public static function getNavigationGroup(): ?string
+    {
+        return __('app.systeme');
+    }
+    
+    public static function getNavigationSort(): ?int
+    {
+        return 100;
+    }
+
+    public function mount()
+    {
+        // Redirect to system settings page by default
+        return redirect()->to(route('filament.admin.pages.settings.system'));
+    }
+}

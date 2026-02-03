@@ -1,0 +1,133 @@
+/* Enterprise SaaS Two-Factor Authentication Styles */
+.enterprise-form {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.enterprise-form .fi-form {
+    background: #ffffff !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+
+.enterprise-form .fi-section {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.enterprise-form .fi-section-content {
+    padding: 0 !important;
+}
+
+/* Tab Navigation Enhancements */
+.enterprise-form nav a {
+    transition: all 0.15s ease-in-out;
+}
+
+.enterprise-form nav a:hover {
+    color: #374151;
+    border-bottom-color: #d1d5db;
+}
+
+.enterprise-form nav a[aria-current="page"] {
+    color: #2563eb;
+    border-bottom-color: #2563eb;
+}
+
+/* Form Field Styling */
+.enterprise-form input[type="text"],
+.enterprise-form input[type="password"] {
+    transition: all 0.15s ease-in-out;
+    font-size: 14px;
+}
+
+.enterprise-form input[type="text"]:focus,
+.enterprise-form input[type="password"]:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    outline: none;
+}
+
+/* Button Styling */
+.enterprise-form button {
+    transition: all 0.15s ease-in-out;
+    font-weight: 500;
+}
+
+.enterprise-form button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+}
+
+/* QR Code Container */
+.enterprise-form .qr-container {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Code Display */
+.enterprise-form code {
+    background: #f3f4f6;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+    font-size: 13px;
+    color: #111827;
+    letter-spacing: 0.05em;
+}
+
+/* Backup Codes Grid */
+.enterprise-form .backup-codes {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 24px;
+}
+
+.enterprise-form .backup-codes div {
+    padding: 8px 12px;
+    background: #f9fafb;
+    border-radius: 4px;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+    font-size: 13px;
+    color: #111827;
+    letter-spacing: 0.05em;
+    text-align: center;
+}
+
+/* Container Max Width Override */
+.enterprise-form .fi-main {
+    max-width: none !important;
+}
+
+/* Remove Filament Default Spacing */
+.enterprise-form .fi-page {
+    padding: 0 !important;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1024px) {
+    .enterprise-form .grid-cols-1.lg\\:grid-cols-2 {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    
+    .enterprise-form .max-w-4xl {
+        max-width: 100%;
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}
+
+/* Clean up form wrapper */
+.enterprise-form .fi-form-component-ctn {
+    gap: 0 !important;
+}
+
+.enterprise-form .fi-section-header {
+    display: none !important;
+}

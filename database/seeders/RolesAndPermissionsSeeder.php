@@ -91,6 +91,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'view activity logs',
             'manage system settings',
             'backup database',
+            'manage pages',
         ];
 
         foreach ($permissions as $permission) {
@@ -118,6 +119,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'view courses', 'create courses', 'edit courses', 'delete courses',
             // System administration
             'manage users', 'manage roles', 'manage permissions', 'view activity logs', 'manage system settings',
+            'manage pages',
             // Reports
             'view reports', 'generate reports', 'export data', 'view statistics',
         ]);

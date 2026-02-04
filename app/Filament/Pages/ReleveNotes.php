@@ -14,10 +14,11 @@ use Filament\Forms\Components\Grid;
 use Barryvdh\DomPDF\Facade\Pdf;
 use ArPHP\I18N\Arabic;
 use App\Models\Classe;
+use App\Filament\Concerns\HasRoleBasedAccess;
 
 class ReleveNotes extends Page implements HasForms
 {
-    use InteractsWithForms;
+    use InteractsWithForms, HasRoleBasedAccess;
 
     protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
     public static function getNavigationGroup(): ?string
@@ -41,6 +42,32 @@ class ReleveNotes extends Page implements HasForms
     {
         $this->hydrateClassFromCode();
         $this->hydrateStudentFromMatricule();
+
+        // Security check: ensure the teacher has access to the hydrated class/student
+        if ($this->id_classe) {
+            $classExists = static::applyRoleBasedRelationScope(Classe::where('id_classe', $this->id_classe), [
+                'classColumn' => 'id_classe'
+            ])->exists();
+            
+            if (!$classExists) {
+                $this->id_classe = null;
+                $this->classCode = null;
+                $this->id_etudiant = null;
+                $this->etudiantMatricule = null;
+            }
+        }
+
+        if ($this->id_etudiant) {
+            $studentExists = static::applyRoleBasedRelationScope(Etudiant::where('id_etudiant', $this->id_etudiant), [
+                'classColumn' => 'id_classe'
+            ])->exists();
+
+            if (!$studentExists) {
+                $this->id_etudiant = null;
+                $this->etudiantMatricule = null;
+            }
+        }
+
         $this->form->fill([
             'id_classe' => $this->id_classe,
             'id_etudiant' => $this->id_etudiant,
@@ -70,7 +97,11 @@ class ReleveNotes extends Page implements HasForms
                     Grid::make(2)->schema([
                         Select::make('id_classe')
                             ->label(__('app.classe'))
-                            ->options(Classe::pluck('nom_classe', 'id_classe'))
+                            ->options(function () {
+                                return static::applyRoleBasedRelationScope(Classe::query(), [
+                                    'classColumn' => 'id_classe'
+                                ])->pluck('nom_classe', 'id_classe');
+                            })
                             ->searchable()
                             ->live()
                             ->afterStateUpdated(function ($set) {
@@ -87,6 +118,11 @@ class ReleveNotes extends Page implements HasForms
                                 if ($classeId) {
                                     $query->where('id_classe', $classeId);
                                 }
+                                
+                                // Apply role-based scoping
+                                static::applyRoleBasedRelationScope($query, [
+                                    'classColumn' => 'id_classe'
+                                ]);
                                 
                                 return $query->get()->mapWithKeys(function ($etudiant) {
                                     return [$etudiant->id_etudiant => "{$etudiant->nom} {$etudiant->prenom} ({$etudiant->matricule})"];
@@ -224,8 +260,14 @@ class ReleveNotes extends Page implements HasForms
     {
         if (!$this->id_classe) return collect();
 
-        $students = Etudiant::where('id_classe', $this->id_classe)
-            ->get();
+        $query = Etudiant::where('id_classe', $this->id_classe);
+        
+        // Ensure teacher can only see students in their assigned classes
+        static::applyRoleBasedRelationScope($query, [
+            'classColumn' => 'id_classe'
+        ]);
+
+        $students = $query->get();
 
         return $students->map(function ($student) {
             $notes = $this->getStudentNotes($student);

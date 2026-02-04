@@ -7,6 +7,7 @@ use Filament\Forms\Form;
 use Filament\Pages\Page;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
+use App\Services\SettingsService;
 
 class Academic extends Page
 {
@@ -20,20 +21,33 @@ class Academic extends Page
     
     protected static bool $shouldRegisterNavigation = false;
 
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->hasRole('super_admin') || auth()->user()?->hasPermissionTo('manage settings');
+    }
+
     public ?array $data = [];
+
+    protected SettingsService $settingsService;
+
+    public function boot(SettingsService $settingsService): void
+    {
+        $this->settingsService = $settingsService;
+    }
 
     public function mount(): void
     {
+        $academicSettings = $this->settingsService->getAcademicSettings();
+        
         $this->form->fill([
-            'current_academic_year' => '2025-2026',
-            'academic_year_start' => now()->startOfYear(),
-            'academic_year_end' => now()->endOfYear(),
-            'grading_scale' => '0-20',
-            'passing_grade' => 10,
-            'allow_grade_modification' => true,
-            'enable_attendance' => true,
-            'enable_parent_portal' => true,
-            'attendance_threshold' => 75,
+            'grading_system' => $academicSettings['grading_system'],
+            'passing_grade' => $academicSettings['passing_grade'],
+            'max_grade' => $academicSettings['max_grade'],
+            'terms_per_year' => $academicSettings['terms_per_year'],
+            'attendance_required' => $academicSettings['attendance_required'],
+            'min_attendance_percentage' => $academicSettings['min_attendance_percentage'],
+            'late_submission_penalty' => $academicSettings['late_submission_penalty'],
+            'max_absences_per_term' => $academicSettings['max_absences_per_term'],
         ]);
     }
 
@@ -41,62 +55,84 @@ class Academic extends Page
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Academic Year')
+                Forms\Components\Section::make('Grading System')
+                    ->description('Configure grading scales and academic standards')
                     ->schema([
-                        Forms\Components\TextInput::make('current_academic_year')
-                            ->label('Current Academic Year')
-                            ->placeholder('2025-2026')
+                        Forms\Components\Select::make('grading_system')
+                            ->label('Grading System')
+                            ->options([
+                                'percentage' => 'Percentage (0-100)',
+                                'gpa' => 'GPA (0-4.0)',
+                                'letter' => 'Letter Grades (A-F)',
+                            ])
                             ->required(),
-                        Forms\Components\DatePicker::make('academic_year_start')
-                            ->label('Academic Year Start Date')
+                        Forms\Components\TextInput::make('passing_grade')
+                            ->label('Passing Grade')
+                            ->integer()
+                            ->minValue(0)
+                            ->maxValue(100)
+                            ->suffix('%')
                             ->required(),
-                        Forms\Components\DatePicker::make('academic_year_end')
-                            ->label('Academic Year End Date')
+                        Forms\Components\TextInput::make('max_grade')
+                            ->label('Maximum Grade')
+                            ->integer()
+                            ->minValue(50)
+                            ->maxValue(100)
+                            ->suffix('%')
                             ->required(),
                     ])->columns(3),
                 
-                Forms\Components\Section::make('Grading System')
+                Forms\Components\Section::make('Academic Structure')
+                    ->description('Configure academic year and term structure')
                     ->schema([
-                        Forms\Components\Select::make('grading_scale')
-                            ->label('Grading Scale')
+                        Forms\Components\Select::make('terms_per_year')
+                            ->label('Terms Per Academic Year')
                             ->options([
-                                '0-20' => '0-20 Scale',
-                                'A-F' => 'Letter Grades (A-F)',
-                                '0-100' => '0-100 Percentage',
-                                'custom' => 'Custom Scale',
+                                '1' => '1 Term (Annual)',
+                                '2' => '2 Terms (Semesters)',
+                                '3' => '3 Terms (Trimesters)',
+                                '4' => '4 Terms (Quarters)',
                             ])
-                            ->default('0-20'),
-                        Forms\Components\TextInput::make('passing_grade')
-                            ->label('Minimum Passing Grade')
-                            ->numeric()
-                            ->default(10),
-                        Forms\Components\Toggle::make('allow_grade_modification')
-                            ->label('Allow Grade Modification')
-                            ->helperText('Allow teachers to modify submitted grades')
-                            ->default(true),
+                            ->required(),
                     ])->columns(2),
                 
-                Forms\Components\Section::make('Features')
+                Forms\Components\Section::make('Attendance Policies')
+                    ->description('Configure attendance tracking and requirements')
                     ->schema([
-                        Forms\Components\Toggle::make('enable_attendance')
-                            ->label('Enable Attendance Tracking')
-                            ->default(true),
-                        Forms\Components\Toggle::make('enable_parent_portal')
-                            ->label('Enable Parent Portal')
-                            ->default(true),
-                        Forms\Components\TextInput::make('attendance_threshold')
-                            ->label('Minimum Attendance Percentage')
-                            ->numeric()
+                        Forms\Components\Toggle::make('attendance_required')
+                            ->label('Attendance Tracking Required')
+                            ->helperText('Enable mandatory attendance tracking for all courses'),
+                        Forms\Components\TextInput::make('min_attendance_percentage')
+                            ->label('Minimum Attendance Required (%)')
+                            ->integer()
                             ->minValue(0)
                             ->maxValue(100)
-                            ->default(75)
-                            ->suffix('%'),
+                            ->suffix('%')
+                            ->required(),
+                        Forms\Components\TextInput::make('max_absences_per_term')
+                            ->label('Maximum Absences Per Term')
+                            ->integer()
+                            ->minValue(0)
+                            ->maxValue(50)
+                            ->required(),
+                    ])->columns(2),
+                
+                Forms\Components\Section::make('Assignment Policies')
+                    ->description('Configure assignment and submission policies')
+                    ->schema([
+                        Forms\Components\TextInput::make('late_submission_penalty')
+                            ->label('Late Submission Penalty (%)')
+                            ->integer()
+                            ->minValue(0)
+                            ->maxValue(100)
+                            ->suffix('%')
+                            ->helperText('Percentage penalty for late assignments'),
                     ])->columns(2),
                 
                 Forms\Components\Actions::make([
                     Forms\Components\Actions\Action::make('save')
-                        ->label('Save Academic Settings')
-                        ->icon('heroicon-m-academic-cap')
+                        ->label('Save changes')
+                        ->icon('heroicon-m-check-circle')
                         ->color('primary')
                         ->action(function () {
                             $this->save();
@@ -115,7 +151,19 @@ class Academic extends Page
     {
         $data = $this->form->getState();
 
-        // Save settings logic here
+        $academicData = [
+            'grading_system' => $data['grading_system'],
+            'passing_grade' => (int) $data['passing_grade'],
+            'max_grade' => (int) $data['max_grade'],
+            'terms_per_year' => (int) $data['terms_per_year'],
+            'attendance_required' => $data['attendance_required'],
+            'min_attendance_percentage' => (int) $data['min_attendance_percentage'],
+            'max_absences_per_term' => (int) $data['max_absences_per_term'],
+            'late_submission_penalty' => (int) $data['late_submission_penalty'],
+        ];
+
+        $this->settingsService->updateAcademicSettings($academicData);
+
         Notification::make()
             ->title('Academic settings saved successfully')
             ->success()

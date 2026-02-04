@@ -7,6 +7,10 @@ use Filament\Forms\Form;
 use Filament\Pages\Page;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
+use App\Models\NotificationPreference;
+use App\Support\NotificationKeys;
+use App\Support\NotificationChannels;
+use Illuminate\Support\Facades\DB;
 
 class Notifications extends Page
 {
@@ -24,79 +28,154 @@ class Notifications extends Page
 
     public function mount(): void
     {
+        $user = auth()->user();
+        
+        // Load existing preferences or default to true
+        $preferences = NotificationPreference::where('user_id', $user->id)
+            ->get()
+            ->groupBy('key');
+
         $this->form->fill([
-            'email_notifications' => true,
-            'login_notifications' => false,
-            'security_alerts' => true,
-            'system_updates' => true,
-            'session_timeout' => '30',
+            // Login Notifications
+            'login_attempt_mail' => $this->getPreference($preferences, NotificationKeys::LOGIN_ATTEMPT, NotificationChannels::MAIL),
+            'login_attempt_database' => $this->getPreference($preferences, NotificationKeys::LOGIN_ATTEMPT, NotificationChannels::DATABASE),
+            
+            // Security Alerts
+            'security_alert_mail' => $this->getPreference($preferences, NotificationKeys::SECURITY_ALERT, NotificationChannels::MAIL),
+            'security_alert_database' => $this->getPreference($preferences, NotificationKeys::SECURITY_ALERT, NotificationChannels::DATABASE),
+            
+            // System Updates
+            'system_update_mail' => $this->getPreference($preferences, NotificationKeys::SYSTEM_UPDATE, NotificationChannels::MAIL),
+            'system_update_database' => $this->getPreference($preferences, NotificationKeys::SYSTEM_UPDATE, NotificationChannels::DATABASE),
+            
+            // Academic Updates (Grades)
+            'grade_published_mail' => $this->getPreference($preferences, NotificationKeys::GRADE_PUBLISHED, NotificationChannels::MAIL),
+            'grade_published_database' => $this->getPreference($preferences, NotificationKeys::GRADE_PUBLISHED, NotificationChannels::DATABASE),
         ]);
+    }
+
+    protected function getPreference($preferences, $key, $channel): bool
+    {
+        if (isset($preferences[$key])) {
+            $pref = $preferences[$key]->firstWhere('channel', $channel);
+            return $pref ? $pref->enabled : true; // Default to true if not found
+        }
+        return true;
     }
 
     public function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Email Notifications')
-                    ->description('Control which emails you receive from the system')
+                Forms\Components\Section::make('Security Notifications')
+                    ->description('Manage alerts related to your account security')
                     ->schema([
-                        Forms\Components\Toggle::make('email_notifications')
-                            ->label('General Email Notifications')
-                            ->helperText('Receive email notifications for important updates')
-                            ->default(true),
-                        Forms\Components\Toggle::make('login_notifications')
-                            ->label('Login Notifications')
-                            ->helperText('Get notified of new login attempts')
-                            ->default(false),
-                        Forms\Components\Toggle::make('security_alerts')
-                            ->label('Security Alerts')
-                            ->helperText('Receive emails about security-related activities')
-                            ->default(true),
-                        Forms\Components\Toggle::make('system_updates')
-                            ->label('System Updates')
-                            ->helperText('Get notified about system maintenance and updates')
-                            ->default(true),
+                        Forms\Components\Grid::make(3)
+                            ->schema([
+                                Forms\Components\Placeholder::make('label_login')
+                                    ->label('Login Attempts')
+                                    ->content('Get notified when a new login occurs.'),
+                                Forms\Components\Toggle::make('login_attempt_mail')
+                                    ->label('Email'),
+                                Forms\Components\Toggle::make('login_attempt_database')
+                                    ->label('In-App'),
+                            ]),
+                        Forms\Components\Grid::make(3)
+                            ->schema([
+                                Forms\Components\Placeholder::make('label_security')
+                                    ->label('Security Alerts')
+                                    ->content('Critical security warnings and password changes.'),
+                                Forms\Components\Toggle::make('security_alert_mail')
+                                    ->label('Email'),
+                                Forms\Components\Toggle::make('security_alert_database')
+                                    ->label('In-App'),
+                            ]),
+                    ]),
+
+                Forms\Components\Section::make('System Notifications')
+                    ->description('Updates about system maintenance and new features')
+                    ->schema([
+                        Forms\Components\Grid::make(3)
+                            ->schema([
+                                Forms\Components\Placeholder::make('label_system')
+                                    ->label('System Updates')
+                                    ->content('Maintenance schedules and feature releases.'),
+                                Forms\Components\Toggle::make('system_update_mail')
+                                    ->label('Email'),
+                                Forms\Components\Toggle::make('system_update_database')
+                                    ->label('In-App'),
+                            ]),
                     ]),
                 
-                Forms\Components\Section::make('Session Management')
-                    ->description('Control your session behavior and timeouts')
+                Forms\Components\Section::make('Academic Notifications')
+                    ->description('Grades, assignments, and course updates')
                     ->schema([
-                        Forms\Components\Select::make('session_timeout')
-                            ->label('Session Timeout')
-                            ->options([
-                                '15' => '15 minutes',
-                                '30' => '30 minutes',
-                                '60' => '1 hour',
-                                '240' => '4 hours',
-                                '480' => '8 hours',
-                            ])
-                            ->default('30')
-                            ->helperText('Automatically log out after this period of inactivity'),
-                    ])
+                        Forms\Components\Grid::make(3)
+                            ->schema([
+                                Forms\Components\Placeholder::make('label_grades')
+                                    ->label('Grade Published')
+                                    ->content('When a new grade is posted.'),
+                                Forms\Components\Toggle::make('grade_published_mail')
+                                    ->label('Email'),
+                                Forms\Components\Toggle::make('grade_published_database')
+                                    ->label('In-App'),
+                            ]),
+                    ]),
+
+                Forms\Components\Actions::make([
+                    Forms\Components\Actions\Action::make('save')
+                        ->label('Save Preferences')
+                        ->icon('heroicon-m-check-circle')
+                        ->color('primary')
+                        ->action(function () {
+                            $this->save();
+                        }),
+                ])
             ])
             ->statePath('data');
     }
 
     protected function getFormActions(): array
     {
-        return [
-            Action::make('save')
-                ->label('Save Notification Settings')
-                ->color('primary')
-                ->submit('save'),
-        ];
+        return [];
     }
 
     public function save(): void
     {
         $data = $this->form->getState();
+        $user = auth()->user();
 
-        // Here you could save notification preferences to user preferences table
-        // For now, we'll just show success message
+        DB::transaction(function () use ($user, $data) {
+            $this->savePreference($user, NotificationKeys::LOGIN_ATTEMPT, NotificationChannels::MAIL, $data['login_attempt_mail']);
+            $this->savePreference($user, NotificationKeys::LOGIN_ATTEMPT, NotificationChannels::DATABASE, $data['login_attempt_database']);
+            
+            $this->savePreference($user, NotificationKeys::SECURITY_ALERT, NotificationChannels::MAIL, $data['security_alert_mail']);
+            $this->savePreference($user, NotificationKeys::SECURITY_ALERT, NotificationChannels::DATABASE, $data['security_alert_database']);
+            
+            $this->savePreference($user, NotificationKeys::SYSTEM_UPDATE, NotificationChannels::MAIL, $data['system_update_mail']);
+            $this->savePreference($user, NotificationKeys::SYSTEM_UPDATE, NotificationChannels::DATABASE, $data['system_update_database']);
+            
+            $this->savePreference($user, NotificationKeys::GRADE_PUBLISHED, NotificationChannels::MAIL, $data['grade_published_mail']);
+            $this->savePreference($user, NotificationKeys::GRADE_PUBLISHED, NotificationChannels::DATABASE, $data['grade_published_database']);
+        });
 
         Notification::make()
-            ->title('Notification settings updated successfully')
+            ->title('Notification preferences updated successfully')
             ->success()
             ->send();
+    }
+
+    protected function savePreference($user, $key, $channel, $enabled): void
+    {
+        NotificationPreference::updateOrCreate(
+            [
+                'user_id' => $user->id,
+                'key' => $key,
+                'channel' => $channel,
+            ],
+            [
+                'enabled' => $enabled
+            ]
+        );
     }
 }

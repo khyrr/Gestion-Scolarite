@@ -41,7 +41,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'create classes',
             'edit classes',
             'delete classes',
-            'manage class assignments',
+            'manage classes',
             
             // Subject Management
             'view subjects',
@@ -54,6 +54,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'create courses',
             'edit courses',
             'delete courses',
+            'view timetables',
             'manage timetables',
             
             // Evaluation Management
@@ -68,6 +69,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'create grades',
             'edit grades',
             'delete grades',
+            'manage grades', // Bulk grade entry permission
             'view all grades',
             'edit grade comments',
             
@@ -90,6 +92,8 @@ class RolesAndPermissionsSeeder extends Seeder
             'manage permissions',
             'view activity logs',
             'manage system settings',
+            'view settings',
+            'manage settings',
             'backup database',
             'manage pages',
         ];
@@ -114,11 +118,12 @@ class RolesAndPermissionsSeeder extends Seeder
             'view teachers', 'create teachers', 'edit teachers', 'delete teachers',
             'manage teacher accounts',
             // Academic management
-            'view classes', 'create classes', 'edit classes', 'delete classes', 'manage class assignments',
+            'view classes', 'create classes', 'edit classes', 'delete classes', 'manage classes',
             'view subjects', 'create subjects', 'edit subjects', 'delete subjects',
-            'view courses', 'create courses', 'edit courses', 'delete courses',
+            'view courses', 'create courses', 'edit courses', 'delete courses', 'view timetables', 'manage timetables',
             // System administration
             'manage users', 'manage roles', 'manage permissions', 'view activity logs', 'manage system settings',
+            'view settings', 'manage settings',
             'manage pages',
             // Reports
             'view reports', 'generate reports', 'export data', 'view statistics',
@@ -134,12 +139,12 @@ class RolesAndPermissionsSeeder extends Seeder
             'view teachers', 'create teachers', 'edit teachers', 'delete teachers',
             'manage teacher accounts', 'assign teacher subjects',
             // Academic management
-            'view classes', 'create classes', 'edit classes', 'delete classes', 'manage class assignments',
+            'view classes', 'create classes', 'edit classes', 'delete classes', 'manage classes',
             'view subjects', 'create subjects', 'edit subjects', 'delete subjects',
-            'view courses', 'create courses', 'edit courses', 'delete courses', 'manage timetables',
+            'view courses', 'create courses', 'edit courses', 'delete courses', 'view timetables', 'manage timetables',
             // Evaluation & grades
             'view evaluations', 'create evaluations', 'edit evaluations', 'delete evaluations', 'view all evaluations',
-            'view grades', 'create grades', 'edit grades', 'delete grades', 'view all grades', 'edit grade comments',
+            'view grades', 'create grades', 'edit grades', 'delete grades', 'manage grades', 'view all grades', 'edit grade comments',
             // Reports
             'view reports', 'generate reports', 'export data', 'view statistics',
             // Payments
@@ -152,9 +157,9 @@ class RolesAndPermissionsSeeder extends Seeder
         $coordinator = Role::firstOrCreate(['name' => 'academic_coordinator']);
         $coordinator->givePermissionTo([
             // Academic structure
-            'view classes', 'create classes', 'edit classes', 'manage class assignments',
+            'view classes', 'create classes', 'edit classes', 'manage classes',
             'view subjects', 'create subjects', 'edit subjects', 
-            'view courses', 'create courses', 'edit courses', 'manage timetables',
+            'view courses', 'create courses', 'edit courses', 'view timetables', 'manage timetables',
             // Teachers (limited)
             'view teachers', 'assign teacher subjects',
             // Students (view and basic edit)
@@ -172,12 +177,12 @@ class RolesAndPermissionsSeeder extends Seeder
             // Students (their classes only)
             'view students', 'view student grades',
             // Classes (their classes only)
-            'view classes', 'view courses',
+            'view classes', 'view courses', 'view timetables', 'view timetables',
             // Subjects
             'view subjects',
             // Evaluations (their subjects only)
             'view evaluations', 'create evaluations', 'edit evaluations',
-            'view grades', 'create grades', 'edit grades', 'edit grade comments',
+            'view grades', 'create grades', 'edit grades', 'manage grades', 'edit grade comments',
             // Basic reports
             'view reports',
         ]);
@@ -190,7 +195,7 @@ class RolesAndPermissionsSeeder extends Seeder
             // Teachers (basic info)
             'view teachers', 'create teachers', 'edit teachers',
             // Classes
-            'view classes', 'view courses',
+            'view classes', 'view courses', 'view timetables', 'manage timetables',
             // Basic reports
             'view reports', 'export data',
             // Payments

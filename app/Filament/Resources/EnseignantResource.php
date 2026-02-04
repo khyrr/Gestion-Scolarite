@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\HasRoleBasedAccess;
 use App\Filament\Resources\EnseignantResource\Pages;
 use App\Filament\Resources\EnseignantResource\RelationManagers;
 use App\Models\Enseignant;
@@ -18,6 +19,8 @@ use Illuminate\Support\HtmlString;
 
 class EnseignantResource extends Resource
 {
+    use HasRoleBasedAccess;
+    
     protected static ?string $model = Enseignant::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
@@ -222,6 +225,13 @@ class EnseignantResource extends Resource
                     ->trueColor('success')
                     ->falseColor('danger')
                     ->default(false),
+                    
+                Tables\Columns\TextColumn::make('user.last_login_at')
+                    ->label(__('app.derniere_connexion'))
+                    ->dateTime('d/m/Y H:i')
+                    ->sortable()
+                    ->toggleable()
+                    ->placeholder(__('app.jamais')),
                     
                 Tables\Columns\TextColumn::make('created_at')
                     ->label(__('app.date_creation'))

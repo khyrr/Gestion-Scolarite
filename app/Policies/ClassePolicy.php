@@ -23,14 +23,14 @@ class ClassePolicy
         // Students can view their own class
         if ($user->profile_type === 'App\\Models\\Etudiant') {
             $etudiant = $user->profile;
-            return $etudiant && $etudiant->classe_id === $classe->id;
+            return $etudiant && $etudiant->classe_id === $classe->id_classe;
         }
         
         // Teachers can view classes they teach
         if ($user->profile_type === 'App\\Models\\Enseignant') {
             $enseignant = $user->profile;
-            return $enseignant && $enseignant->enseignantMatiereClasses()
-                ->where('classe_id', $classe->id)
+            return $enseignant && $enseignant->classes()
+                ->where('classes.id_classe', $classe->id_classe)
                 ->exists();
         }
         

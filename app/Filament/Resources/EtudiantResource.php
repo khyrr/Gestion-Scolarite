@@ -66,6 +66,14 @@ class EtudiantResource extends Resource
         return auth()->user()->hasPermissionTo('delete students');
     }
 
+    public static function getEloquentQuery(): Builder
+    {
+        return static::applyRoleBasedTableScope(parent::getEloquentQuery(), [
+            'classColumn' => 'etudiants.id_classe',
+            'studentIdColumn' => 'etudiants.id_etudiant'
+        ]);
+    }
+
     /**
      * Check if a teacher can access a specific student
      */
@@ -84,7 +92,7 @@ class EtudiantResource extends Resource
         }
         
         // Check if the student is in any of the teacher's classes
-        $teacherClasses = $enseignant->classes()->pluck('id_classe');
+        $teacherClasses = $enseignant->classes()->pluck('classes.id_classe');
         return $teacherClasses->contains($student->id_classe);
     }
 
@@ -220,12 +228,6 @@ class EtudiantResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(function (Builder $query) {
-                return static::applyRoleBasedTableScope($query, [
-                    'classColumn' => 'id_classe',
-                    'studentIdColumn' => 'id_etudiant'
-                ]);
-            })
             ->striped()
             ->columns([
                 Tables\Columns\TextColumn::make('matricule')
@@ -299,6 +301,14 @@ class EtudiantResource extends Resource
                     ->default(__('app.aucun_compte'))
                     ->visible(fn () => auth()->user()->hasRole('super_admin') || auth()->user()->can('manage accounts')),
                     
+                Tables\Columns\TextColumn::make('user.last_login_at')
+                    ->label(__('app.derniere_connexion'))
+                    ->dateTime('d/m/Y H:i')
+                    ->sortable()
+                    ->toggleable()
+                    ->placeholder(__('app.jamais'))
+                    ->visible(fn () => auth()->user()->hasRole('super_admin') || auth()->user()->can('manage accounts')),
+                    
                 Tables\Columns\TextColumn::make('notes_count')
                     ->label(__('app.notes'))
                     ->counts('notes')
@@ -350,7 +360,8 @@ class EtudiantResource extends Resource
                         ->visible(fn () => auth()->user()->hasPermissionTo('delete students'))
                 ]),
             ])
-            ->defaultSort('nom', 'asc');
+            ->defaultSort('nom', 'asc')
+            ->defaultPaginationPageOption(setting('items_per_page', 25));
     }
 
     public static function getRelations(): array

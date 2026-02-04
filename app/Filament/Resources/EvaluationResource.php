@@ -13,9 +13,11 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Concerns\HasRoleBasedAccess;
 
 class EvaluationResource extends Resource
 {
+    use HasRoleBasedAccess;
     protected static ?string $model = Evaluation::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';
@@ -54,12 +56,29 @@ class EvaluationResource extends Resource
 
     public static function canEdit(Model $record): bool
     {
+        // Can't edit if evaluation has ended or has grades
+        if ($record->isLocked()) {
+            return false;
+        }
+        
         return auth()->user()->hasPermissionTo('edit evaluations');
     }
 
     public static function canDelete(Model $record): bool
     {
+        // Can't delete if evaluation has any grades entered
+        if ($record->hasGrades()) {
+            return false;
+        }
+        
         return auth()->user()->hasPermissionTo('delete evaluations');
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return static::applyRoleBasedTableScope(parent::getEloquentQuery(), [
+            'classColumn' => 'evaluations.id_classe',
+        ]);
     }
 
     public static function form(Form $form): Form
@@ -84,20 +103,58 @@ class EvaluationResource extends Resource
                                 'controle' => 'Test',
                                 'projet' => 'Project',
                             ]),
+                        
+                        Forms\Components\Select::make('id_classe')
+                            ->label('Class')
+                            ->relationship('classe', 'nom_classe', function (Builder $query) {
+                                return static::applyRoleBasedRelationScope($query, [
+                                    'classColumn' => 'id_classe'
+                                ]);
+                            })
+                            ->required()
+                            ->searchable()
+                            ->preload()
+                            ->live()
+                            ->afterStateUpdated(function ($set) {
+                                // Reset subject when class changes
+                                $set('id_matiere', null);
+                            }),
                             
                         Forms\Components\Select::make('id_matiere')
                             ->label('Subject')
-                            ->relationship('matiere', 'nom_matiere')
+                            ->options(function (callable $get) {
+                                $classeId = $get('id_classe');
+                                
+                                if (!$classeId) {
+                                    return [];
+                                }
+                                
+                                $user = auth()->user();
+                                
+                                // Get subjects taught in the selected class
+                                $query = \App\Models\Matiere::whereHas('classes', function ($q) use ($classeId) {
+                                    $q->where('classes.id_classe', $classeId);
+                                });
+                                
+                                // If user is a teacher, only show subjects they teach in this class
+                                if ($user->hasRole(['teacher', 'enseignant']) && $user->profile) {
+                                    $enseignant = $user->profile;
+                                    $query->whereHas('enseignants', function ($q) use ($enseignant, $classeId) {
+                                        $q->where('enseignants.id_enseignant', $enseignant->id_enseignant)
+                                          ->where('enseignant_matiere_classe.id_classe', $classeId)
+                                          ->where('enseignant_matiere_classe.active', true);
+                                    });
+                                }
+                                
+                                return $query->pluck('nom_matiere', 'id_matiere');
+                            })
                             ->required()
                             ->searchable()
-                            ->preload(),
-                            
-                        Forms\Components\Select::make('id_classe')
-                            ->label('Class')
-                            ->relationship('classe', 'nom_classe')
-                            ->required()
-                            ->searchable()
-                            ->preload(),
+                            ->preload()
+                            ->disabled(fn (callable $get) => !$get('id_classe'))
+                            ->helperText(fn (callable $get) => !$get('id_classe') 
+                                ? __('app.selectionner_classe_dabord') 
+                                : null),
                     ])
                     ->columns(2),
                     
@@ -209,6 +266,18 @@ class EvaluationResource extends Resource
                     ->counts('notes')
                     ->badge()
                     ->color('success'),
+                
+                Tables\Columns\IconColumn::make('status')
+                    ->label(__('app.statut'))
+                    ->state(fn ($record) => $record->isLocked())
+                    ->boolean()
+                    ->trueIcon('heroicon-o-lock-closed')
+                    ->falseIcon('heroicon-o-lock-open')
+                    ->trueColor('warning')
+                    ->falseColor('success')
+                    ->tooltip(fn ($record) => $record->isLocked() 
+                        ? __('app.evaluation_verrouille') 
+                        : __('app.evaluation_modifiable')),
                     
                 Tables\Columns\TextColumn::make('created_at')
                     ->label(__('app.cree_a'))
@@ -246,6 +315,12 @@ class EvaluationResource extends Resource
                     ->preload(),
             ])
             ->actions([
+                Tables\Actions\Action::make('manage_grades')
+                    ->label(__('app.saisir_notes'))
+                    ->icon('heroicon-o-pencil-square')
+                    ->color('primary')
+                    ->url(fn ($record) => static::getUrl('grades', ['record' => $record]))
+                    ->visible(fn () => auth()->user()->can('manage grades') || auth()->user()->hasRole(['super_admin', 'admin', 'teacher', 'enseignant'])),
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
@@ -271,6 +346,8 @@ class EvaluationResource extends Resource
             'index' => Pages\ListEvaluations::route('/'),
             'create' => Pages\CreateEvaluation::route('/create'),
             'edit' => Pages\EditEvaluation::route('/{record}/edit'),
+            'view' => Pages\ViewEvaluation::route('/{record}'),
+            'grades' => Pages\ManageGrades::route('/{record}/grades'),
         ];
     }
 }

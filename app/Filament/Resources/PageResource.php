@@ -12,9 +12,13 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Actions\BulkAction;
 use Illuminate\Database\Eloquent\Collection;
+use App\Filament\Concerns\HasRoleBasedAccess;
 
 class PageResource extends Resource
 {
+
+    use HasRoleBasedAccess;
+
     protected static ?string $model = Page::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
@@ -82,12 +86,100 @@ class PageResource extends Resource
                             ->rules(['alpha_dash'])
                             ->helperText(__('app.slug_helper')),
 
-                        Forms\Components\Textarea::make('content')
+                        Forms\Components\Select::make('status')
+                            ->label(__('app.status'))
+                            ->options([
+                                'draft' => __('app.draft'),
+                                'published' => __('app.published'),
+                                'scheduled' => __('app.scheduled'),
+                            ])
+                            ->default('draft')
+                            ->required()
+                            ->live()
+                            ->afterStateUpdated(function ($state, Forms\Set $set) {
+                                if ($state === 'published' && !$set('published_at', null)) {
+                                    $set('published_at', now());
+                                }
+                            }),
+
+                        Forms\Components\DateTimePicker::make('published_at')
+                            ->label(__('app.publish_date'))
+                            ->helperText(__('app.publish_date_helper'))
+                            ->visible(fn (Forms\Get $get) => in_array($get('status'), ['published', 'scheduled']))
+                            ->required(fn (Forms\Get $get) => $get('status') === 'scheduled'),
+
+                        Forms\Components\Radio::make('editor_mode')
+                            ->label(__('Content Editor Mode'))
+                            ->options([
+                                'visual' => __('Visual Editor (WYSIWYG - for non-technical users)'),
+                                'html' => __('HTML Code Editor (Full control with Tailwind CSS)'),
+                            ])
+                            ->default('visual')
+                            ->inline()
+                            ->live()
+                            ->afterStateHydrated(function (Forms\Components\Radio $component, $state) {
+                                if (!$state) {
+                                    $component->state('visual');
+                                }
+                            })
+                            ->columnSpanFull(),
+
+                        Forms\Components\RichEditor::make('content')
                             ->label(__('app.content'))
-                            ->rows(10)
+                            ->toolbarButtons([
+                                'blockquote',
+                                'bold',
+                                'bulletList',
+                                'codeBlock',
+                                'h2',
+                                'h3',
+                                'h4',
+                                'italic',
+                                'link',
+                                'orderedList',
+                                'redo',
+                                'strike',
+                                'table',
+                                'underline',
+                                'undo',
+                            ])
+                            ->visible(fn (Forms\Get $get) => $get('editor_mode') === 'visual')
+                            ->columnSpanFull(),
+
+                        Forms\Components\Textarea::make('content')
+                            ->label(__('HTML Content'))
+                            ->rows(20)
+                            ->helperText(__('Full HTML supported. Use Tailwind CSS classes for styling. Example: <div class="bg-blue-500 p-4 rounded-lg">Content</div>'))
+                            ->placeholder('<div class="container mx-auto px-4">
+    <h1 class="text-3xl font-bold text-gray-800 mb-4">Page Title</h1>
+    <p class="text-gray-600">Your content here...</p>
+</div>')
+                            ->visible(fn (Forms\Get $get) => $get('editor_mode') === 'html')
                             ->columnSpanFull(),
                     ])
                     ->columns(2),
+
+                Forms\Components\Section::make(__('app.seo_settings'))
+                    ->schema([
+                        Forms\Components\TextInput::make('meta_title')
+                            ->label(__('app.meta_title'))
+                            ->maxLength(60)
+                            ->helperText(__('app.meta_title_helper'))
+                            ->placeholder(fn (Forms\Get $get) => $get('title')),
+
+                        Forms\Components\Textarea::make('meta_description')
+                            ->label(__('app.meta_description'))
+                            ->maxLength(160)
+                            ->rows(3)
+                            ->helperText(__('app.meta_description_helper')),
+
+                        Forms\Components\TextInput::make('meta_keywords')
+                            ->label(__('app.meta_keywords'))
+                            ->helperText(__('app.meta_keywords_helper'))
+                            ->placeholder('keyword1, keyword2, keyword3'),
+                    ])
+                    ->columns(1)
+                    ->collapsed(),
 
                 Forms\Components\Section::make(__('app.page_settings'))
                     ->schema([
@@ -129,6 +221,24 @@ class PageResource extends Resource
                     ->badge()
                     ->color('gray'),
 
+                Tables\Columns\TextColumn::make('status')
+                    ->label(__('app.status'))
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'draft' => 'gray',
+                        'published' => 'success',
+                        'scheduled' => 'warning',
+                        default => 'gray',
+                    })
+                    ->formatStateUsing(fn (string $state): string => __('app.' . $state))
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('published_at')
+                    ->label(__('app.published'))
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(),
+
                 Tables\Columns\IconColumn::make('is_enabled')
                     ->label(__('app.enabled'))
                     ->boolean()
@@ -166,6 +276,14 @@ class PageResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                Tables\Filters\SelectFilter::make('status')
+                    ->label(__('app.status'))
+                    ->options([
+                        'draft' => __('app.draft'),
+                        'published' => __('app.published'),
+                        'scheduled' => __('app.scheduled'),
+                    ]),
+
                 Tables\Filters\TernaryFilter::make('is_enabled')
                     ->label(__('app.enabled'))
                     ->placeholder(__('app.all'))
@@ -179,21 +297,45 @@ class PageResource extends Resource
                     ->falseLabel(__('app.private_only')),
             ])
             ->actions([
+                Tables\Actions\Action::make('preview')
+                    ->label(__('app.preview'))
+                    ->icon('heroicon-o-eye')
+                    ->color('info')
+                    ->url(fn (Page $record): string => route('page.show', ['slug' => $record->slug, 'preview' => true]))
+                    ->openUrlInNewTab(),
+
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
                 
                 Tables\Actions\Action::make('view_page')
-                    ->label(__('app.view_page'))
-                    ->icon('heroicon-o-eye')
-                    ->color('info')
+                    ->label(__('app.view_live'))
+                    ->icon('heroicon-o-arrow-top-right-on-square')
+                    ->color('success')
                     ->url(fn (Page $record): string => route('page.show', $record->slug))
                     ->openUrlInNewTab()
-                    ->visible(fn (Page $record): bool => $record->is_enabled && $record->is_public),
+                    ->visible(fn (Page $record): bool => $record->isPublished() && $record->is_enabled && $record->is_public),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    
+                    BulkAction::make('publish')
+                        ->label(__('app.publish'))
+                        ->icon('heroicon-o-check-circle')
+                        ->color('success')
+                        ->action(fn (Collection $records) => $records->each->update([
+                            'status' => 'published',
+                            'published_at' => now(),
+                        ]))
+                        ->deselectRecordsAfterCompletion(),
+
+                    BulkAction::make('draft')
+                        ->label(__('app.move_to_draft'))
+                        ->icon('heroicon-o-document')
+                        ->color('gray')
+                        ->action(fn (Collection $records) => $records->each->update(['status' => 'draft']))
+                        ->deselectRecordsAfterCompletion(),
                     
                     BulkAction::make('enable')
                         ->label(__('app.enable'))

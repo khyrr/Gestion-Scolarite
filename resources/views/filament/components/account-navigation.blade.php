@@ -3,25 +3,25 @@
     $tabs = [
         [
             'name' => 'Profile',
-            'url' => route('filament.admin.pages.account.profile'),
+            'url' => \App\Filament\Pages\Account\Profile::getUrl(),
             'icon' => 'heroicon-m-user',
             'active' => str_contains($currentRoute, 'account.profile')
         ],
         [
             'name' => 'Security', 
-            'url' => route('filament.admin.pages.account.security'),
+            'url' => \App\Filament\Pages\Account\Security::getUrl(),
             'icon' => 'heroicon-m-shield-check',
             'active' => str_contains($currentRoute, 'account.security')
         ],
         [
             'name' => 'Preferences',
-            'url' => route('filament.admin.pages.account.preferences'), 
+            'url' => \App\Filament\Pages\Account\Preferences::getUrl(), 
             'icon' => 'heroicon-m-cog-6-tooth',
             'active' => str_contains($currentRoute, 'account.preferences')
         ],
         [
             'name' => 'Notifications',
-            'url' => route('filament.admin.pages.account.notifications'),
+            'url' => \App\Filament\Pages\Account\Notifications::getUrl(),
             'icon' => 'heroicon-m-bell', 
             'active' => str_contains($currentRoute, 'account.notifications')
         ]

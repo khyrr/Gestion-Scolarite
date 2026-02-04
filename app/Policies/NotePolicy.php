@@ -28,9 +28,9 @@ class NotePolicy
         // Teachers can view grades for evaluations they manage
         if ($user->profile_type === 'App\\Models\\Enseignant') {
             $enseignant = $user->profile;
-            if ($enseignant && $enseignant->enseignantMatiereClasses()
-                    ->where('matiere_id', $note->evaluation->matiere_id)
-                    ->where('classe_id', $note->evaluation->classe_id)
+            if ($enseignant && $enseignant->matieres()
+                    ->where('matieres.id_matiere', $note->evaluation->id_matiere)
+                    ->wherePivot('id_classe', $note->evaluation->id_classe)
                     ->exists()) {
                 return true;
             }

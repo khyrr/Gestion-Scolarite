@@ -32,19 +32,31 @@ class PublicController extends Controller
 
         return view('public.pages.homepage', [
             'page' => $page,
-            'themeVars' => $this->themeService->getThemeVars(),
+            'themeVars' => $this->getEnhancedThemeVars(),
         ]);
     }
 
     /**
      * Display a page by slug
      */
-    public function showPage(string $slug)
+    public function showPage(string $slug, Request $request)
     {
         $page = Page::findBySlug($slug);
         
-        if (!$page || !$page->isEnabled() || !$page->isPublic()) {
-            abort(404, 'Page not found or not available');
+        // Check for preview mode (only accessible by authenticated users with manage pages permission)
+        $isPreview = $request->has('preview') && 
+                     auth()->check() && 
+                     (auth()->user()->hasPermissionTo('manage pages') || auth()->user()->hasRole('super_admin'));
+        
+        if (!$page) {
+            abort(404, 'Page not found');
+        }
+        
+        // If not preview mode, check normal visibility rules
+        if (!$isPreview) {
+            if (!$page->isEnabled() || !$page->isPublic() || !$page->isPublished()) {
+                abort(404, 'Page not found or not available');
+            }
         }
 
         // Determine which view to use based on slug
@@ -57,7 +69,8 @@ class PublicController extends Controller
 
         return view($view, [
             'page' => $page,
-            'themeVars' => $this->themeService->getThemeVars(),
+            'themeVars' => $this->getEnhancedThemeVars(),
+            'isPreview' => $isPreview,
         ]);
     }
 
@@ -74,7 +87,7 @@ class PublicController extends Controller
 
         return view('public.pages.contact', [
             'page' => $page,
-            'themeVars' => $this->themeService->getThemeVars(),
+            'themeVars' => $this->getEnhancedThemeVars(),
         ]);
     }
 
@@ -145,6 +158,46 @@ class PublicController extends Controller
     }
 
     /**
+     * Get enhanced theme vars with school settings
+     */
+    protected function getEnhancedThemeVars(): array
+    {
+        $themeVars = $this->themeService->getThemeVars();
+        
+        // Merge school settings into themeVars
+        return array_merge($themeVars, [
+            // Organization settings
+            'site_name' => setting('school_name', $themeVars['site_name'] ?? 'School'),
+            'school_name' => setting('school_name', 'My School'),
+            'school_address' => setting('school_address', ''),
+            'school_phone' => setting('school_phone', ''),
+            'school_email' => setting('school_email', ''),
+            'school_website' => setting('school_website', ''),
+            
+            // Contact settings (maintain backward compatibility)
+            'contact_address' => setting('school_address', ''),
+            'contact_email' => setting('school_email', ''),
+            'contact_phone' => setting('school_phone', ''),
+            
+            // System settings
+            'timezone' => setting('timezone', 'UTC'),
+            'date_format' => setting('date_format', 'Y-m-d'),
+            'language' => setting('language', 'en'),
+            'currency' => setting('currency', 'USD'),
+            
+            // Academic settings (available for public pages if needed)
+            'academic_year_start' => setting('academic_year_start', '09-01'),
+            'academic_year_end' => setting('academic_year_end', '06-30'),
+            'grading_system' => setting('grading_system', 'percentage'),
+            
+            // Application settings
+            'app_name' => setting('app_name', config('app.name')),
+            'registration_enabled' => setting('registration_enabled', true),
+            'notifications_enabled' => setting('notifications_enabled', true),
+        ]);
+    }
+
+    /**
      * Get theme CSS
      */
     public function themeCSS()
@@ -179,7 +232,7 @@ class PublicController extends Controller
         return view('public.pages.search', [
             'query' => $query,
             'pages' => $pages,
-            'themeVars' => $this->themeService->getThemeVars(),
+            'themeVars' => $this->getEnhancedThemeVars(),
         ]);
     }
 
@@ -189,16 +242,20 @@ class PublicController extends Controller
     public function siteInfo()
     {
         return response()->json([
-            'site_name' => SiteSetting::siteName(),
+            'site_name' => setting('school_name', SiteSetting::siteName()),
             'site_description' => SiteSetting::siteDescription(),
-            'contact_email' => SiteSetting::contactEmail(),
-            'contact_phone' => SiteSetting::contactPhone(),
-            'contact_address' => SiteSetting::contactAddress(),
+            'contact_email' => setting('school_email', SiteSetting::contactEmail()),
+            'contact_phone' => setting('school_phone', SiteSetting::contactPhone()),
+            'contact_address' => setting('school_address', SiteSetting::contactAddress()),
             'logo_url' => $this->themeService->getLogoUrl(),
             'theme_colors' => [
                 'primary' => SiteSetting::primaryColor(),
                 'secondary' => SiteSetting::secondaryColor(),
             ],
+            'school_website' => setting('school_website', ''),
+            'timezone' => setting('timezone', 'UTC'),
+            'language' => setting('language', 'en'),
+            'currency' => setting('currency', 'USD'),
         ]);
     }
 }

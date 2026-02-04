@@ -14,6 +14,11 @@ trait HasRoleBasedAccess
     {
         $user = auth()->user();
         
+        // Super admin bypass
+        if ($user->hasRole('super_admin')) {
+            return $query;
+        }
+        
         if (!$user->hasRole(['teacher', 'enseignant'])) {
             return $query;
         }
@@ -36,6 +41,11 @@ trait HasRoleBasedAccess
     protected static function applyStudentScope(Builder $query, string $studentIdColumn = 'id_etudiant'): Builder
     {
         $user = auth()->user();
+        
+        // Super admin bypass
+        if ($user->hasRole('super_admin')) {
+            return $query;
+        }
         
         if (!$user->hasRole('etudiant')) {
             return $query;
@@ -106,6 +116,11 @@ trait HasRoleBasedAccess
     {
         $user = auth()->user();
         
+        // Super admin bypass
+        if ($user->hasRole('super_admin')) {
+            return true;
+        }
+        
         if (!$user->hasRole(['teacher', 'enseignant'])) {
             return false;
         }
@@ -141,6 +156,11 @@ trait HasRoleBasedAccess
     protected static function canStudentAccessRecord(Model $record): bool
     {
         $user = auth()->user();
+        
+        // Super admin bypass
+        if ($user->hasRole('super_admin')) {
+            return true;
+        }
         
         if (!$user->hasRole('etudiant')) {
             return false;

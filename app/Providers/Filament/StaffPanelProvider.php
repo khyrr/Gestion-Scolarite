@@ -20,6 +20,8 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Filament\Navigation\NavigationGroup;
+use Filament\Navigation\MenuItem;
+use App\Filament\Pages\Account;
 
 class StaffPanelProvider extends PanelProvider
 {
@@ -35,7 +37,8 @@ class StaffPanelProvider extends PanelProvider
             ])
             ->id('staff')
             ->path('staff')
-            ->login()
+            ->login(\App\Filament\Pages\Auth\Login::class)
+            ->databaseNotifications()
             ->colors([
                 'primary' => Color::Emerald,
                 'info' => Color::Blue,
@@ -44,12 +47,18 @@ class StaffPanelProvider extends PanelProvider
                 'danger' => Color::Rose,
                 'gray' => Color::Gray,
             ])
+            ->userMenuItems([
+            MenuItem::make()
+                ->label(__('app.mon_compte'))
+                ->url(fn (): string => \App\Filament\Pages\Account\Profile::getUrl())
+                ->icon('heroicon-o-user-circle'),
+            // ...
+            ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
                 \App\Filament\Pages\Dashboard::class,
             ])
-            ->profile(isSimple: false)
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
@@ -62,8 +71,12 @@ class StaffPanelProvider extends PanelProvider
                 );
             })
             ->brandName(function () {
-                return __('app.staff_panel');
-            })
+                $user = auth()->user();
+                if (!$user) return setting('school_name', 'School Administration');
+                
+                return __('app.administration_panel');
+            })->brandLogo(asset('images/logo.svg'))
+            ->favicon(asset('images/favicon.png'))
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -79,6 +92,8 @@ class StaffPanelProvider extends PanelProvider
                 Authenticate::class,
                 \App\Http\Middleware\EnsureStaffRole::class,
             ])
-            ->spa();
+            ->spa()
+            ->font('Poppins')
+            ->sidebarFullyCollapsibleOnDesktop();
     }
 }

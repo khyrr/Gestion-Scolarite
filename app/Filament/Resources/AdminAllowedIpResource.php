@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\HasRoleBasedAccess;
 use App\Filament\Resources\AdminAllowedIpResource\Pages;
 use App\Models\AdminAllowedIp;
 use Filament\Forms;
@@ -13,6 +14,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class AdminAllowedIpResource extends Resource
 {
+    use HasRoleBasedAccess;
+    
     protected static ?string $model = AdminAllowedIp::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-finger-print';

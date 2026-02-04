@@ -9,18 +9,38 @@ class EnseignPaiement extends Model
 {
     protected $table = 'enseignpaiements';
     protected $primaryKey ='id_paiements';
-    protected $fillable =['user_id','typepaiement','montant','statut','date_paiement'];
+    protected $fillable =['user_id','typepaiement','montant','statut','date_paiement','notified'];
     
     protected $dates = ['date_paiement'];
     
     protected $casts = [
         'date_paiement' => 'date',
         'montant' => 'decimal:2',
+        'notified' => 'boolean',
     ];
     
     public function enseignant()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    protected static function booted()
+    {
+        static::created(function ($payment) {
+            if ($payment->statut === 'paye' && !$payment->notified) {
+                event(new \App\Events\TeacherPaymentProcessed($payment));
+            }
+        });
+
+        static::updated(function ($payment) {
+            if (
+                $payment->wasChanged('statut') &&
+                $payment->statut === 'paye' &&
+                !$payment->notified
+            ) {
+                event(new \App\Events\TeacherPaymentProcessed($payment));
+            }
+        });
     }
     
     /**

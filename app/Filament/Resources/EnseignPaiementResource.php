@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\HasRoleBasedAccess;
 use App\Filament\Resources\EnseignPaiementResource\Pages;
 use App\Filament\Resources\EnseignPaiementResource\RelationManagers;
 use App\Models\EnseignPaiement;
@@ -16,6 +17,8 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class EnseignPaiementResource extends Resource
 {
+    use HasRoleBasedAccess;
+    
     protected static ?string $model = EnseignPaiement::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-banknotes';

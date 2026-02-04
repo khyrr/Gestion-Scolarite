@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\HasRoleBasedAccess;
 use App\Filament\Resources\RoleResource\Pages;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
@@ -13,6 +14,8 @@ use Filament\Tables\Table;
 
 class RoleResource extends Resource
 {
+    use HasRoleBasedAccess;
+    
     protected static ?string $model = Role::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-key';

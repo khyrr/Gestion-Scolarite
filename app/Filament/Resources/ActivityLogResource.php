@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\HasRoleBasedAccess;
 use App\Filament\Resources\ActivityLogResource\Pages;
 use Spatie\Activitylog\Models\Activity as ActivityModel;
 
@@ -16,6 +17,8 @@ use Illuminate\Support\HtmlString;
 
 class ActivityLogResource extends Resource
 {
+    use HasRoleBasedAccess;
+    
     protected static ?string $model = ActivityModel::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-list-bullet';

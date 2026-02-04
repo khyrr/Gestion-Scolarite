@@ -64,6 +64,14 @@ class ClasseResource extends Resource
         return auth()->user()->hasPermissionTo('delete classes');
     }
 
+    public static function getEloquentQuery(): Builder
+    {
+        return static::applyRoleBasedTableScope(parent::getEloquentQuery(), [
+            'classColumn' => 'id_classe',
+            'studentScope' => false,
+        ]);
+    }
+
     public static function form(Form $form): Form
     {
         return $form
@@ -104,12 +112,6 @@ class ClasseResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(function (Builder $query) {
-                return static::applyRoleBasedTableScope($query, [
-                    'classColumn' => 'id_classe',
-                    'studentScope' => false, // Students don't directly manage classes
-                ]);
-            })
             ->columns([
                 Tables\Columns\TextColumn::make('nom_classe')
                     ->label(__('app.nom_classe'))
@@ -172,7 +174,8 @@ class ClasseResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
-            ->defaultSort('niveau', 'asc');
+            ->defaultSort('niveau', 'asc')
+            ->defaultPaginationPageOption(setting('items_per_page', 25));
     }
 
     public static function getRelations(): array

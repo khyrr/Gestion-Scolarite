@@ -85,19 +85,24 @@ class Preferences extends Page
                                 'auto' => 'Auto (based on screen size)',
                             ])
                             ->default('auto'),
-                    ])->columns(2)
+                    ])->columns(2),
+
+                    Forms\Components\Actions::make([
+                    Forms\Components\Actions\Action::make('save')
+                        ->label('Save Changes')
+                        ->icon('heroicon-m-check-circle')
+                        ->color('primary')
+                        ->action(function () {
+                            $this->save();
+                        }),
+                ])
             ])
             ->statePath('data');
     }
 
     protected function getFormActions(): array
     {
-        return [
-            Action::make('save')
-                ->label('Save Preferences')
-                ->color('primary')
-                ->submit('save'),
-        ];
+        return [];
     }
 
     public function save(): void

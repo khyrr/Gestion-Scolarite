@@ -105,8 +105,8 @@ class Security extends Page
                             ->visible(fn () => auth()->user()->two_factor_confirmed_at === null),
                         
                         Forms\Components\TextInput::make('two_factor_code')
-                            ->label('Verification Code')
-                            ->helperText('Enter the 6-digit code from your authenticator app')
+                            ->label(__('app.code_2fa'))
+                            ->helperText(__('app.enter_code_from_app'))
                             ->numeric()
                             ->length(6)
                             ->placeholder('123456')
@@ -114,7 +114,7 @@ class Security extends Page
                         
                         // Recovery codes for enabled 2FA
                         Forms\Components\Placeholder::make('backup_codes_info')
-                            ->label('Recovery Codes')
+                            ->label(__('app.recovery_codes'))
                             ->content(function () {
                                 $user = auth()->user();
                                 $codes = json_decode(decrypt($user->two_factor_recovery_codes), true);
@@ -176,19 +176,24 @@ class Security extends Page
                             ->label('Confirm New Password')
                             ->password()
                             ->requiredWith('new_password'),
-                    ])->columns(1)
+                    ])->columns(1),
+                    Forms\Components\Actions::make([
+                    Forms\Components\Actions\Action::make('save')
+                        ->label('Save Changes')
+                        ->icon('heroicon-m-check-circle')
+                        ->color('primary')
+                        ->action(function () {
+                            $this->save();
+                        }),
+                ])
+                    
             ])
             ->statePath('data');
     }
 
     protected function getFormActions(): array
     {
-        return [
-            Action::make('save')
-                ->label('Save Changes')
-                ->color('primary')
-                ->submit('save'),
-        ];
+        return [];
     }
 
     public function save(): void

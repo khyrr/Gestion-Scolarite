@@ -15,6 +15,12 @@ class Page extends Model
         'slug',
         'title',
         'content',
+        'editor_mode',
+        'status',
+        'published_at',
+        'meta_title',
+        'meta_description',
+        'meta_keywords',
         'is_enabled',
         'is_public',
         'settings',
@@ -25,6 +31,7 @@ class Page extends Model
         'is_enabled' => 'boolean',
         'is_public' => 'boolean',
         'settings' => 'array',
+        'published_at' => 'datetime',
     ];
 
     /**
@@ -41,6 +48,35 @@ class Page extends Model
     public function scopePublic(Builder $query): Builder
     {
         return $query->where('is_public', true);
+    }
+
+    /**
+     * Scope to get only published pages
+     */
+    public function scopePublished(Builder $query): Builder
+    {
+        return $query->where('status', 'published')
+            ->where(function ($q) {
+                $q->whereNull('published_at')
+                  ->orWhere('published_at', '<=', now());
+            });
+    }
+
+    /**
+     * Scope to get draft pages
+     */
+    public function scopeDraft(Builder $query): Builder
+    {
+        return $query->where('status', 'draft');
+    }
+
+    /**
+     * Scope to get scheduled pages
+     */
+    public function scopeScheduled(Builder $query): Builder
+    {
+        return $query->where('status', 'scheduled')
+            ->where('published_at', '>', now());
     }
 
     /**
@@ -85,6 +121,38 @@ class Page extends Model
     public function isPublic(): bool
     {
         return $this->is_public;
+    }
+
+    /**
+     * Check if page is published
+     */
+    public function isPublished(): bool
+    {
+        if ($this->status !== 'published') {
+            return false;
+        }
+        
+        if ($this->published_at && $this->published_at->isFuture()) {
+            return false;
+        }
+        
+        return true;
+    }
+
+    /**
+     * Check if page is draft
+     */
+    public function isDraft(): bool
+    {
+        return $this->status === 'draft';
+    }
+
+    /**
+     * Check if page is scheduled
+     */
+    public function isScheduled(): bool
+    {
+        return $this->status === 'scheduled' && $this->published_at && $this->published_at->isFuture();
     }
 
     /**

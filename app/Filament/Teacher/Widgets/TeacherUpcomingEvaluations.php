@@ -10,8 +10,8 @@ use Carbon\Carbon;
 
 class TeacherUpcomingEvaluations extends BaseWidget
 {
-    protected static ?int $sort = 9;
-    protected int | string | array $columnSpan = 'half';
+    protected static ?int $sort = 999;
+    protected int | string | array $columnSpan = 2; // Match dashboard's 2-column layout
 
     public static function canView(): bool
     {

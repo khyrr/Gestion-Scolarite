@@ -40,7 +40,8 @@ class AdminPanelProvider extends PanelProvider
             
             ->id('admin')
             ->path('admin')
-            ->login()
+            ->login(\App\Filament\Pages\Auth\Login::class)
+            ->databaseNotifications()
             ->colors([
                 'primary' => Color::Amber,
                 'info' => Color::Blue,
@@ -78,10 +79,10 @@ class AdminPanelProvider extends PanelProvider
             })
             ->brandName(function () {
                 $user = auth()->user();
-                if (!$user) return config('app.name');
+                if (!$user) return setting('school_name', 'School Administration');
                 
                 return __('app.administration_panel');
-            })->brandLogo(asset('images/admin_logo.png'))
+            })->brandLogo(asset('images/logo.svg'))
             ->favicon(asset('images/favicon.png'))
             ->middleware([
                 EncryptCookies::class,

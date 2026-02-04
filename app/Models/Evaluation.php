@@ -42,6 +42,41 @@ class Evaluation extends Model
     {
         return $this->titre ?: (ucfirst($this->type) . ' de ' . $this->matiere_name);
     }
+
+    /**
+     * Check if evaluation has ended (based on date)
+     */
+    public function hasEnded(): bool
+    {
+        if (!$this->date) {
+            return false;
+        }
+        return $this->date->isPast();
+    }
+
+    /**
+     * Check if evaluation has any grades entered
+     */
+    public function hasGrades(): bool
+    {
+        return $this->notes()->exists();
+    }
+
+    /**
+     * Check if evaluation can be modified
+     * An evaluation is locked if it has ended OR has grades
+     */
+    public function isLocked(): bool
+    {
+        return $this->hasEnded() || $this->hasGrades();
+    }
+
+    protected static function booted()
+    {
+        static::created(function ($evaluation) {
+            event(new \App\Events\EvaluationCreated($evaluation));
+        });
+    }
     
     use HasFactory;
 }

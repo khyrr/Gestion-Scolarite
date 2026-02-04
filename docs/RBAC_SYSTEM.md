@@ -105,6 +105,8 @@ Permissions are organized by resource and action type:
 - `manage permissions` - Permission management
 - `view activity logs` - System monitoring
 - `manage system settings` - System configuration
+- `view settings` - View system configuration
+- `manage settings` - Modify system settings
 - `backup database` - Data backup
 
 ## Role-Permission Matrix

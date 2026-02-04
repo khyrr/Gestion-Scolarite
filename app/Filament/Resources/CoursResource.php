@@ -13,9 +13,11 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Concerns\HasRoleBasedAccess;
 
 class CoursResource extends Resource
 {
+    use HasRoleBasedAccess;
     protected static ?string $model = Cours::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-calendar-days';
@@ -60,6 +62,13 @@ class CoursResource extends Resource
     public static function canDelete(Model $record): bool
     {
         return auth()->user()->hasPermissionTo('delete courses');
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return static::applyRoleBasedTableScope(parent::getEloquentQuery(), [
+            'classColumn' => 'cours.id_classe',
+        ]);
     }
 
     public static function form(Form $form): Form

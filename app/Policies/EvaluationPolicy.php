@@ -29,9 +29,9 @@ class EvaluationPolicy
         // Teachers can view evaluations they created or for subjects they teach
         if ($user->profile_type === 'App\\Models\\Enseignant') {
             $enseignant = $user->profile;
-            if ($enseignant && $enseignant->enseignantMatiereClasses()
-                    ->where('matiere_id', $evaluation->matiere_id)
-                    ->where('classe_id', $evaluation->classe_id)
+            if ($enseignant && $enseignant->matieres()
+                    ->where('matieres.id_matiere', $evaluation->id_matiere)
+                    ->wherePivot('id_classe', $evaluation->id_classe)
                     ->exists()) {
                 return true;
             }
@@ -56,9 +56,9 @@ class EvaluationPolicy
         // Teachers can edit their own evaluations
         if ($user->profile_type === 'App\\Models\\Enseignant') {
             $enseignant = $user->profile;
-            if ($enseignant && $enseignant->enseignantMatiereClasses()
-                    ->where('matiere_id', $evaluation->matiere_id)
-                    ->where('classe_id', $evaluation->classe_id)
+            if ($enseignant && $enseignant->matieres()
+                    ->where('matieres.id_matiere', $evaluation->id_matiere)
+                    ->wherePivot('id_classe', $evaluation->id_classe)
                     ->exists()) {
                 return true;
             }
@@ -75,9 +75,9 @@ class EvaluationPolicy
         // Teachers can delete their own evaluations (with restrictions)
         if ($user->profile_type === 'App\\Models\\Enseignant') {
             $enseignant = $user->profile;
-            if ($enseignant && $enseignant->enseignantMatiereClasses()
-                    ->where('matiere_id', $evaluation->matiere_id)
-                    ->where('classe_id', $evaluation->classe_id)
+            if ($enseignant && $enseignant->matieres()
+                    ->where('matieres.id_matiere', $evaluation->id_matiere)
+                    ->wherePivot('id_classe', $evaluation->id_classe)
                     ->exists()) {
                 // Can only delete if no grades have been assigned yet
                 return !$evaluation->notes()->exists();

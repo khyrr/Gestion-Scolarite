@@ -6,10 +6,10 @@
         
         @include('filament.components.account-navigation')
         
-        {{ $this->form }}
-        
-        <div class="flex justify-end">
-            <x-filament-actions::group :actions="$this->getFormActions()" />
-        </div>
+    @if (method_exists($this, 'form'))
+        <x-filament-panels::form wire:submit="save">
+            {{ $this->form }}
+        </x-filament-panels::form>
+    @endif
     </div>
 </x-filament-panels::page>

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\HasRoleBasedAccess;
 use App\Filament\Resources\MatiereResource\Pages;
 use App\Filament\Resources\MatiereResource\RelationManagers;
 use App\Models\Matiere;
@@ -16,6 +17,8 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class MatiereResource extends Resource
 {
+    use HasRoleBasedAccess;
+    
     protected static ?string $model = Matiere::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-book-open';

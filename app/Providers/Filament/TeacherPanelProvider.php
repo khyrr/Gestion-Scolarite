@@ -20,6 +20,8 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Filament\Navigation\NavigationGroup;
+use Filament\Navigation\MenuItem;
+use App\Filament\Pages\Account;
 
 class TeacherPanelProvider extends PanelProvider
 {
@@ -30,11 +32,11 @@ class TeacherPanelProvider extends PanelProvider
                 NavigationGroup::make(__('app.tableau_de_bord')),
                 NavigationGroup::make(__('app.mes_classes')),
                 NavigationGroup::make(__('app.gestion_academique')),
-                NavigationGroup::make(__('app.profil')),
             ])
             ->id('teacher')
             ->path('teacher')
-            ->login()
+            ->login(\App\Filament\Pages\Auth\Login::class)
+            ->databaseNotifications()
             ->colors([
                 'primary' => Color::Blue,
                 'info' => Color::Cyan,
@@ -43,17 +45,29 @@ class TeacherPanelProvider extends PanelProvider
                 'danger' => Color::Rose,
                 'gray' => Color::Gray,
             ])
+            ->userMenuItems([
+            MenuItem::make()
+                ->label(__('app.mon_compte'))
+                ->url(fn (): string => \App\Filament\Pages\Account\Profile::getUrl())
+                ->icon('heroicon-o-user-circle'),
+            // ...
+            ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
                 \App\Filament\Pages\Dashboard::class,
             ])
-            ->profile(isSimple: false)
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 // Teacher specific widgets
             ])
-            ->brandName(__('app.teacher_portal'))
+            ->brandName(function () {
+                $user = auth()->user();
+                if (!$user) return setting('school_name', 'School Administration');
+                
+                return __('app.administration_panel');
+            })->brandLogo(setting('school_logo', asset('images/logo.svg')))
+            ->favicon(asset('images/favicon.png'))
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -69,6 +83,8 @@ class TeacherPanelProvider extends PanelProvider
                 Authenticate::class,
                 \App\Http\Middleware\EnsureTeacherRole::class,
             ])
-            ->spa();
+            ->spa()
+            ->font('Poppins')
+            ->sidebarFullyCollapsibleOnDesktop();
     }
 }

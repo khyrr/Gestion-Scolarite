@@ -8,9 +8,12 @@ use App\Models\Cours;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Actions\Action;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Filament\Concerns\HasRoleBasedAccess;
 
 class ViewClasseTimetable extends ViewRecord
 {
+    use HasRoleBasedAccess;
+
     protected static string $resource = ClasseResource::class;
 
     protected static string $view = 'filament.resources.classe-resource.pages.view-classe-timetable';
@@ -25,6 +28,37 @@ class ViewClasseTimetable extends ViewRecord
         return __('app.emploi_temps');
     }
 
+    /**
+     * Check if user can view full timetable (not just their own courses)
+     */
+    protected function canViewFullTimetable(): bool
+    {
+        $user = auth()->user();
+        
+        return $user->hasRole('super_admin') || 
+               $user->hasPermissionTo('manage timetables') || 
+               $user->hasPermissionTo('manage classes');
+    }
+
+    /**
+     * Get courses with RBAC filtering
+     */
+    protected function getCourses(): \Illuminate\Database\Eloquent\Collection
+    {
+        $query = Cours::where('id_classe', $this->record->id_classe)
+            ->with(['matiere', 'enseignant']);
+        
+        // Filter by teacher if they can't view full timetable
+        if (!$this->canViewFullTimetable()) {
+            $enseignant = auth()->user()->profile;
+            if ($enseignant) {
+                $query->where('id_enseignant', $enseignant->id_enseignant);
+            }
+        }
+        
+        return $query->get();
+    }
+
     protected function getActions(): array
     {
         return [
@@ -33,39 +67,40 @@ class ViewClasseTimetable extends ViewRecord
                 ->icon('heroicon-o-arrow-down-tray')
                 ->color('success')
                 ->action(function () {
-                    $classe = $this->record;
-                    $courses = Cours::where('id_classe', $classe->id_classe)
-                        ->with(['matiere', 'enseignant'])
-                        ->get();
-
                     $pdf = Pdf::loadView('pdf.timetable', [
-                        'classe' => $classe,
-                        'courses' => $courses,
+                        'classe' => $this->record,
+                        'courses' => $this->getCourses(),
                     ])->setPaper('a4', 'portrait');
 
-                    return response()->streamDownload(function () use ($pdf) {
-                        echo $pdf->output();
-                    }, "emploi_du_temps_{$classe->nom_classe}.pdf");
+                    return response()->streamDownload(
+                        fn () => print($pdf->output()),
+                        "emploi_du_temps_{$this->record->nom_classe}.pdf"
+                    );
                 }),
         ];
     }
 
     protected function getViewData(): array
     {
-        $classe = $this->record;
-        $courses = Cours::where('id_classe', $classe->id_classe)
-            ->with(['matiere', 'enseignant'])
-            ->get();
-
         return [
-            'classe' => $classe,
-            'courses' => $courses,
+            'classe' => $this->record,
+            'courses' => $this->getCourses(),
         ];
     }
 
-    public static function canView(): bool
+    public static function canView($record = null): bool
     {
-        return auth()->user()->hasRole('super_admin') || 
-               auth()->user()->hasRole(['teacher', 'enseignant']);
+        $user = auth()->user();
+        
+        if (!$user || !$user->hasPermissionTo('view timetables')) {
+            return false;
+        }
+        
+        // Teachers can only view timetables for their assigned classes
+        if ($record && $user->hasRole(['teacher', 'enseignant'])) {
+            return static::canTeacherAccessRecord($record);
+        }
+        
+        return true;
     }
 }

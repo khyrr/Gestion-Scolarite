@@ -20,6 +20,10 @@ class TranscriptService
         $totalCoeff = 0;
         $weightedSum = 0;
 
+        // Get passing grade from settings (as percentage)
+        $passingGradePercentage = setting('passing_grade', 50); // Default 50%
+        $passingGradeOn20 = ($passingGradePercentage / 100) * 20;
+
         foreach ($notesByMatiere as $matiere => $matiereNotes) {
             $matiereStats = [
                 'total_points' => 0,
@@ -36,7 +40,7 @@ class TranscriptService
                 $matiereStats['total_max_points'] += $noteMax;
 
                 $totalNotes++;
-                if ($noteSur20 >= 10)
+                if ($noteSur20 >= $passingGradeOn20)
                     $passedNotes++;
                 if ($noteSur20 >= 16)
                     $excellentNotes++;
@@ -76,30 +80,43 @@ class TranscriptService
 
     public function getGradeLetter($average)
     {
-        if ($average >= 18)
-            return 'A+';
-        if ($average >= 16)
-            return 'A';
-        if ($average >= 14)
-            return 'B+';
-        if ($average >= 12)
-            return 'B';
-        if ($average >= 10)
-            return 'C';
-        if ($average >= 8)
-            return 'D';
-        return 'F';
+        $gradingSystem = setting('grading_system', 'percentage');
+        
+        if ($gradingSystem === 'letter') {
+            if ($average >= 18) return 'A+';
+            if ($average >= 16) return 'A';
+            if ($average >= 14) return 'B+';
+            if ($average >= 12) return 'B';
+            if ($average >= setting('passing_grade', 50) / 100 * 20) return 'C';
+            if ($average >= 8) return 'D';
+            return 'F';
+        }
+        
+        if ($gradingSystem === 'gpa') {
+            if ($average >= 18) return '4.0';
+            if ($average >= 16) return '3.5';
+            if ($average >= 14) return '3.0';
+            if ($average >= 12) return '2.5';
+            if ($average >= setting('passing_grade', 50) / 100 * 20) return '2.0';
+            if ($average >= 8) return '1.0';
+            return '0.0';
+        }
+        
+        // Default: percentage
+        return round($average, 1) . '/20';
     }
 
     public function getMention($average)
     {
+        $passingGrade = setting('passing_grade', 50) / 100 * 20; // Convert % to /20
+        
         if ($average >= 16)
             return 'Très Bien';
         if ($average >= 14)
             return 'Bien';
         if ($average >= 12)
             return 'Assez Bien';
-        if ($average >= 10)
+        if ($average >= $passingGrade)
             return 'Passable';
         return 'Insuffisant';
     }

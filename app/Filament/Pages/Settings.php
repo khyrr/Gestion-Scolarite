@@ -22,9 +22,14 @@ class Settings extends Page
         return 100;
     }
 
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->hasRole('super_admin') || auth()->user()?->hasPermissionTo('view settings');
+    }
+
     public function mount()
     {
         // Redirect to system settings page by default
-        return redirect()->to(route('filament.admin.pages.settings.system'));
+        return redirect()->to(\App\Filament\Pages\Settings\System::getUrl());
     }
 }

@@ -24,6 +24,11 @@ class Profile extends Page
     
     protected static ?int $navigationSort = 9999;
 
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->hasRole('super_admin') || auth()->user()->hasPermissionTo('view settings');
+    }
+
     public ?array $data = [];
 
     public function mount(): void
@@ -111,7 +116,7 @@ class Profile extends Page
                 Forms\Components\Actions::make([
                     Forms\Components\Actions\Action::make('save')
                         ->label('Save Changes')
-                        ->icon('heroicon-m-check')
+                        ->icon('heroicon-m-check-circle')
                         ->color('primary')
                         ->action(function () {
                             $this->save();

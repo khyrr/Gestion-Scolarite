@@ -252,7 +252,11 @@ class GradeService
         }
 
         $evaluation = Evaluation::find($evaluationId);
-        $passingGrade = ($evaluation->note_max ?? 20) / 2; // 50% is passing
+        $maxGrade = $evaluation->note_max ?? 20;
+        
+        // Get passing grade from settings
+        $passingGradePercentage = setting('passing_grade', 50); // Default 50%
+        $passingGrade = ($maxGrade * $passingGradePercentage) / 100;
 
         return [
             'count' => $grades->count(),
@@ -260,6 +264,7 @@ class GradeService
             'min' => $grades->min(),
             'max' => $grades->max(),
             'pass_rate' => round(($grades->filter(fn($g) => $g >= $passingGrade)->count() / $grades->count()) * 100, 2),
+            'passing_grade' => $passingGrade,
         ];
     }
 }

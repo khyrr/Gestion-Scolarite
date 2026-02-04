@@ -248,6 +248,13 @@ class AdministrateurResource extends Resource
                     ->trueColor('success')
                     ->falseColor('warning'),
                     
+                Tables\Columns\TextColumn::make('user.last_login_at')
+                    ->label(__('app.derniere_connexion'))
+                    ->dateTime('d/m/Y H:i')
+                    ->sortable()
+                    ->toggleable()
+                    ->placeholder(__('app.jamais')),
+                    
                 Tables\Columns\TextColumn::make('created_at')
                     ->label(__('app.date_creation'))
                     ->dateTime('d/m/Y')

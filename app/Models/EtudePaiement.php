@@ -22,6 +22,23 @@ class EtudePaiement extends Model
     {
         return $this->belongsTo(Etudiant::class, 'id_etudiant');
     }
+
+    protected static function booted()
+    {
+        static::created(function ($payment) {
+            // Check if status is Paid or if we notify for all new entries
+            if ($payment->statut === 'Payé' || $payment->statut === 'Complet') {
+                event(new \App\Events\StudentPaymentReceived($payment));
+            }
+        });
+
+        static::updated(function ($payment) {
+            // If status changed to Paid
+            if ($payment->isDirty('statut') && ($payment->statut === 'Payé' || $payment->statut === 'Complet')) {
+                event(new \App\Events\StudentPaymentReceived($payment));
+            }
+        });
+    }
     
     /**
      * Generate payment receipt number

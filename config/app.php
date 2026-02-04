@@ -181,6 +181,8 @@ return [
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\FortifyServiceProvider::class,
+        App\Providers\SettingsServiceProvider::class,
+        App\Providers\ConfigSettingsProvider::class,
         App\Providers\Filament\AdminPanelProvider::class,
         App\Providers\Filament\TeacherPanelProvider::class,
         App\Providers\Filament\StaffPanelProvider::class,

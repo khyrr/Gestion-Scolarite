@@ -17,9 +17,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use App\Filament\Concerns\HasRoleBasedAccess;
 
 class NoteResource extends Resource
 {
+    use HasRoleBasedAccess;
     protected static ?string $model = Note::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-trophy';
@@ -66,6 +68,13 @@ class NoteResource extends Resource
         return auth()->user()->hasPermissionTo('delete grades');
     }
 
+    public static function getEloquentQuery(): Builder
+    {
+        return static::applyRoleBasedTableScope(parent::getEloquentQuery(), [
+            'classRelation' => 'etudiant',
+        ]);
+    }
+
     /**
      * Check if a teacher can access a specific note
      */
@@ -97,25 +106,9 @@ class NoteResource extends Resource
                         Forms\Components\Select::make('id_etudiant')
                             ->label(__('app.etudiant'))
                             ->relationship('etudiant', 'matricule', function (Builder $query) {
-                                $user = auth()->user();
-                                
-                                // Admins can select any student
-                                if ($user->hasRole('super_admin')) {
-                                    return $query;
-                                }
-                                
-                                // Teachers can only select students from their classes
-                                if ($user->hasRole(['teacher', 'enseignant'])) {
-                                    $enseignant = $user->profile;
-                                    if ($enseignant) {
-                                        $teacherClasses = $enseignant->classes()->pluck('classes.id_classe');
-                                        $query->whereIn('id_classe', $teacherClasses);
-                                    } else {
-                                        $query->whereRaw('1 = 0');
-                                    }
-                                }
-                                
-                                return $query;
+                                return static::applyRoleBasedRelationScope($query, [
+                                    'classColumn' => 'id_classe'
+                                ]);
                             })
                             ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->nom} {$record->prenom} ({$record->matricule})")
                             ->required()
@@ -245,39 +238,6 @@ class NoteResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(function (Builder $query) {
-                $user = auth()->user();
-                
-                // Admins see all notes
-                if ($user->hasRole('super_admin')) {
-                    return $query;
-                }
-                
-                // Teachers see only notes from students in their classes
-                if ($user->hasRole(['teacher', 'enseignant'])) {
-                    $enseignant = $user->profile;
-                    if ($enseignant) {
-                        $teacherClasses = $enseignant->classes()->pluck('classes.id_classe');
-                        $query->whereHas('etudiant', function (Builder $q) use ($teacherClasses) {
-                            $q->whereIn('id_classe', $teacherClasses);
-                        });
-                    } else {
-                        $query->whereRaw('1 = 0');
-                    }
-                }
-                
-                // Students see only their own notes
-                if ($user->hasRole('etudiant')) {
-                    $etudiant = $user->profile;
-                    if ($etudiant) {
-                        $query->where('id_etudiant', $etudiant->id_etudiant);
-                    } else {
-                        $query->whereRaw('1 = 0');
-                    }
-                }
-                
-                return $query;
-            })
             ->columns([
                 Tables\Columns\TextColumn::make('etudiant.matricule')
                     ->label(__('app.matricule'))
@@ -392,7 +352,8 @@ class NoteResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
-            ->defaultSort('created_at', 'desc');
+            ->defaultSort('created_at', 'desc')
+            ->defaultPaginationPageOption(setting('items_per_page', 25));
     }
 
     public static function getRelations(): array

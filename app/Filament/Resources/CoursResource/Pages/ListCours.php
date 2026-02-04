@@ -9,9 +9,12 @@ use Filament\Forms;
 use App\Models\Classe;
 use App\Models\Cours;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Filament\Concerns\HasRoleBasedAccess;
 
 class ListCours extends ListRecords
 {
+    use HasRoleBasedAccess;
+    
     protected static string $resource = CoursResource::class;
 
     protected function getHeaderActions(): array
@@ -24,7 +27,11 @@ class ListCours extends ListRecords
                 ->form([
                     Forms\Components\Select::make('id_classe')
                         ->label(__('app.classe'))
-                        ->options(Classe::pluck('nom_classe', 'id_classe'))
+                        ->options(function () {
+                            return static::applyRoleBasedRelationScope(Classe::query(), [
+                                'classColumn' => 'id_classe'
+                            ])->pluck('nom_classe', 'id_classe');
+                        })
                         ->required()
                         ->searchable()
                         ->live(),
@@ -37,9 +44,21 @@ class ListCours extends ListRecords
                             }
 
                             $classe = Classe::find($classeId);
-                            $courses = Cours::where('id_classe', $classeId)
-                                ->with(['matiere', 'enseignant.user'])
-                                ->get();
+                            $query = Cours::where('id_classe', $classeId)
+                                ->with(['matiere', 'enseignant.user']);
+                            
+                            // Apply RBAC filtering
+                            $user = auth()->user();
+                            if (!($user->hasRole('super_admin') || 
+                                  $user->hasPermissionTo('manage timetables') || 
+                                  $user->hasPermissionTo('manage classes'))) {
+                                $enseignant = $user->profile;
+                                if ($enseignant) {
+                                    $query->where('id_enseignant', $enseignant->id_enseignant);
+                                }
+                            }
+                            
+                            $courses = $query->get();
 
                             return view('filament.pages.timetable-preview', [
                                 'classe' => $classe,
@@ -52,9 +71,21 @@ class ListCours extends ListRecords
                 ->modalSubmitActionLabel(__('app.export_pdf'))
                 ->action(function (array $data) {
                     $classe = Classe::find($data['id_classe']);
-                    $courses = Cours::where('id_classe', $data['id_classe'])
-                        ->with(['matiere', 'enseignant.user'])
-                        ->get();
+                    $query = Cours::where('id_classe', $data['id_classe'])
+                        ->with(['matiere', 'enseignant.user']);
+                    
+                    // Apply RBAC filtering
+                    $user = auth()->user();
+                    if (!($user->hasRole('super_admin') || 
+                          $user->hasPermissionTo('manage timetables') || 
+                          $user->hasPermissionTo('manage classes'))) {
+                        $enseignant = $user->profile;
+                        if ($enseignant) {
+                            $query->where('id_enseignant', $enseignant->id_enseignant);
+                        }
+                    }
+                    
+                    $courses = $query->get();
 
                     $pdf = Pdf::loadView('pdf.timetable', [
                         'classe' => $classe,

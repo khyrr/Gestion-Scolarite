@@ -275,4 +275,20 @@ class User extends Authenticatable
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
+
+    /**
+     * Get the notification preferences for the user.
+     */
+    public function notificationPreferences()
+    {
+        return $this->hasMany(\App\Models\NotificationPreference::class);
+    }
+
+    /**
+     * Get the notification logs for the user.
+     */
+    public function notificationLogs()
+    {
+        return $this->hasMany(\App\Models\NotificationLog::class);
+    }
 }

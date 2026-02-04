@@ -11,9 +11,13 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Filament\Forms;
 use Illuminate\Support\Facades\Blade;
 use Filament\Facades\Filament;
+use App\Filament\Concerns\HasRoleBasedAccess;
 
 class Dashboard extends BaseDashboard
 {
+
+    use HasRoleBasedAccess;
+
     public static function canAccess(): bool
     {
         $user = auth()->user();
@@ -78,9 +82,21 @@ class Dashboard extends BaseDashboard
                             }
 
                             $classe = Classe::find($classeId);
-                            $courses = Cours::where('id_classe', $classeId)
-                                ->with(['matiere', 'enseignant'])
-                                ->get();
+                            $query = Cours::where('id_classe', $classeId)
+                                ->with(['matiere', 'enseignant']);
+                            
+                            // Apply RBAC filtering
+                            $user = auth()->user();
+                            if (!($user->hasRole('super_admin') || 
+                                  $user->hasPermissionTo('manage timetables') || 
+                                  $user->hasPermissionTo('manage classes'))) {
+                                $enseignant = $user->profile;
+                                if ($enseignant) {
+                                    $query->where('id_enseignant', $enseignant->id_enseignant);
+                                }
+                            }
+                            
+                            $courses = $query->get();
 
                             return view('filament.pages.timetable-preview', [
                                 'classe' => $classe,
@@ -93,9 +109,21 @@ class Dashboard extends BaseDashboard
                 ->modalSubmitActionLabel(__('app.export_pdf'))
                 ->action(function (array $data) {
                     $classe = Classe::find($data['id_classe']);
-                    $courses = Cours::where('id_classe', $data['id_classe'])
-                        ->with(['matiere', 'enseignant'])
-                        ->get();
+                    $query = Cours::where('id_classe', $data['id_classe'])
+                        ->with(['matiere', 'enseignant']);
+                    
+                    // Apply RBAC filtering
+                    $user = auth()->user();
+                    if (!($user->hasRole('super_admin') || 
+                          $user->hasPermissionTo('manage timetables') || 
+                          $user->hasPermissionTo('manage classes'))) {
+                        $enseignant = $user->profile;
+                        if ($enseignant) {
+                            $query->where('id_enseignant', $enseignant->id_enseignant);
+                        }
+                    }
+                    
+                    $courses = $query->get();
 
                     $pdf = Pdf::loadView('pdf.timetable', [
                         'classe' => $classe,

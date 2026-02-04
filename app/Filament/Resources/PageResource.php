@@ -47,22 +47,22 @@ class PageResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()->hasPermissionTo('manage pages') || auth()->user()->hasRole('super_admin');
+        return auth()->user()->hasPermissionTo('page.manage') || auth()->user()->hasRole('super_admin');
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()->hasPermissionTo('manage pages') || auth()->user()->hasRole('super_admin');
+        return auth()->user()->hasPermissionTo('page.manage') || auth()->user()->hasRole('super_admin');
     }
 
     public static function canEdit($record): bool
     {
-        return auth()->user()->hasPermissionTo('manage pages') || auth()->user()->hasRole('super_admin');
+        return auth()->user()->hasPermissionTo('page.manage') || auth()->user()->hasRole('super_admin');
     }
 
     public static function canDelete($record): bool
     {
-        return auth()->user()->hasPermissionTo('manage pages') || auth()->user()->hasRole('super_admin');
+        return auth()->user()->hasPermissionTo('page.manage') || auth()->user()->hasRole('super_admin');
     }
 
     public static function form(Form $form): Form

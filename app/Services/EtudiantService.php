@@ -12,7 +12,7 @@ class EtudiantService
      */
     public function getPaginatedEtudiants($perPage = null)
     {
-        $perPage = $perPage ?: setting('items_per_page', 25);
+        $perPage = $perPage ?: setting('system.items_per_page', 25);
         return Etudiant::with('classe')->latest()->paginate($perPage);
     }
 

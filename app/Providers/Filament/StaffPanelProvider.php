@@ -72,7 +72,7 @@ class StaffPanelProvider extends PanelProvider
             })
             ->brandName(function () {
                 $user = auth()->user();
-                if (!$user) return setting('school_name', 'School Administration');
+                if (!$user) return setting('school.name', 'School Administration');
                 
                 return __('app.administration_panel');
             })->brandLogo(asset('images/logo.svg'))

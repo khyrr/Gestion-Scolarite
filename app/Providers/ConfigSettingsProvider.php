@@ -36,8 +36,8 @@ class ConfigSettingsProvider extends ServiceProvider
     private function applySettingsToConfig(): void
     {
         // Update mail configuration with settings
-        $schoolEmail = setting('school_email');
-        $schoolName = setting('school_name');
+        $schoolEmail = setting('school.email');
+        $schoolName = setting('school.name');
         
         if ($schoolEmail) {
             Config::set('mail.from.address', $schoolEmail);
@@ -48,7 +48,7 @@ class ConfigSettingsProvider extends ServiceProvider
         }
         
         // Update session configuration with settings
-        $sessionTimeout = setting('session_timeout');
+        $sessionTimeout = setting('security.session_timeout');
         if ($sessionTimeout) {
             Config::set('session.lifetime', (int) $sessionTimeout);
         }

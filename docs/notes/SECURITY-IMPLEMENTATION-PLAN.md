@@ -435,7 +435,7 @@ php artisan db:seed --class=AdminSeeder
 # Clear all sessions
 php artisan session:flush
 
-# View activity logs
+# activity_log.view
 php artisan logs:show --type=security
 
 # Add allowed IP

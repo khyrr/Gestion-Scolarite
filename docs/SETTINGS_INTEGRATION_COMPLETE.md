@@ -25,8 +25,8 @@
 ### Reading Settings
 ```php
 // Using helper function (recommended)
-$schoolName = setting('school_name', 'Default School');
-$passingGrade = setting('passing_grade', 60);
+$schoolName = setting('school.name', 'Default School');
+$passingGrade = setting('academic.passing_grade', 60);
 
 // Using service directly
 $settingsService = app(SettingsService::class);
@@ -56,65 +56,76 @@ $systemSettings = $settingsService->getSystemSettings();
 ### Configuration Access
 ```php
 // Settings are automatically loaded into Laravel config
-config('app.name')        // Uses setting('app_name')
-config('session.lifetime') // Uses setting('session_timeout')
-config('app.timezone')     // Uses setting('timezone')
+config('app.name')         // Uses setting('app.name')
+config('session.lifetime') // Uses setting('security.session_timeout')
+config('app.timezone')     // Uses setting('system.timezone')
 ```
 
 ## 🎯 Settings Categories in Use
 
 ### **Organization Settings**
 ```php
-school_name              // ✅ Used in config and UI
-school_address           // ✅ Available for forms
-school_phone            // ✅ Available for forms  
-school_email            // ✅ Available for forms
-academic_year_start     // ✅ Available for academic calendar
-academic_year_end       // ✅ Available for academic calendar
+school.name                  // ✅ Used in config and UI
+school.address               // ✅ Available for forms
+school.phone                 // ✅ Available for forms  
+school.email                 // ✅ Available for forms
+school.website               // ✅ Available for forms
+school.logo                  // ✅ Used in branding
+school.academic_year_start   // ✅ Available for academic calendar
+school.academic_year_end     // ✅ Available for academic calendar
 ```
 
 ### **System Settings**
 ```php
-timezone                // ✅ Applied to app.timezone
-date_format            // ✅ Available for date formatting
-language               // ✅ Available for localization
-currency               // ✅ Available for financial modules
-items_per_page         // ✅ Available for pagination
+system.timezone           // ✅ Applied to app.timezone
+system.date_format        // ✅ Available for date formatting
+system.time_format        // ✅ Available for time formatting
+system.language           // ✅ Available for localization
+system.currency           // ✅ Available for financial modules
+system.currency_symbol    // ✅ Available for currency display
+system.items_per_page     // ✅ Available for pagination
 ```
 
 ### **Academic Settings**
 ```php
-grading_system         // ✅ Available for grade calculations
-passing_grade          // ✅ Used in academic logic
-max_grade              // ✅ Used for grade validation
-terms_per_year         // ✅ Available for calendar
-attendance_required    // ✅ Controls attendance features
-min_attendance_percentage // ✅ Used in attendance validation
-late_submission_penalty   // ✅ Available for assignment grading
+academic.grading_system            // ✅ Available for grade calculations
+academic.passing_grade             // ✅ Used in academic logic
+academic.max_grade                 // ✅ Used for grade validation
+academic.grade_scale               // ✅ Grade boundaries configuration
+academic.terms_per_year            // ✅ Available for calendar
+academic.attendance_required       // ✅ Controls attendance features
+academic.min_attendance_percentage // ✅ Used in attendance validation
+academic.late_submission_penalty   // ✅ Available for assignment grading
+academic.max_absences_per_term     // ✅ Used in attendance policies
 ```
 
 ### **Security Settings**
 ```php
-password_min_length        // ✅ Used in PasswordComplexity rule
-password_require_uppercase // ✅ Used in PasswordComplexity rule
-password_require_lowercase // ✅ Used in PasswordComplexity rule
-password_require_numbers   // ✅ Used in PasswordComplexity rule
-password_require_symbols   // ✅ Used in PasswordComplexity rule
-session_timeout           // ✅ Applied to session.lifetime
-max_login_attempts        // ✅ Used in Fortify rate limiting
-lockout_duration          // ✅ Used in Fortify rate limiting
-two_factor_required       // ✅ Available for 2FA enforcement
-force_https               // ✅ Used in security middleware
+security.password_min_length        // ✅ Used in PasswordComplexity rule
+security.password_require_uppercase // ✅ Used in PasswordComplexity rule
+security.password_require_lowercase // ✅ Used in PasswordComplexity rule
+security.password_require_numbers   // ✅ Used in PasswordComplexity rule
+security.password_require_symbols   // ✅ Used in PasswordComplexity rule
+security.session_timeout            // ✅ Applied to session.lifetime
+security.max_login_attempts         // ✅ Used in Fortify rate limiting
+security.lockout_duration           // ✅ Used in Fortify rate limiting
+security.two_factor_required        // ✅ Available for 2FA enforcement
+security.password_expiry_days       // ✅ Available for password rotation
+security.force_https                // ✅ Used in security middleware
 ```
 
 ### **Application Settings**
 ```php
-app_name                    // ✅ Applied to app.name
-registration_enabled        // ✅ Available for registration control
-email_verification_required // ✅ Available for email verification
-notifications_enabled       // ✅ Available for notification control
-file_upload_max_size        // ✅ Available for file upload limits
-auto_backup_enabled         // ✅ Available for backup automation
+app.name                         // ✅ Applied to app.name
+app.version                      // ✅ Available for version display
+app.default_user_role            // ✅ Used in registration
+app.registration_enabled         // ✅ Available for registration control
+app.email_verification_required  // ✅ Available for email verification
+app.notifications_enabled        // ✅ Available for notification control
+app.file_upload_max_size         // ✅ Available for file upload limits
+app.allowed_file_types           // ✅ File type validation
+app.backup_frequency             // ✅ Backup scheduling
+app.auto_backup_enabled          // ✅ Available for backup automation
 ```
 
 ## 🏗️ Architecture Benefits
@@ -155,11 +166,11 @@ auto_backup_enabled         // ✅ Available for backup automation
 To use settings in new features:
 
 ```php
-// 1. Add setting to seeder with default value
+// 1. Add setting to seeder with default value (use dot notation)
 // 2. Add to appropriate service method (getXXXSettings)
 // 3. Add form field to appropriate settings page
-// 4. Use setting() helper in your code
-$myFeatureEnabled = setting('my_feature_enabled', false);
+// 4. Use setting() helper in your code with dot notation
+$myFeatureEnabled = setting('app.my_feature_enabled', false);
 ```
 
 The settings system is now fully integrated and ready to use throughout your school management application! 🎉

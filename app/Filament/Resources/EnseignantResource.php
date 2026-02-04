@@ -49,22 +49,22 @@ class EnseignantResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()->hasPermissionTo('view teachers');
+        return auth()->user()->hasPermissionTo('teacher.view');
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()->hasPermissionTo('create teachers');
+        return auth()->user()->hasPermissionTo('teacher.create');
     }
 
     public static function canEdit(Model $record): bool
     {
-        return auth()->user()->hasPermissionTo('edit teachers');
+        return auth()->user()->hasPermissionTo('teacher.edit');
     }
 
     public static function canDelete(Model $record): bool
     {
-        return auth()->user()->hasPermissionTo('delete teachers');
+        return auth()->user()->hasPermissionTo('teacher.delete');
     }
 
     public static function form(Form $form): Form
@@ -100,7 +100,7 @@ class EnseignantResource extends Resource
                     ->columns(2),
                     
                 Forms\Components\Section::make(__('app.informations_compte'))
-                    ->visible(fn () => !auth()->user()->hasPermissionTo('manage users'))
+                    ->visible(fn () => !auth()->user()->hasPermissionTo('user.manage'))
                     ->description(__('app.informations_compte_lecture_seule'))
                     ->schema([
                         Forms\Components\Placeholder::make('email_readonly')
@@ -118,7 +118,7 @@ class EnseignantResource extends Resource
                     ->columns(2),
                     
                 Forms\Components\Section::make(__('app.compte_utilisateur'))
-                    ->visible(fn () => auth()->user()->hasPermissionTo('manage users'))
+                    ->visible(fn () => auth()->user()->hasPermissionTo('user.manage'))
                     ->description(__('app.compte_utilisateur_description'))
                     ->schema([
                         Forms\Components\TextInput::make('email')
@@ -249,28 +249,28 @@ class EnseignantResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make()
-                    ->visible(fn () => auth()->user()->hasPermissionTo('edit teachers')),
+                    ->visible(fn () => auth()->user()->hasPermissionTo('teacher.edit')),
                 Tables\Actions\DeleteAction::make()
-                    ->visible(fn () => auth()->user()->hasPermissionTo('delete teachers')),
+                    ->visible(fn () => auth()->user()->hasPermissionTo('teacher.delete')),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
-                        ->visible(fn () => auth()->user()->hasPermissionTo('delete teachers')),
+                        ->visible(fn () => auth()->user()->hasPermissionTo('teacher.delete')),
                     Tables\Actions\BulkAction::make('activate')
                         ->label(__('app.activer'))
                         ->icon('heroicon-o-check-circle')
                         ->color('success')
                         ->action(fn ($records) => $records->each(fn ($record) => $record->user?->update(['is_active' => true])))
                         ->deselectRecordsAfterCompletion()
-                        ->visible(fn () => auth()->user()->hasPermissionTo('manage users')),
+                        ->visible(fn () => auth()->user()->hasPermissionTo('user.manage')),
                     Tables\Actions\BulkAction::make('deactivate')
                         ->label(__('app.desactiver'))
                         ->icon('heroicon-o-x-circle')
                         ->color('danger')
                         ->action(fn ($records) => $records->each(fn ($record) => $record->user?->update(['is_active' => false])))
                         ->deselectRecordsAfterCompletion()
-                        ->visible(fn () => auth()->user()->hasPermissionTo('manage users')),
+                        ->visible(fn () => auth()->user()->hasPermissionTo('user.manage')),
                 ]),
             ])
             ->defaultSort('nom', 'asc');

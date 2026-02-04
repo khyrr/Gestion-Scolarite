@@ -23,7 +23,7 @@ class Security extends Page
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->hasRole('super_admin') || auth()->user()?->hasPermissionTo('manage settings');
+        return auth()->user()?->hasRole('super_admin') || auth()->user()?->hasPermissionTo('setting.manage');
     }
 
     public ?array $data = [];
@@ -40,17 +40,17 @@ class Security extends Page
         $securitySettings = $this->settingsService->getSecuritySettings();
         
         $this->form->fill([
-            'two_factor_required' => $securitySettings['two_factor_required'],
-            'session_timeout' => $securitySettings['session_timeout'],
-            'password_min_length' => $securitySettings['password_min_length'],
-            'password_require_uppercase' => $securitySettings['password_require_uppercase'],
-            'password_require_lowercase' => $securitySettings['password_require_lowercase'],
-            'password_require_numbers' => $securitySettings['password_require_numbers'],
-            'password_require_symbols' => $securitySettings['password_require_symbols'],
-            'max_login_attempts' => $securitySettings['max_login_attempts'],
-            'lockout_duration' => $securitySettings['lockout_duration'],
-            'password_expiry_days' => $securitySettings['password_expiry_days'],
-            'force_https' => $securitySettings['force_https'],
+            'two_factor_required' => $securitySettings['security.two_factor_required'],
+            'session_timeout' => $securitySettings['security.session_timeout'],
+            'password_min_length' => $securitySettings['security.password_min_length'],
+            'password_require_uppercase' => $securitySettings['security.password_require_uppercase'],
+            'password_require_lowercase' => $securitySettings['security.password_require_lowercase'],
+            'password_require_numbers' => $securitySettings['security.password_require_numbers'],
+            'password_require_symbols' => $securitySettings['security.password_require_symbols'],
+            'max_login_attempts' => $securitySettings['security.max_login_attempts'],
+            'lockout_duration' => $securitySettings['security.lockout_duration'],
+            'password_expiry_days' => $securitySettings['security.password_expiry_days'],
+            'force_https' => $securitySettings['security.force_https'],
         ]);
     }
 
@@ -149,17 +149,17 @@ class Security extends Page
         $data = $this->form->getState();
 
         $securityData = [
-            'two_factor_required' => $data['two_factor_required'],
-            'session_timeout' => (int) $data['session_timeout'],
-            'password_min_length' => (int) $data['password_min_length'],
-            'password_require_uppercase' => $data['password_require_uppercase'],
-            'password_require_lowercase' => $data['password_require_lowercase'],
-            'password_require_numbers' => $data['password_require_numbers'],
-            'password_require_symbols' => $data['password_require_symbols'],
-            'max_login_attempts' => (int) $data['max_login_attempts'],
-            'lockout_duration' => (int) $data['lockout_duration'],
-            'password_expiry_days' => (int) $data['password_expiry_days'],
-            'force_https' => $data['force_https'],
+            'security.two_factor_required' => $data['two_factor_required'],
+            'security.session_timeout' => (int) $data['session_timeout'],
+            'security.password_min_length' => (int) $data['password_min_length'],
+            'security.password_require_uppercase' => $data['password_require_uppercase'],
+            'security.password_require_lowercase' => $data['password_require_lowercase'],
+            'security.password_require_numbers' => $data['password_require_numbers'],
+            'security.password_require_symbols' => $data['password_require_symbols'],
+            'security.max_login_attempts' => (int) $data['max_login_attempts'],
+            'security.lockout_duration' => (int) $data['lockout_duration'],
+            'security.password_expiry_days' => (int) $data['password_expiry_days'],
+            'security.force_https' => $data['force_https'],
         ];
 
         $this->settingsService->updateSecuritySettings($securityData);

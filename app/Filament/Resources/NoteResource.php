@@ -50,22 +50,22 @@ class NoteResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()->hasPermissionTo('view grades');
+        return auth()->user()->hasPermissionTo('grade.view');
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()->hasPermissionTo('create grades');
+        return auth()->user()->hasPermissionTo('grade.create');
     }
 
     public static function canEdit(Model $record): bool
     {
-        return auth()->user()->hasPermissionTo('edit grades');
+        return auth()->user()->hasPermissionTo('grade.edit');
     }
 
     public static function canDelete(Model $record): bool
     {
-        return auth()->user()->hasPermissionTo('delete grades');
+        return auth()->user()->hasPermissionTo('grade.delete');
     }
 
     public static function getEloquentQuery(): Builder
@@ -101,7 +101,7 @@ class NoteResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Section::make(__('app.note_information'))
-                    ->visible(fn () => auth()->user()->hasPermissionTo('create grades') || auth()->user()->hasPermissionTo('edit grades'))
+                    ->visible(fn () => auth()->user()->hasPermissionTo('grade.create') || auth()->user()->hasPermissionTo('grade.edit'))
                     ->schema([
                         Forms\Components\Select::make('id_etudiant')
                             ->label(__('app.etudiant'))
@@ -170,7 +170,7 @@ class NoteResource extends Resource
                     ->columns(2),
                     
                 Forms\Components\Section::make(__('app.note'))
-                    ->visible(fn () => auth()->user()->hasPermissionTo('create grades') || auth()->user()->hasPermissionTo('edit grades'))
+                    ->visible(fn () => auth()->user()->hasPermissionTo('grade.create') || auth()->user()->hasPermissionTo('grade.edit'))
                     ->schema([
                         Forms\Components\TextInput::make('note')
                             ->label(__('app.note'))
@@ -199,7 +199,7 @@ class NoteResource extends Resource
                     
                 // Read-only grade view for teachers with view-only permissions
                 Forms\Components\Section::make(__('app.consultation_note'))
-                    ->visible(fn () => auth()->user()->hasPermissionTo('view grades') && !auth()->user()->hasPermissionTo('create grades') && !auth()->user()->hasPermissionTo('edit grades'))
+                    ->visible(fn () => auth()->user()->hasPermissionTo('grade.view') && !auth()->user()->hasPermissionTo('grade.create') && !auth()->user()->hasPermissionTo('grade.edit'))
                     ->schema([
                         Forms\Components\Placeholder::make('etudiant_info')
                             ->label(__('app.etudiant'))
@@ -353,7 +353,7 @@ class NoteResource extends Resource
                 ]),
             ])
             ->defaultSort('created_at', 'desc')
-            ->defaultPaginationPageOption(setting('items_per_page', 25));
+            ->defaultPaginationPageOption(setting('system.items_per_page', 25));
     }
 
     public static function getRelations(): array

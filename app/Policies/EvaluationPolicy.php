@@ -12,7 +12,7 @@ class EvaluationPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('view evaluations');
+        return $user->hasPermissionTo('evaluation.view');
     }
 
     /**
@@ -37,7 +37,7 @@ class EvaluationPolicy
             }
         }
         
-        return $user->hasPermissionTo('view evaluations');
+        return $user->hasPermissionTo('evaluation.view');
     }
 
     /**
@@ -45,7 +45,7 @@ class EvaluationPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('create evaluations');
+        return $user->hasPermissionTo('evaluation.create');
     }
 
     /**
@@ -64,7 +64,7 @@ class EvaluationPolicy
             }
         }
         
-        return $user->hasPermissionTo('edit evaluations');
+        return $user->hasPermissionTo('evaluation.edit');
     }
 
     /**
@@ -84,6 +84,6 @@ class EvaluationPolicy
             }
         }
         
-        return $user->hasPermissionTo('delete evaluations');
+        return $user->hasPermissionTo('evaluation.delete');
     }
 }

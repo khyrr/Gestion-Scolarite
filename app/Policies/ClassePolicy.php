@@ -12,7 +12,7 @@ class ClassePolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('view classes');
+        return $user->hasPermissionTo('class.view');
     }
 
     /**
@@ -34,7 +34,7 @@ class ClassePolicy
                 ->exists();
         }
         
-        return $user->hasPermissionTo('view classes');
+        return $user->hasPermissionTo('class.view');
     }
 
     /**
@@ -42,7 +42,7 @@ class ClassePolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('create classes');
+        return $user->hasPermissionTo('class.create');
     }
 
     /**
@@ -50,7 +50,7 @@ class ClassePolicy
      */
     public function update(User $user, Classe $classe): bool
     {
-        return $user->hasPermissionTo('edit classes');
+        return $user->hasPermissionTo('class.edit');
     }
 
     /**
@@ -58,7 +58,7 @@ class ClassePolicy
      */
     public function delete(User $user, Classe $classe): bool
     {
-        return $user->hasPermissionTo('delete classes');
+        return $user->hasPermissionTo('class.delete');
     }
 
     /**
@@ -66,6 +66,6 @@ class ClassePolicy
      */
     public function manageAssignments(User $user, Classe $classe): bool
     {
-        return $user->hasPermissionTo('manage class assignments');
+        return $user->hasPermissionTo('class.manage');
     }
 }

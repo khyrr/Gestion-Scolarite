@@ -238,8 +238,9 @@ class TwoFactorService
     public function ensureNotRateLimited(User $user): void
     {
         $key = $this->rateLimitKey($user);
-        $maxAttempts = (int) config('security.max_failed_attempts', 5);
-        $decaySeconds = (int) config('security.rate_limit_decay_seconds', 60);
+        $maxAttempts = (int) setting('security.max_login_attempts', 5);
+        $lockoutDuration = (int) setting('security.lockout_duration', 15); // minutes
+        $decaySeconds = $lockoutDuration * 60; // Convert minutes to seconds
 
         if (RateLimiter::tooManyAttempts($key, $maxAttempts)) {
             abort(429, 'Too many 2FA attempts. Please try again later.');
@@ -252,7 +253,8 @@ class TwoFactorService
     public function incrementFailedAttempts(User $user): void
     {
         $key = $this->rateLimitKey($user);
-        $decaySeconds = (int) config('security.rate_limit_decay_seconds', 60);
+        $lockoutDuration = (int) setting('security.lockout_duration', 15); // minutes
+        $decaySeconds = $lockoutDuration * 60; // Convert minutes to seconds
 
         RateLimiter::hit($key, $decaySeconds);
     }

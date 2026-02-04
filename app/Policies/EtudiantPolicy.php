@@ -13,7 +13,7 @@ class EtudiantPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('view students');
+        return $user->hasPermissionTo('student.view');
     }
 
     /**
@@ -27,7 +27,7 @@ class EtudiantPolicy
         }
         
         // All other roles with permission can view students
-        return $user->hasPermissionTo('view students');
+        return $user->hasPermissionTo('student.view');
     }
 
     /**
@@ -35,7 +35,7 @@ class EtudiantPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('create students');
+        return $user->hasPermissionTo('student.create');
     }
 
     /**
@@ -43,7 +43,7 @@ class EtudiantPolicy
      */
     public function update(User $user, Etudiant $etudiant): bool
     {
-        return $user->hasPermissionTo('edit students');
+        return $user->hasPermissionTo('student.edit');
     }
 
     /**
@@ -51,7 +51,7 @@ class EtudiantPolicy
      */
     public function delete(User $user, Etudiant $etudiant): bool
     {
-        return $user->hasPermissionTo('delete students');
+        return $user->hasPermissionTo('student.delete');
     }
 
     /**
@@ -59,7 +59,7 @@ class EtudiantPolicy
      */
     public function restore(User $user, Etudiant $etudiant): bool
     {
-        return $user->hasPermissionTo('delete students');
+        return $user->hasPermissionTo('student.delete');
     }
 
     /**

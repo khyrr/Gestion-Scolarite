@@ -24,7 +24,7 @@ class Settings extends Page
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->hasRole('super_admin') || auth()->user()?->hasPermissionTo('view settings');
+        return auth()->user()?->hasRole('super_admin') || auth()->user()?->hasPermissionTo('setting.view');
     }
 
     public function mount()

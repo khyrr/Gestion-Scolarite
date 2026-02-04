@@ -46,22 +46,22 @@ class ClasseResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()->hasPermissionTo('view classes');
+        return auth()->user()->hasPermissionTo('class.view');
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()->hasPermissionTo('create classes');
+        return auth()->user()->hasPermissionTo('class.create');
     }
 
     public static function canEdit(Model $record): bool
     {
-        return auth()->user()->hasPermissionTo('edit classes');
+        return auth()->user()->hasPermissionTo('class.edit');
     }
 
     public static function canDelete(Model $record): bool
     {
-        return auth()->user()->hasPermissionTo('delete classes');
+        return auth()->user()->hasPermissionTo('class.delete');
     }
 
     public static function getEloquentQuery(): Builder
@@ -77,7 +77,7 @@ class ClasseResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Section::make(__('app.informations_classe'))
-                    ->visible(fn () => auth()->user()->hasPermissionTo('create classes') || auth()->user()->hasPermissionTo('edit classes'))
+                    ->visible(fn () => auth()->user()->hasPermissionTo('class.create') || auth()->user()->hasPermissionTo('class.edit'))
                     ->schema([
                         Forms\Components\TextInput::make('nom_classe')
                             ->label(__('app.nom_classe'))
@@ -95,7 +95,7 @@ class ClasseResource extends Resource
                     
                 // Read-only class view for users with view-only permissions
                 Forms\Components\Section::make(__('app.consultation_classe'))
-                    ->visible(fn () => auth()->user()->hasPermissionTo('view classes') && !auth()->user()->hasPermissionTo('create classes') && !auth()->user()->hasPermissionTo('edit classes'))
+                    ->visible(fn () => auth()->user()->hasPermissionTo('class.view') && !auth()->user()->hasPermissionTo('class.create') && !auth()->user()->hasPermissionTo('class.edit'))
                     ->schema([
                         Forms\Components\Placeholder::make('nom_classe_display')
                             ->label(__('app.nom_classe'))
@@ -175,7 +175,7 @@ class ClasseResource extends Resource
                 ]),
             ])
             ->defaultSort('niveau', 'asc')
-            ->defaultPaginationPageOption(setting('items_per_page', 25));
+            ->defaultPaginationPageOption(setting('system.items_per_page', 25));
     }
 
     public static function getRelations(): array

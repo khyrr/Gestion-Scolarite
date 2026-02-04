@@ -18,7 +18,7 @@ class ViewEvaluation extends ViewRecord
                 ->icon('heroicon-o-pencil-square')
                 ->color('primary')
                 ->url(fn () => static::getResource()::getUrl('grades', ['record' => $this->record]))
-                ->visible(fn () => auth()->user()->can('manage grades') || auth()->user()->hasRole(['super_admin', 'admin', 'teacher', 'enseignant'])),
+                ->visible(fn () => auth()->user()->can('grade.manage') || auth()->user()->hasRole(['super_admin', 'admin', 'teacher', 'enseignant'])),
             Actions\EditAction::make(),
             Actions\DeleteAction::make(),
         ];

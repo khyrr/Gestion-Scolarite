@@ -23,7 +23,7 @@ class NotificationSettings extends Page
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->hasRole('super_admin') || auth()->user()?->hasPermissionTo('manage settings');
+        return auth()->user()?->hasRole('super_admin') || auth()->user()?->hasPermissionTo('setting.manage');
     }
 
     public ?array $data = [];

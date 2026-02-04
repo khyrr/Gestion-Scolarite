@@ -17,85 +17,85 @@ class RolesAndPermissionsSeeder extends Seeder
         // Reset cached roles and permissions
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // Create comprehensive permissions organized by resource
+        // Create comprehensive permissions organized by resource with dot notation
         $permissions = [
             // Student Management
-            'view students',
-            'create students', 
-            'edit students',
-            'delete students',
-            'manage student accounts',
-            'view student grades',
-            'export student data',
+            'student.view',
+            'student.create', 
+            'student.edit',
+            'student.delete',
+            'student.manage_accounts',
+            'student.view_grades',
+            'student.export',
             
             // Teacher Management
-            'view teachers',
-            'create teachers',
-            'edit teachers', 
-            'delete teachers',
-            'manage teacher accounts',
-            'assign teacher subjects',
+            'teacher.view',
+            'teacher.create',
+            'teacher.edit', 
+            'teacher.delete',
+            'teacher.manage_accounts',
+            'teacher.assign_subjects',
             
             // Class Management
-            'view classes',
-            'create classes',
-            'edit classes',
-            'delete classes',
-            'manage classes',
+            'class.view',
+            'class.create',
+            'class.edit',
+            'class.delete',
+            'class.manage',
             
             // Subject Management
-            'view subjects',
-            'create subjects',
-            'edit subjects',
-            'delete subjects',
+            'subject.view',
+            'subject.create',
+            'subject.edit',
+            'subject.delete',
             
             // Course & Schedule Management
-            'view courses',
-            'create courses',
-            'edit courses',
-            'delete courses',
-            'view timetables',
-            'manage timetables',
+            'course.view',
+            'course.create',
+            'course.edit',
+            'course.delete',
+            'timetable.view',
+            'timetable.manage',
             
             // Evaluation Management
-            'view evaluations',
-            'create evaluations',
-            'edit evaluations',
-            'delete evaluations',
-            'view all evaluations',
+            'evaluation.view',
+            'evaluation.create',
+            'evaluation.edit',
+            'evaluation.delete',
+            'evaluation.view_all',
             
             // Grade Management
-            'view grades',
-            'create grades',
-            'edit grades',
-            'delete grades',
-            'manage grades', // Bulk grade entry permission
-            'view all grades',
-            'edit grade comments',
+            'grade.view',
+            'grade.create',
+            'grade.edit',
+            'grade.delete',
+            'grade.manage', // Bulk grade entry permission
+            'grade.view_all',
+            'grade.edit_comments',
             
             // Payment & Financial Management
-            'view payments',
-            'create payments',
-            'edit payments',
-            'delete payments',
-            'manage financial reports',
+            'payment.view',
+            'payment.create',
+            'payment.edit',
+            'payment.delete',
+            'payment.manage_reports',
             
             // Reports & Analytics
-            'view reports',
-            'generate reports',
-            'export data',
-            'view statistics',
+            'report.view',
+            'report.generate',
+            'report.export',
+            'report.view_statistics',
             
             // System Administration
-            'manage users',
-            'manage roles',
-            'manage permissions',
-            'view activity logs',
-            'manage system settings',
-            'view settings',
-            'manage settings',
-            'backup database',
-            'manage pages',
+            'user.manage',
+            'role.manage',
+            'permission.manage',
+            'activity_log.view',
+            'system.manage_settings',
+            'setting.view',
+            'setting.manage',
+            'database.backup',
+            'page.manage',
         ];
 
         foreach ($permissions as $permission) {
@@ -112,115 +112,115 @@ class RolesAndPermissionsSeeder extends Seeder
         $admin = Role::firstOrCreate(['name' => 'admin']);
         $admin->givePermissionTo([
             // Student management
-            'view students', 'create students', 'edit students', 'delete students',
-            'manage student accounts', 'export student data',
+            'student.view', 'student.create', 'student.edit', 'student.delete',
+            'student.manage_accounts', 'student.export',
             // Teacher management
-            'view teachers', 'create teachers', 'edit teachers', 'delete teachers',
-            'manage teacher accounts',
+            'teacher.view', 'teacher.create', 'teacher.edit', 'teacher.delete',
+            'teacher.manage_accounts',
             // Academic management
-            'view classes', 'create classes', 'edit classes', 'delete classes', 'manage classes',
-            'view subjects', 'create subjects', 'edit subjects', 'delete subjects',
-            'view courses', 'create courses', 'edit courses', 'delete courses', 'view timetables', 'manage timetables',
+            'class.view', 'class.create', 'class.edit', 'class.delete', 'class.manage',
+            'subject.view', 'subject.create', 'subject.edit', 'subject.delete',
+            'course.view', 'course.create', 'course.edit', 'course.delete', 'timetable.view', 'timetable.manage',
             // System administration
-            'manage users', 'manage roles', 'manage permissions', 'view activity logs', 'manage system settings',
-            'view settings', 'manage settings',
-            'manage pages',
+            'user.manage', 'role.manage', 'permission.manage', 'activity_log.view', 'system.manage_settings',
+            'setting.view', 'setting.manage',
+            'page.manage',
             // Reports
-            'view reports', 'generate reports', 'export data', 'view statistics',
+            'report.view', 'report.generate', 'report.export', 'report.view_statistics',
         ]);
 
         // 3. DIRECTOR - Full academic management, no system administration  
         $director = Role::firstOrCreate(['name' => 'director']);
         $director->givePermissionTo([
             // Student management
-            'view students', 'create students', 'edit students', 'delete students',
-            'manage student accounts', 'view student grades', 'export student data',
+            'student.view', 'student.create', 'student.edit', 'student.delete',
+            'student.manage_accounts', 'student.view_grades', 'student.export',
             // Teacher management
-            'view teachers', 'create teachers', 'edit teachers', 'delete teachers',
-            'manage teacher accounts', 'assign teacher subjects',
+            'teacher.view', 'teacher.create', 'teacher.edit', 'teacher.delete',
+            'teacher.manage_accounts', 'teacher.assign_subjects',
             // Academic management
-            'view classes', 'create classes', 'edit classes', 'delete classes', 'manage classes',
-            'view subjects', 'create subjects', 'edit subjects', 'delete subjects',
-            'view courses', 'create courses', 'edit courses', 'delete courses', 'view timetables', 'manage timetables',
+            'class.view', 'class.create', 'class.edit', 'class.delete', 'class.manage',
+            'subject.view', 'subject.create', 'subject.edit', 'subject.delete',
+            'course.view', 'course.create', 'course.edit', 'course.delete', 'timetable.view', 'timetable.manage',
             // Evaluation & grades
-            'view evaluations', 'create evaluations', 'edit evaluations', 'delete evaluations', 'view all evaluations',
-            'view grades', 'create grades', 'edit grades', 'delete grades', 'manage grades', 'view all grades', 'edit grade comments',
+            'evaluation.view', 'evaluation.create', 'evaluation.edit', 'evaluation.delete', 'evaluation.view_all',
+            'grade.view', 'grade.create', 'grade.edit', 'grade.delete', 'grade.manage', 'grade.view_all', 'grade.edit_comments',
             // Reports
-            'view reports', 'generate reports', 'export data', 'view statistics',
+            'report.view', 'report.generate', 'report.export', 'report.view_statistics',
             // Payments
-            'view payments', 'create payments', 'edit payments', 'delete payments', 'manage financial reports',
+            'payment.view', 'payment.create', 'payment.edit', 'payment.delete', 'payment.manage_reports',
             // Activity monitoring
-            'view activity logs',
+            'activity_log.view',
         ]);
 
         // 4. ACADEMIC COORDINATOR - Academic content management
         $coordinator = Role::firstOrCreate(['name' => 'academic_coordinator']);
         $coordinator->givePermissionTo([
             // Academic structure
-            'view classes', 'create classes', 'edit classes', 'manage classes',
-            'view subjects', 'create subjects', 'edit subjects', 
-            'view courses', 'create courses', 'edit courses', 'view timetables', 'manage timetables',
+            'class.view', 'class.create', 'class.edit', 'class.manage',
+            'subject.view', 'subject.create', 'subject.edit', 
+            'course.view', 'course.create', 'course.edit', 'timetable.view', 'timetable.manage',
             // Teachers (limited)
-            'view teachers', 'assign teacher subjects',
+            'teacher.view', 'teacher.assign_subjects',
             // Students (view and basic edit)
-            'view students', 'edit students', 'view student grades',
+            'student.view', 'student.edit', 'student.view_grades',
             // Evaluations
-            'view evaluations', 'create evaluations', 'edit evaluations', 'view all evaluations',
-            'view grades', 'view all grades',
+            'evaluation.view', 'evaluation.create', 'evaluation.edit', 'evaluation.view_all',
+            'grade.view', 'grade.view_all',
             // Reports
-            'view reports', 'generate reports', 'view statistics',
+            'report.view', 'report.generate', 'report.view_statistics',
         ]);
 
         // 5. TEACHER - Classroom management
         $teacher = Role::firstOrCreate(['name' => 'teacher']); 
         $teacher->givePermissionTo([
             // Students (their classes only)
-            'view students', 'view student grades',
+            'student.view', 'student.view_grades',
             // Classes (their classes only)
-            'view classes', 'view courses', 'view timetables', 'view timetables',
+            'class.view', 'course.view', 'timetable.view',
             // Subjects
-            'view subjects',
+            'subject.view',
             // Evaluations (their subjects only)
-            'view evaluations', 'create evaluations', 'edit evaluations',
-            'view grades', 'create grades', 'edit grades', 'manage grades', 'edit grade comments',
+            'evaluation.view', 'evaluation.create', 'evaluation.edit',
+            'grade.view', 'grade.create', 'grade.edit', 'grade.manage', 'grade.edit_comments',
             // Basic reports
-            'view reports',
+            'report.view',
         ]);
 
         // 6. SECRETARY - Administrative support
         $secretary = Role::firstOrCreate(['name' => 'secretary']);
         $secretary->givePermissionTo([
             // Students (basic management)
-            'view students', 'create students', 'edit students',
+            'student.view', 'student.create', 'student.edit',
             // Teachers (basic info)
-            'view teachers', 'create teachers', 'edit teachers',
+            'teacher.view', 'teacher.create', 'teacher.edit',
             // Classes
-            'view classes', 'view courses', 'view timetables', 'manage timetables',
+            'class.view', 'course.view', 'timetable.view', 'timetable.manage',
             // Basic reports
-            'view reports', 'export data',
+            'report.view', 'report.export',
             // Payments
-            'view payments', 'create payments', 'edit payments',
+            'payment.view', 'payment.create', 'payment.edit',
         ]);
 
         // 7. ACCOUNTANT - Financial management
         $accountant = Role::firstOrCreate(['name' => 'accountant']);
         $accountant->givePermissionTo([
             // Students (for payment purposes)
-            'view students',
+            'student.view',
             // Teachers (for salary purposes) 
-            'view teachers',
+            'teacher.view',
             // Full payment management
-            'view payments', 'create payments', 'edit payments', 'delete payments',
-            'manage financial reports',
+            'payment.view', 'payment.create', 'payment.edit', 'payment.delete',
+            'payment.manage_reports',
             // Financial reports
-            'view reports', 'generate reports', 'export data', 'view statistics',
+            'report.view', 'report.generate', 'report.export', 'report.view_statistics',
         ]);
 
         // 8. STUDENT - Self-service access
         $student = Role::firstOrCreate(['name' => 'student']);
         $student->givePermissionTo([
-            'view student grades', // Their own grades only
-            'view courses', // Their class courses
+            'student.view_grades', // Their own grades only
+            'course.view', // Their class courses
         ]);
 
         $this->command->info('✅ Enhanced role-based permission system created!');

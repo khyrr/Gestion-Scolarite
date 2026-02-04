@@ -166,6 +166,7 @@
         </div>
 
         <!-- Map Section -->
+        @if(isset($themeVars['contact_latitude']) && isset($themeVars['contact_longitude']) && $themeVars['contact_latitude'] && $themeVars['contact_longitude'])
         <div class="mt-20">
             <div class="material-card rounded-material-xl p-8 bg-gradient-to-br from-white to-surface-50 border border-surface-200/50">
                 <div class="text-center mb-8">
@@ -176,17 +177,54 @@
                     <h2 class="text-3xl font-bold text-on-surface mb-4">Find Us</h2>
                     <p class="text-surface-600">Visit our campus and discover our facilities</p>
                 </div>
-                <div class="bg-gradient-to-br from-surface-100 to-surface-200 h-80 rounded-material-lg flex items-center justify-center border border-surface-300/50">
-                    <div class="text-center">
-                        <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary-100 text-primary-600 mb-6">
-                            <span class="material-icons-round text-3xl">location_on</span>
-                        </div>
-                        <p class="text-surface-700 text-xl font-semibold mb-2">Interactive Map</p>
-                        <p class="text-surface-500">Map integration coming soon</p>
-                    </div>
-                </div>
+                <div id="map" class="h-96 rounded-material-lg border border-surface-300/50 overflow-hidden"></div>
             </div>
         </div>
+
+        <!-- Leaflet CSS -->
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+              integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+              crossorigin=""/>
+        
+        <!-- Leaflet JS -->
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+                integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+                crossorigin=""></script>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Initialize map
+                const latitude = {{ $themeVars['contact_latitude'] }};
+                const longitude = {{ $themeVars['contact_longitude'] }};
+                
+                const map = L.map('map').setView([latitude, longitude], 15);
+                
+                // Add OpenStreetMap tile layer
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                    maxZoom: 19,
+                }).addTo(map);
+                
+                // Add marker for school location
+                const marker = L.marker([latitude, longitude]).addTo(map);
+                
+                // Add popup with school information
+                @if(isset($themeVars['school_name']) && $themeVars['school_name'])
+                marker.bindPopup(`
+                    <div class="text-center">
+                        <strong class="text-lg">{{ $themeVars['school_name'] }}</strong><br>
+                        @if(isset($themeVars['contact_address']) && $themeVars['contact_address'])
+                        <span class="text-sm">{{ $themeVars['contact_address'] }}</span><br>
+                        @endif
+                        @if(isset($themeVars['contact_phone']) && $themeVars['contact_phone'])
+                        <span class="text-sm">📞 {{ $themeVars['contact_phone'] }}</span>
+                        @endif
+                    </div>
+                `).openPopup();
+                @endif
+            });
+        </script>
+        @endif
     </div>
 </section>
 @endsection

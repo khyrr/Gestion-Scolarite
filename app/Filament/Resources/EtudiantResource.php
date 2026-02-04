@@ -48,22 +48,22 @@ class EtudiantResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()->hasPermissionTo('view students');
+        return auth()->user()->hasPermissionTo('student.view');
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()->hasPermissionTo('create students');
+        return auth()->user()->hasPermissionTo('student.create');
     }
 
     public static function canEdit(Model $record): bool
     {
-        return auth()->user()->hasPermissionTo('edit students');
+        return auth()->user()->hasPermissionTo('student.edit');
     }
 
     public static function canDelete(Model $record): bool
     {
-        return auth()->user()->hasPermissionTo('delete students');
+        return auth()->user()->hasPermissionTo('student.delete');
     }
 
     public static function getEloquentQuery(): Builder
@@ -146,7 +146,7 @@ class EtudiantResource extends Resource
                     ->columns(2),
                     
                 Forms\Components\Section::make(__('app.informations_compte'))
-                    ->visible(fn () => !auth()->user()->hasPermissionTo('manage users'))
+                    ->visible(fn () => !auth()->user()->hasPermissionTo('user.manage'))
                     ->description(__('app.informations_compte_lecture_seule'))
                     ->schema([
                         Forms\Components\Placeholder::make('contact_readonly')
@@ -169,7 +169,7 @@ class EtudiantResource extends Resource
                     ->columns(2),
                     
                 Forms\Components\Section::make(__('app.contact_information'))
-                    ->visible(fn () => auth()->user()->hasPermissionTo('manage users'))
+                    ->visible(fn () => auth()->user()->hasPermissionTo('user.manage'))
                     ->schema([
                         Forms\Components\TextInput::make('telephone')
                             ->label(__('app.telephone'))
@@ -185,7 +185,7 @@ class EtudiantResource extends Resource
                     
                 Forms\Components\Section::make(__('app.compte_utilisateur'))
                     ->description(__('app.compte_utilisateur_description'))
-                    ->visible(fn () => auth()->user()->hasPermissionTo('manage users'))
+                    ->visible(fn () => auth()->user()->hasPermissionTo('user.manage'))
                     ->schema([
                         Forms\Components\TextInput::make('email')
                             ->label(__('app.email'))
@@ -282,7 +282,7 @@ class EtudiantResource extends Resource
                     ->toggleable()
                     ->copyable()
                     ->icon('heroicon-o-phone')
-                    ->visible(fn () => auth()->user()->hasRole('super_admin') || auth()->user()->can('manage students')),
+                    ->visible(fn () => auth()->user()->hasRole('super_admin') || auth()->user()->can('student.manage_accounts')),
 
                 Tables\Columns\IconColumn::make('user.is_active')
                     ->label(__('app.compte_actif'))
@@ -290,7 +290,7 @@ class EtudiantResource extends Resource
                     ->sortable()
                     ->toggleable()
                     ->default(false)
-                    ->visible(fn () => auth()->user()->hasRole('super_admin') || auth()->user()->can('manage accounts')),
+                    ->visible(fn () => auth()->user()->hasRole('super_admin') || auth()->user()->can('student.manage_accounts')),
                     
                 Tables\Columns\TextColumn::make('user.email')
                     ->label(__('app.email'))
@@ -299,7 +299,7 @@ class EtudiantResource extends Resource
                     ->copyable()
                     ->icon('heroicon-o-envelope')
                     ->default(__('app.aucun_compte'))
-                    ->visible(fn () => auth()->user()->hasRole('super_admin') || auth()->user()->can('manage accounts')),
+                    ->visible(fn () => auth()->user()->hasRole('super_admin') || auth()->user()->can('student.manage_accounts')),
                     
                 Tables\Columns\TextColumn::make('user.last_login_at')
                     ->label(__('app.derniere_connexion'))
@@ -307,7 +307,7 @@ class EtudiantResource extends Resource
                     ->sortable()
                     ->toggleable()
                     ->placeholder(__('app.jamais'))
-                    ->visible(fn () => auth()->user()->hasRole('super_admin') || auth()->user()->can('manage accounts')),
+                    ->visible(fn () => auth()->user()->hasRole('super_admin') || auth()->user()->can('student.manage_accounts')),
                     
                 Tables\Columns\TextColumn::make('notes_count')
                     ->label(__('app.notes'))
@@ -321,7 +321,7 @@ class EtudiantResource extends Resource
                     ->dateTime('d/m/Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
-                    ->visible(fn () => auth()->user()->hasRole('super_admin') || auth()->user()->can('manage students')),
+                    ->visible(fn () => auth()->user()->hasRole('super_admin') || auth()->user()->can('student.manage_accounts')),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('id_classe')
@@ -350,14 +350,14 @@ class EtudiantResource extends Resource
                         return static::canView($record);
                     }),
                 Tables\Actions\EditAction::make()
-                    ->visible(fn (Model $record) => auth()->user()->hasPermissionTo('edit students')),
+                    ->visible(fn (Model $record) => auth()->user()->hasPermissionTo('student.edit')),
                 Tables\Actions\DeleteAction::make()
-                    ->visible(fn (Model $record) => auth()->user()->hasPermissionTo('delete students')),
+                    ->visible(fn (Model $record) => auth()->user()->hasPermissionTo('student.delete')),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
-                        ->visible(fn () => auth()->user()->hasPermissionTo('delete students'))
+                        ->visible(fn () => auth()->user()->hasPermissionTo('student.delete'))
                 ]),
             ])
             ->defaultSort('nom', 'asc')

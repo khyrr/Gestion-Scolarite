@@ -44,22 +44,22 @@ class PermissionResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()->hasPermissionTo('manage permissions');
+        return auth()->user()->hasPermissionTo('permission.manage');
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()->hasPermissionTo('manage permissions');
+        return auth()->user()->hasPermissionTo('permission.manage');
     }
 
     public static function canEdit($record): bool
     {
-        return auth()->user()->hasPermissionTo('manage permissions');
+        return auth()->user()->hasPermissionTo('permission.manage');
     }
 
     public static function canDelete($record): bool
     {
-        return auth()->user()->hasPermissionTo('manage permissions');
+        return auth()->user()->hasPermissionTo('permission.manage');
     }
 
     public static function form(Form $form): Form

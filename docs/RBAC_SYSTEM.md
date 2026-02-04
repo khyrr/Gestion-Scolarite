@@ -16,7 +16,7 @@ This school management system implements a comprehensive role-based access contr
 - **Purpose**: Overall school management and academic oversight
 - **Users**: School director, principal
 - **Access**: Full academic and administrative management, financial oversight, all reports
-- **Restrictions**: Cannot manage system settings or user roles
+- **Restrictions**: Cannot system.manage_settings or user roles
 - **Login**: directeur@ecole.com
 
 ### 3. **Academic Coordinator** (`academic_coordinator`)
@@ -103,8 +103,8 @@ Permissions are organized by resource and action type:
 - `manage users` - User account management
 - `manage roles` - Role assignment
 - `manage permissions` - Permission management
-- `view activity logs` - System monitoring
-- `manage system settings` - System configuration
+- `activity_log.view` - System monitoring
+- `system.manage_settings` - System configuration
 - `view settings` - View system configuration
 - `manage settings` - Modify system settings
 - `backup database` - Data backup

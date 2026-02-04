@@ -21,7 +21,7 @@ class TranscriptService
         $weightedSum = 0;
 
         // Get passing grade from settings (as percentage)
-        $passingGradePercentage = setting('passing_grade', 50); // Default 50%
+        $passingGradePercentage = setting('academic.passing_grade', 50); // Default 50%
         $passingGradeOn20 = ($passingGradePercentage / 100) * 20;
 
         foreach ($notesByMatiere as $matiere => $matiereNotes) {
@@ -80,14 +80,14 @@ class TranscriptService
 
     public function getGradeLetter($average)
     {
-        $gradingSystem = setting('grading_system', 'percentage');
+        $gradingSystem = setting('academic.grading_system', 'percentage');
         
         if ($gradingSystem === 'letter') {
             if ($average >= 18) return 'A+';
             if ($average >= 16) return 'A';
             if ($average >= 14) return 'B+';
             if ($average >= 12) return 'B';
-            if ($average >= setting('passing_grade', 50) / 100 * 20) return 'C';
+            if ($average >= setting('academic.passing_grade', 50) / 100 * 20) return 'C';
             if ($average >= 8) return 'D';
             return 'F';
         }
@@ -97,7 +97,7 @@ class TranscriptService
             if ($average >= 16) return '3.5';
             if ($average >= 14) return '3.0';
             if ($average >= 12) return '2.5';
-            if ($average >= setting('passing_grade', 50) / 100 * 20) return '2.0';
+            if ($average >= setting('academic.passing_grade', 50) / 100 * 20) return '2.0';
             if ($average >= 8) return '1.0';
             return '0.0';
         }
@@ -108,7 +108,7 @@ class TranscriptService
 
     public function getMention($average)
     {
-        $passingGrade = setting('passing_grade', 50) / 100 * 20; // Convert % to /20
+        $passingGrade = setting('academic.passing_grade', 50) / 100 * 20; // Convert % to /20
         
         if ($average >= 16)
             return 'Très Bien';

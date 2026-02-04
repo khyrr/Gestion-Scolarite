@@ -23,7 +23,7 @@ class Application extends Page
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->hasRole('super_admin') || auth()->user()?->hasPermissionTo('manage settings');
+        return auth()->user()?->hasRole('super_admin') || auth()->user()?->hasPermissionTo('setting.manage');
     }
 
     public ?array $data = [];
@@ -40,14 +40,14 @@ class Application extends Page
         $applicationSettings = $this->settingsService->getApplicationSettings();
         
         $this->form->fill([
-            'app_name' => $applicationSettings['app_name'],
-            'default_user_role' => $applicationSettings['default_user_role'],
-            'registration_enabled' => $applicationSettings['registration_enabled'],
-            'email_verification_required' => $applicationSettings['email_verification_required'],
-            'notifications_enabled' => $applicationSettings['notifications_enabled'],
-            'file_upload_max_size' => $applicationSettings['file_upload_max_size'],
-            'backup_frequency' => $applicationSettings['backup_frequency'],
-            'auto_backup_enabled' => $applicationSettings['auto_backup_enabled'],
+            'app_name' => $applicationSettings['app.name'],
+            'default_user_role' => $applicationSettings['app.default_user_role'],
+            'registration_enabled' => $applicationSettings['app.registration_enabled'],
+            'email_verification_required' => $applicationSettings['app.email_verification_required'],
+            'notifications_enabled' => $applicationSettings['app.notifications_enabled'],
+            'file_upload_max_size' => $applicationSettings['app.file_upload_max_size'],
+            'backup_frequency' => $applicationSettings['app.backup_frequency'],
+            'auto_backup_enabled' => $applicationSettings['app.auto_backup_enabled'],
         ]);
     }
 
@@ -137,14 +137,14 @@ class Application extends Page
         $data = $this->form->getState();
 
         $applicationData = [
-            'app_name' => $data['app_name'],
-            'default_user_role' => $data['default_user_role'],
-            'registration_enabled' => $data['registration_enabled'],
-            'email_verification_required' => $data['email_verification_required'],
-            'notifications_enabled' => $data['notifications_enabled'],
-            'file_upload_max_size' => (int) $data['file_upload_max_size'],
-            'backup_frequency' => $data['backup_frequency'],
-            'auto_backup_enabled' => $data['auto_backup_enabled'],
+            'app.name' => $data['app_name'],
+            'app.default_user_role' => $data['default_user_role'],
+            'app.registration_enabled' => $data['registration_enabled'],
+            'app.email_verification_required' => $data['email_verification_required'],
+            'app.notifications_enabled' => $data['notifications_enabled'],
+            'app.file_upload_max_size' => (int) $data['file_upload_max_size'],
+            'app.backup_frequency' => $data['backup_frequency'],
+            'app.auto_backup_enabled' => $data['auto_backup_enabled'],
         ];
 
         $this->settingsService->updateApplicationSettings($applicationData);

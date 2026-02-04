@@ -52,7 +52,7 @@ class ActivityLogResource extends Resource
             return false;
         }
 
-        return $user->hasPermissionTo('view activity logs');
+        return $user->hasPermissionTo('activity_log.view');
     }
 
     public static function canCreate(): bool
@@ -136,7 +136,7 @@ class ActivityLogResource extends Resource
 
                     Forms\Components\Placeholder::make('ip')
                         ->label(__('app.ip_address'))
-                        ->content(fn ($record) => $record->properties['ip'] ?? null)
+                        ->content(fn ($record) => $record->properties['ip_address'] ?? null)
                         ->columnSpan(1),
 
                     Forms\Components\Placeholder::make('user_agent')
@@ -175,7 +175,7 @@ class ActivityLogResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                Tables\Columns\TextColumn::make('properties->ip')
+                Tables\Columns\TextColumn::make('properties->ip_address')
                     ->label(__('app.ip_address'))
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -188,11 +188,23 @@ class ActivityLogResource extends Resource
             ->filters([
                 Tables\Filters\SelectFilter::make('log_name')
                     ->label(__('app.log_name'))
-                    ->options(fn () => ActivityModel::query()->distinct()->pluck('log_name', 'log_name')->toArray()),
+                    ->options(fn () => ActivityModel::query()
+                        ->distinct()
+                        ->whereNotNull('log_name')
+                        ->pluck('log_name', 'log_name')
+                        ->filter()
+                        ->toArray()
+                    ),
 
                 Tables\Filters\SelectFilter::make('event')
                     ->label(__('app.event'))
-                    ->options(fn () => ActivityModel::query()->distinct()->pluck('event', 'event')->toArray()),
+                    ->options(fn () => ActivityModel::query()
+                        ->distinct()
+                        ->whereNotNull('event')
+                        ->pluck('event', 'event')
+                        ->filter()
+                        ->toArray()
+                    ),
 
                 Tables\Filters\Filter::make('date')
                     ->form([

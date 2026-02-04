@@ -63,10 +63,10 @@ class TeacherPanelProvider extends PanelProvider
             ])
             ->brandName(function () {
                 $user = auth()->user();
-                if (!$user) return setting('school_name', 'School Administration');
+                if (!$user) return setting('school.name', 'School Administration');
                 
                 return __('app.administration_panel');
-            })->brandLogo(setting('school_logo', asset('images/logo.svg')))
+            })->brandLogo(setting('school.logo', asset('images/logo.svg')))
             ->favicon(asset('images/favicon.png'))
             ->middleware([
                 EncryptCookies::class,

@@ -44,22 +44,22 @@ class RoleResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()->hasPermissionTo('manage roles');
+        return auth()->user()->hasPermissionTo('role.manage');
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()->hasPermissionTo('manage roles');
+        return auth()->user()->hasPermissionTo('role.manage');
     }
 
     public static function canEdit($record): bool
     {
-        return auth()->user()->hasPermissionTo('manage roles');
+        return auth()->user()->hasPermissionTo('role.manage');
     }
 
     public static function canDelete($record): bool
     {
-        return auth()->user()->hasPermissionTo('manage roles');
+        return auth()->user()->hasPermissionTo('role.manage');
     }
 
     public static function form(Form $form): Form

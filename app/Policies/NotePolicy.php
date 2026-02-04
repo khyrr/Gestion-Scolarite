@@ -12,7 +12,7 @@ class NotePolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('view grades');
+        return $user->hasPermissionTo('grade.view');
     }
 
     /**
@@ -36,7 +36,7 @@ class NotePolicy
             }
         }
         
-        return $user->hasPermissionTo('view grades');
+        return $user->hasPermissionTo('grade.view');
     }
 
     /**
@@ -44,7 +44,7 @@ class NotePolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('create grades');
+        return $user->hasPermissionTo('grade.create');
     }
 
     /**
@@ -63,7 +63,7 @@ class NotePolicy
             }
         }
         
-        return $user->hasPermissionTo('edit grades');
+        return $user->hasPermissionTo('grade.edit');
     }
 
     /**
@@ -82,7 +82,7 @@ class NotePolicy
             }
         }
         
-        return $user->hasPermissionTo('delete grades');
+        return $user->hasPermissionTo('grade.delete');
     }
 
     /**
@@ -101,6 +101,6 @@ class NotePolicy
             }
         }
         
-        return $user->hasPermissionTo('edit grade comments');
+        return $user->hasPermissionTo('grade.edit_comments');
     }
 }

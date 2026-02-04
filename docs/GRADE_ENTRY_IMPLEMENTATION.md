@@ -43,7 +43,7 @@ Added keys:
 
 ### 5. Permission System
 - **File**: `database/seeders/RolesAndPermissionsSeeder.php`
-- **New Permission**: `manage grades`
+- **New Permission**: `grade.manage`
 - **Assigned to**: super_admin, admin, teacher
 
 ## Architecture
@@ -163,7 +163,7 @@ protected function saveGrade(Etudiant $student, ?float $note, ?string $commentai
 
 ### Security Considerations
 
-1. **Permission Check**: `manage grades` permission required
+1. **Permission Check**: `grade.manage` permission required
 2. **Teacher Restriction**: Verified against `enseignant_matiere_classe` mapping
 3. **Input Validation**: Scores validated against evaluation's `note_max`
 4. **CSRF Protection**: Built-in Laravel/Filament protection
@@ -185,13 +185,13 @@ php artisan db:seed --class=RolesAndPermissionsSeeder
 Or manually create the permission:
 ```bash
 php artisan tinker
->>> \Spatie\Permission\Models\Permission::create(['name' => 'manage grades']);
+>>> \Spatie\Permission\Models\Permission::create(['name' => 'grade.manage']);
 ```
 
 ### 3. Assign Permission
 ```bash
 >>> $teacher = \Spatie\Permission\Models\Role::findByName('teacher');
->>> $teacher->givePermissionTo('manage grades');
+>>> $teacher->givePermissionTo('grade.manage');
 ```
 
 ### 4. Clear Cache

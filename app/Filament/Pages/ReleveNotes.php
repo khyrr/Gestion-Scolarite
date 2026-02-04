@@ -86,7 +86,7 @@ class ReleveNotes extends Page implements HasForms
 
     public static function canViewAny(): bool
     {
-        return auth()->user()->hasRole('super_admin') || auth()->user()->can('view report cards');
+        return auth()->user()->hasRole('super_admin') || auth()->user()->can('report.view');
     }
 
     public function form(Form $form): Form

@@ -23,7 +23,7 @@ class Academic extends Page
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->hasRole('super_admin') || auth()->user()?->hasPermissionTo('manage settings');
+        return auth()->user()?->hasRole('super_admin') || auth()->user()?->hasPermissionTo('setting.manage');
     }
 
     public ?array $data = [];
@@ -40,14 +40,14 @@ class Academic extends Page
         $academicSettings = $this->settingsService->getAcademicSettings();
         
         $this->form->fill([
-            'grading_system' => $academicSettings['grading_system'],
-            'passing_grade' => $academicSettings['passing_grade'],
-            'max_grade' => $academicSettings['max_grade'],
-            'terms_per_year' => $academicSettings['terms_per_year'],
-            'attendance_required' => $academicSettings['attendance_required'],
-            'min_attendance_percentage' => $academicSettings['min_attendance_percentage'],
-            'late_submission_penalty' => $academicSettings['late_submission_penalty'],
-            'max_absences_per_term' => $academicSettings['max_absences_per_term'],
+            'grading_system' => $academicSettings['academic.grading_system'],
+            'passing_grade' => $academicSettings['academic.passing_grade'],
+            'max_grade' => $academicSettings['academic.max_grade'],
+            'terms_per_year' => $academicSettings['academic.terms_per_year'],
+            'attendance_required' => $academicSettings['academic.attendance_required'],
+            'min_attendance_percentage' => $academicSettings['academic.min_attendance_percentage'],
+            'late_submission_penalty' => $academicSettings['academic.late_submission_penalty'],
+            'max_absences_per_term' => $academicSettings['academic.max_absences_per_term'],
         ]);
     }
 
@@ -152,14 +152,14 @@ class Academic extends Page
         $data = $this->form->getState();
 
         $academicData = [
-            'grading_system' => $data['grading_system'],
-            'passing_grade' => (int) $data['passing_grade'],
-            'max_grade' => (int) $data['max_grade'],
-            'terms_per_year' => (int) $data['terms_per_year'],
-            'attendance_required' => $data['attendance_required'],
-            'min_attendance_percentage' => (int) $data['min_attendance_percentage'],
-            'max_absences_per_term' => (int) $data['max_absences_per_term'],
-            'late_submission_penalty' => (int) $data['late_submission_penalty'],
+            'academic.grading_system' => $data['grading_system'],
+            'academic.passing_grade' => (int) $data['passing_grade'],
+            'academic.max_grade' => (int) $data['max_grade'],
+            'academic.terms_per_year' => (int) $data['terms_per_year'],
+            'academic.attendance_required' => $data['attendance_required'],
+            'academic.min_attendance_percentage' => (int) $data['min_attendance_percentage'],
+            'academic.max_absences_per_term' => (int) $data['max_absences_per_term'],
+            'academic.late_submission_penalty' => (int) $data['late_submission_penalty'],
         ];
 
         $this->settingsService->updateAcademicSettings($academicData);

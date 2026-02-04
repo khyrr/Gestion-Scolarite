@@ -32,6 +32,9 @@ class User extends Authenticatable
         'two_factor_recovery_codes',
         'two_factor_enabled',
         'last_login_at',
+        'locked_until',
+        'failed_login_attempts',
+        'last_failed_login_at',
     ];
 
     /**
@@ -56,6 +59,8 @@ class User extends Authenticatable
         'is_active' => 'boolean',
         'two_factor_enabled' => 'boolean',
         'last_login_at' => 'datetime',
+        'locked_until' => 'datetime',
+        'last_failed_login_at' => 'datetime',
     ];
 
     /**

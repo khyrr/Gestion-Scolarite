@@ -35,15 +35,18 @@ class FortifyServiceProvider extends ServiceProvider
 
         RateLimiter::for('login', function (Request $request) {
             $throttleKey = Str::transliterate(Str::lower($request->input(Fortify::username())).'|'.$request->ip());
-            $maxAttempts = setting('max_login_attempts', 5);
-            $lockoutDuration = setting('lockout_duration', 15); // minutes
+            $maxAttempts = (int) setting('security.max_login_attempts', 5);
+            $lockoutDuration = (int) setting('security.lockout_duration', 15); // minutes
 
+            // Return rate limit with proper decay time in minutes
             return Limit::perMinutes($lockoutDuration, $maxAttempts)->by($throttleKey);
         });
 
         RateLimiter::for('two-factor', function (Request $request) {
-            $maxAttempts = setting('two_factor_max_attempts', 5);
-            return Limit::perMinute($maxAttempts)->by($request->session()->get('login.id'));
+            $maxAttempts = (int) setting('security.max_login_attempts', 5);
+            $lockoutDuration = (int) setting('security.lockout_duration', 15); // minutes
+            
+            return Limit::perMinutes($lockoutDuration, $maxAttempts)->by($request->session()->get('login.id'));
         });
     }
 }

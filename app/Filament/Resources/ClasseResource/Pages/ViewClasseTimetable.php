@@ -36,8 +36,8 @@ class ViewClasseTimetable extends ViewRecord
         $user = auth()->user();
         
         return $user->hasRole('super_admin') || 
-               $user->hasPermissionTo('manage timetables') || 
-               $user->hasPermissionTo('manage classes');
+               $user->hasPermissionTo('timetable.manage') || 
+               $user->hasPermissionTo('class.manage');
     }
 
     /**
@@ -92,7 +92,7 @@ class ViewClasseTimetable extends ViewRecord
     {
         $user = auth()->user();
         
-        if (!$user || !$user->hasPermissionTo('view timetables')) {
+        if (!$user || !$user->hasPermissionTo('timetable.view')) {
             return false;
         }
         

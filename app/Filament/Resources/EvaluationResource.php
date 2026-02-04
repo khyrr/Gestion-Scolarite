@@ -46,12 +46,12 @@ class EvaluationResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()->hasPermissionTo('view evaluations');
+        return auth()->user()->hasPermissionTo('evaluation.view');
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()->hasPermissionTo('create evaluations');
+        return auth()->user()->hasPermissionTo('evaluation.create');
     }
 
     public static function canEdit(Model $record): bool
@@ -61,7 +61,7 @@ class EvaluationResource extends Resource
             return false;
         }
         
-        return auth()->user()->hasPermissionTo('edit evaluations');
+        return auth()->user()->hasPermissionTo('evaluation.edit');
     }
 
     public static function canDelete(Model $record): bool
@@ -71,7 +71,7 @@ class EvaluationResource extends Resource
             return false;
         }
         
-        return auth()->user()->hasPermissionTo('delete evaluations');
+        return auth()->user()->hasPermissionTo('evaluation.delete');
     }
 
     public static function getEloquentQuery(): Builder
@@ -86,7 +86,7 @@ class EvaluationResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Section::make('Evaluation Details')
-                    ->visible(fn () => auth()->user()->hasPermissionTo('create evaluations') || auth()->user()->hasPermissionTo('edit evaluations'))
+                    ->visible(fn () => auth()->user()->hasPermissionTo('evaluation.create') || auth()->user()->hasPermissionTo('evaluation.edit'))
                     ->schema([
                         Forms\Components\TextInput::make('titre')
                             ->label('Title')
@@ -159,7 +159,7 @@ class EvaluationResource extends Resource
                     ->columns(2),
                     
                 Forms\Components\Section::make('Grading')
-                    ->visible(fn () => auth()->user()->hasPermissionTo('create evaluations') || auth()->user()->hasPermissionTo('edit evaluations'))
+                    ->visible(fn () => auth()->user()->hasPermissionTo('evaluation.create') || auth()->user()->hasPermissionTo('evaluation.edit'))
                     ->schema([
                         Forms\Components\TextInput::make('note_max')
                             ->label(__('app.note_maximum'))
@@ -179,7 +179,7 @@ class EvaluationResource extends Resource
                     
                 // Read-only evaluation view for users with view-only permissions
                 Forms\Components\Section::make(__('app.consultation_evaluation'))
-                    ->visible(fn () => auth()->user()->hasPermissionTo('view evaluations') && !auth()->user()->hasPermissionTo('create evaluations') && !auth()->user()->hasPermissionTo('edit evaluations'))
+                    ->visible(fn () => auth()->user()->hasPermissionTo('evaluation.view') && !auth()->user()->hasPermissionTo('evaluation.create') && !auth()->user()->hasPermissionTo('evaluation.edit'))
                     ->schema([
                         Forms\Components\Placeholder::make('titre_display')
                             ->label(__('app.titre'))
@@ -320,7 +320,7 @@ class EvaluationResource extends Resource
                     ->icon('heroicon-o-pencil-square')
                     ->color('primary')
                     ->url(fn ($record) => static::getUrl('grades', ['record' => $record]))
-                    ->visible(fn () => auth()->user()->can('manage grades') || auth()->user()->hasRole(['super_admin', 'admin', 'teacher', 'enseignant'])),
+                    ->visible(fn () => auth()->user()->can('grade.manage') || auth()->user()->hasRole(['super_admin', 'admin', 'teacher', 'enseignant'])),
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),

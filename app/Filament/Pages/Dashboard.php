@@ -88,8 +88,8 @@ class Dashboard extends BaseDashboard
                             // Apply RBAC filtering
                             $user = auth()->user();
                             if (!($user->hasRole('super_admin') || 
-                                  $user->hasPermissionTo('manage timetables') || 
-                                  $user->hasPermissionTo('manage classes'))) {
+                                  $user->hasPermissionTo('timetable.manage') || 
+                                  $user->hasPermissionTo('class.manage'))) {
                                 $enseignant = $user->profile;
                                 if ($enseignant) {
                                     $query->where('id_enseignant', $enseignant->id_enseignant);
@@ -115,8 +115,8 @@ class Dashboard extends BaseDashboard
                     // Apply RBAC filtering
                     $user = auth()->user();
                     if (!($user->hasRole('super_admin') || 
-                          $user->hasPermissionTo('manage timetables') || 
-                          $user->hasPermissionTo('manage classes'))) {
+                          $user->hasPermissionTo('timetable.manage') || 
+                          $user->hasPermissionTo('class.manage'))) {
                         $enseignant = $user->profile;
                         if ($enseignant) {
                             $query->where('id_enseignant', $enseignant->id_enseignant);

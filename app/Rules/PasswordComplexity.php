@@ -12,11 +12,11 @@ class PasswordComplexity implements ValidationRule
      */
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        $minLength = setting('password_min_length', 8);
-        $requireUppercase = setting('password_require_uppercase', true);
-        $requireLowercase = setting('password_require_lowercase', true);
-        $requireNumbers = setting('password_require_numbers', true);
-        $requireSymbols = setting('password_require_symbols', false);
+        $minLength = setting('security.password_min_length', 8);
+        $requireUppercase = setting('security.password_require_uppercase', true);
+        $requireLowercase = setting('security.password_require_lowercase', true);
+        $requireNumbers = setting('security.password_require_numbers', true);
+        $requireSymbols = setting('security.password_require_symbols', false);
 
         // Check minimum length
         if (strlen($value) < $minLength) {
@@ -56,22 +56,22 @@ class PasswordComplexity implements ValidationRule
     {
         $requirements = [];
         
-        $minLength = setting('password_min_length', 8);
+        $minLength = setting('security.password_min_length', 8);
         $requirements[] = "at least {$minLength} characters";
         
-        if (setting('password_require_uppercase', true)) {
+        if (setting('security.password_require_uppercase', true)) {
             $requirements[] = 'one uppercase letter';
         }
         
-        if (setting('password_require_lowercase', true)) {
+        if (setting('security.password_require_lowercase', true)) {
             $requirements[] = 'one lowercase letter';
         }
         
-        if (setting('password_require_numbers', true)) {
+        if (setting('security.password_require_numbers', true)) {
             $requirements[] = 'one number';
         }
         
-        if (setting('password_require_symbols', false)) {
+        if (setting('security.password_require_symbols', false)) {
             $requirements[] = 'one special character';
         }
 

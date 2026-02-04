@@ -39,7 +39,7 @@ class ManageGrades extends Page implements HasTable
     {
         $this->record = $this->resolveRecord($record);
 
-        // Authorization: Ensure user can manage grades for this evaluation
+        // Authorization: Ensure user can grade.manage for this evaluation
         abort_unless($this->canAccessEvaluation(), 403);
     }
 
@@ -53,7 +53,7 @@ class ManageGrades extends Page implements HasTable
         $user = auth()->user();
 
         // Permission-based access
-        if (!$user->can('manage grades') && !$user->hasRole(['super_admin', 'admin'])) {
+        if (!$user->can('grade.manage') && !$user->hasRole(['super_admin', 'admin'])) {
             return false;
         }
 
@@ -81,7 +81,7 @@ class ManageGrades extends Page implements HasTable
         $user = auth()->user();
         
         // Must have permission or admin role
-        return $user->can('manage grades') || $user->hasRole(['super_admin', 'admin', 'teacher', 'enseignant']);
+        return $user->can('grade.manage') || $user->hasRole(['super_admin', 'admin', 'teacher', 'enseignant']);
     }
 
     public function getTitle(): string

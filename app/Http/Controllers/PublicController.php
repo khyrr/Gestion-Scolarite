@@ -46,7 +46,7 @@ class PublicController extends Controller
         // Check for preview mode (only accessible by authenticated users with manage pages permission)
         $isPreview = $request->has('preview') && 
                      auth()->check() && 
-                     (auth()->user()->hasPermissionTo('manage pages') || auth()->user()->hasRole('super_admin'));
+                     (auth()->user()->hasPermissionTo('page.manage') || auth()->user()->hasRole('super_admin'));
         
         if (!$page) {
             abort(404, 'Page not found');
@@ -167,33 +167,35 @@ class PublicController extends Controller
         // Merge school settings into themeVars
         return array_merge($themeVars, [
             // Organization settings
-            'site_name' => setting('school_name', $themeVars['site_name'] ?? 'School'),
-            'school_name' => setting('school_name', 'My School'),
-            'school_address' => setting('school_address', ''),
-            'school_phone' => setting('school_phone', ''),
-            'school_email' => setting('school_email', ''),
-            'school_website' => setting('school_website', ''),
+            'site_name' => setting('school.name', $themeVars['site_name'] ?? 'School'),
+            'school_name' => setting('school.name', 'My School'),
+            'school_address' => setting('school.address', ''),
+            'school_phone' => setting('school.phone', ''),
+            'school_email' => setting('school.email', ''),
+            'school_website' => setting('school.website', ''),
             
             // Contact settings (maintain backward compatibility)
-            'contact_address' => setting('school_address', ''),
-            'contact_email' => setting('school_email', ''),
-            'contact_phone' => setting('school_phone', ''),
+            'contact_address' => setting('school.address', ''),
+            'contact_email' => setting('school.email', ''),
+            'contact_phone' => setting('school.phone', ''),
+            'contact_latitude' => setting('school.latitude', ''),
+            'contact_longitude' => setting('school.longitude', ''),
             
             // System settings
-            'timezone' => setting('timezone', 'UTC'),
-            'date_format' => setting('date_format', 'Y-m-d'),
-            'language' => setting('language', 'en'),
-            'currency' => setting('currency', 'USD'),
+            'timezone' => setting('system.timezone', 'UTC'),
+            'date_format' => setting('system.date_format', 'Y-m-d'),
+            'language' => setting('system.language', 'en'),
+            'currency' => setting('system.currency', 'USD'),
             
             // Academic settings (available for public pages if needed)
-            'academic_year_start' => setting('academic_year_start', '09-01'),
-            'academic_year_end' => setting('academic_year_end', '06-30'),
-            'grading_system' => setting('grading_system', 'percentage'),
+            'academic_year_start' => setting('school.academic_year_start', '09-01'),
+            'academic_year_end' => setting('school.academic_year_end', '06-30'),
+            'grading_system' => setting('academic.grading_system', 'percentage'),
             
             // Application settings
-            'app_name' => setting('app_name', config('app.name')),
-            'registration_enabled' => setting('registration_enabled', true),
-            'notifications_enabled' => setting('notifications_enabled', true),
+            'app_name' => setting('app.name', config('app.name')),
+            'registration_enabled' => setting('app.registration_enabled', true),
+            'notifications_enabled' => setting('app.notifications_enabled', true),
         ]);
     }
 
@@ -242,20 +244,20 @@ class PublicController extends Controller
     public function siteInfo()
     {
         return response()->json([
-            'site_name' => setting('school_name', SiteSetting::siteName()),
+            'site_name' => setting('school.name', SiteSetting::siteName()),
             'site_description' => SiteSetting::siteDescription(),
-            'contact_email' => setting('school_email', SiteSetting::contactEmail()),
-            'contact_phone' => setting('school_phone', SiteSetting::contactPhone()),
-            'contact_address' => setting('school_address', SiteSetting::contactAddress()),
+            'contact_email' => setting('school.email', SiteSetting::contactEmail()),
+            'contact_phone' => setting('school.phone', SiteSetting::contactPhone()),
+            'contact_address' => setting('school.address', SiteSetting::contactAddress()),
             'logo_url' => $this->themeService->getLogoUrl(),
             'theme_colors' => [
                 'primary' => SiteSetting::primaryColor(),
                 'secondary' => SiteSetting::secondaryColor(),
             ],
-            'school_website' => setting('school_website', ''),
-            'timezone' => setting('timezone', 'UTC'),
-            'language' => setting('language', 'en'),
-            'currency' => setting('currency', 'USD'),
+            'school_website' => setting('school.website', ''),
+            'timezone' => setting('system.timezone', 'UTC'),
+            'language' => setting('system.language', 'en'),
+            'currency' => setting('system.currency', 'USD'),
         ]);
     }
 }

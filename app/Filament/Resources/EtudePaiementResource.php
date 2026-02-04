@@ -47,22 +47,22 @@ class EtudePaiementResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()->hasPermissionTo('view payments');
+        return auth()->user()->hasPermissionTo('payment.view');
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()->hasPermissionTo('create payments');
+        return auth()->user()->hasPermissionTo('payment.create');
     }
 
     public static function canEdit($record): bool
     {
-        return auth()->user()->hasPermissionTo('edit payments');
+        return auth()->user()->hasPermissionTo('payment.edit');
     }
 
     public static function canDelete($record): bool
     {
-        return auth()->user()->hasPermissionTo('delete payments');
+        return auth()->user()->hasPermissionTo('payment.delete');
     }
 
     public static function form(Form $form): Form
@@ -70,7 +70,7 @@ class EtudePaiementResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Section::make('Payment Information')
-                    ->visible(fn () => auth()->user()->hasPermissionTo('create payments') || auth()->user()->hasPermissionTo('edit payments'))
+                    ->visible(fn () => auth()->user()->hasPermissionTo('payment.create') || auth()->user()->hasPermissionTo('payment.edit'))
                     ->schema([
                         Forms\Components\Select::make('id_etudiant')
                             ->label(__('app.etudiant'))
@@ -104,7 +104,7 @@ class EtudePaiementResource extends Resource
                     ->columns(3),
                     
                 Forms\Components\Section::make('Payment Status')
-                    ->visible(fn () => auth()->user()->hasPermissionTo('create payments') || auth()->user()->hasPermissionTo('edit payments'))
+                    ->visible(fn () => auth()->user()->hasPermissionTo('payment.create') || auth()->user()->hasPermissionTo('payment.edit'))
                     ->schema([
                         Forms\Components\Select::make('statut')
                             ->label(__('app.statut'))
@@ -126,7 +126,7 @@ class EtudePaiementResource extends Resource
                     
                 // Read-only payment summary for users with view-only permissions
                 Forms\Components\Section::make(__('app.payment_summary'))
-                    ->visible(fn () => auth()->user()->hasPermissionTo('view payments') && !auth()->user()->hasPermissionTo('create payments') && !auth()->user()->hasPermissionTo('edit payments'))
+                    ->visible(fn () => auth()->user()->hasPermissionTo('payment.view') && !auth()->user()->hasPermissionTo('payment.create') && !auth()->user()->hasPermissionTo('payment.edit'))
                     ->schema([
                         Forms\Components\Placeholder::make('etudiant_info')
                             ->label(__('app.etudiant'))

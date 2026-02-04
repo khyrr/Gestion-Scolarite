@@ -44,22 +44,22 @@ class AdministrateurResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()->hasPermissionTo('manage users');
+        return auth()->user()->hasPermissionTo('user.manage');
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()->hasPermissionTo('manage users');
+        return auth()->user()->hasPermissionTo('user.manage');
     }
 
     public static function canEdit($record): bool
     {
-        return auth()->user()->hasPermissionTo('manage users');
+        return auth()->user()->hasPermissionTo('user.manage');
     }
 
     public static function canDelete($record): bool
     {
-        return auth()->user()->hasPermissionTo('manage users');
+        return auth()->user()->hasPermissionTo('user.manage');
     }
 
     public static function form(Form $form): Form
@@ -92,7 +92,7 @@ class AdministrateurResource extends Resource
                     
                 Forms\Components\Section::make(__('app.compte_utilisateur'))
                     ->description(__('app.compte_utilisateur_description'))
-                    ->visible(fn () => auth()->user()->hasPermissionTo('manage users'))
+                    ->visible(fn () => auth()->user()->hasPermissionTo('user.manage'))
                     ->schema([
                         Forms\Components\TextInput::make('email')
                             ->label(__('app.email'))
@@ -151,7 +151,7 @@ class AdministrateurResource extends Resource
                 // Read-only account information for users without manage users permission
                 Forms\Components\Section::make(__('app.compte_utilisateur'))
                     ->description(__('app.informations_compte_readonly'))
-                    ->visible(fn () => !auth()->user()->hasPermissionTo('manage users'))
+                    ->visible(fn () => !auth()->user()->hasPermissionTo('user.manage'))
                     ->schema([
                         Forms\Components\TextInput::make('user.email')
                             ->label(__('app.email'))
@@ -180,8 +180,7 @@ class AdministrateurResource extends Resource
                     ->columns(2),
                     
                 Forms\Components\Section::make(__('app.two_factor'))
-                    ->visible(fn () => auth()->user()->hasPermissionTo('manage users'))
-                    ->visible(fn () => auth()->user()->hasPermissionTo('manage users'))
+                    ->visible(fn () => auth()->user()->hasPermissionTo('user.manage'))
                     ->schema([
                         Forms\Components\Toggle::make('two_factor_enabled')
                             ->label(__('app.deux_facteurs_active_court'))

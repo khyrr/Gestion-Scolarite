@@ -13,7 +13,7 @@ The settings system follows a **three-tier priority cascade**:
 ```php
 // 1. Database Setting (Highest Priority)
 // Super admin sets in /admin/settings
-Setting::set('school_name', 'Harvard University', 'string', 'organization');
+Setting::set('school.name', 'Harvard University', 'string', 'organization');
 
 // 2. Environment Variable (Middle Priority)  
 // Set in .env file
@@ -21,10 +21,10 @@ SCHOOL_NAME="MIT University"
 
 // 3. Default Value (Lowest Priority)
 // Hardcoded in service or helper
-setting('school_name', 'Default School')
+setting('school.name', 'Default School')
 
 // Result: Database value takes precedence if it exists
-setting('school_name') // Returns "Harvard University"
+setting('school.name') // Returns "Harvard University"
 ```
 
 ### **Resolution Flow**
@@ -48,9 +48,9 @@ function setting($key, $default = null) {
 
 Settings keys are automatically converted to ENV format:
 ```php
-'school_name' → 'SCHOOL_NAME'
-'password_min_length' → 'PASSWORD_MIN_LENGTH'  
-'academic.year_start' → 'ACADEMIC_YEAR_START'
+'school.name' → 'SCHOOL_NAME'
+'security.password_min_length' → 'PASSWORD_MIN_LENGTH'  
+'school.academic_year_start' → 'ACADEMIC_YEAR_START'
 ```
 
 ### **Use Cases**
@@ -113,7 +113,7 @@ Setting::clearCache()                                // Clear all cached setting
 
 **Main Methods**:
 ```php
-getOrganizationSettings()    // School info, academic year
+getSchoolSettings()          // School info, academic year
 getSystemSettings()          // Timezone, language, currency
 getAcademicSettings()        // Grading, attendance rules
 getSecuritySettings()        // Password policies, session config
@@ -125,8 +125,8 @@ updateXXXSettings(array)     // Update specific setting groups
 - **Purpose**: Global helper for easy setting access
 - **Usage**:
 ```php
-setting('school_name')                    // Get setting value
-setting('passing_grade', 60)             // Get with default
+setting('school.name')                   // Get setting value
+setting('academic.passing_grade', 60)    // Get with default
 setting()->set('key', 'value', 'system') // Set using service
 ```
 
@@ -135,69 +135,72 @@ setting()->set('key', 'value', 'system') // Set using service
 ### 1. Organization Settings (`group: 'organization'`)
 School/institution basic information:
 ```php
-school_name            // Institution name
-school_address         // Physical address
-school_phone           // Contact phone
-school_email           // Contact email
-school_website         // Website URL
-academic_year_start    // Academic year start (MM-DD)
-academic_year_end      // Academic year end (MM-DD)
+school.name                  // Institution name
+school.address               // Physical address
+school.phone                 // Contact phone
+school.email                 // Contact email
+school.website               // Website URL
+school.logo                  // Logo path/URL
+school.academic_year_start   // Academic year start (MM-DD)
+school.academic_year_end     // Academic year end (MM-DD)
 ```
 
 ### 2. System Settings (`group: 'system'`)
 System-wide configuration:
 ```php
-timezone              // Default timezone
-date_format           // Date display format
-language              // Default language
-currency              // Default currency
-items_per_page        // Pagination size
-maintenance_mode      // System maintenance flag
+system.timezone           // Default timezone
+system.date_format        // Date display format
+system.time_format        // Time display format
+system.language           // Default language
+system.currency           // Default currency
+system.currency_symbol    // Currency symbol
+system.items_per_page     // Pagination size
+system.maintenance_mode   // System maintenance flag
 ```
 
 ### 3. Academic Settings (`group: 'academic'`)
 Educational system configuration:
 ```php
-grading_system            // percentage, gpa, letter
-passing_grade             // Minimum passing grade
-max_grade                 // Maximum possible grade
-grade_scale               // JSON grade boundaries
-terms_per_year           // Academic terms per year
-attendance_required      // Mandatory attendance tracking
-min_attendance_percentage // Required attendance %
-late_submission_penalty  // Late work penalty %
-max_absences_per_term    // Maximum absences allowed
+academic.grading_system            // percentage, gpa, letter
+academic.passing_grade             // Minimum passing grade
+academic.max_grade                 // Maximum possible grade
+academic.grade_scale               // JSON grade boundaries
+academic.terms_per_year            // Academic terms per year
+academic.attendance_required       // Mandatory attendance tracking
+academic.min_attendance_percentage // Required attendance %
+academic.late_submission_penalty   // Late work penalty %
+academic.max_absences_per_term     // Maximum absences allowed
 ```
 
 ### 4. Security Settings (`group: 'security'`)
 Security policies and authentication:
 ```php
-password_min_length        // Minimum password length
-password_require_uppercase // Require uppercase letters
-password_require_lowercase // Require lowercase letters
-password_require_numbers   // Require numeric characters
-password_require_symbols   // Require special characters
-session_timeout           // Session timeout (minutes)
-max_login_attempts        // Login attempts before lockout
-lockout_duration          // Lockout duration (minutes)
-two_factor_required       // Mandatory 2FA flag
-password_expiry_days      // Password expiration period
-force_https              // Force HTTPS connections
+security.password_min_length        // Minimum password length
+security.password_require_uppercase // Require uppercase letters
+security.password_require_lowercase // Require lowercase letters
+security.password_require_numbers   // Require numeric characters
+security.password_require_symbols   // Require special characters
+security.session_timeout            // Session timeout (minutes)
+security.max_login_attempts         // Login attempts before lockout
+security.lockout_duration           // Lockout duration (minutes)
+security.two_factor_required        // Mandatory 2FA flag
+security.password_expiry_days       // Password expiration period
+security.force_https                // Force HTTPS connections
 ```
 
 ### 5. Application Settings (`group: 'application'`)
 Application behavior and features:
 ```php
-app_name                    // Application name
-app_version                 // Current version
-default_user_role          // Default role for new users
-registration_enabled       // Allow new registrations
-email_verification_required // Require email verification
-notifications_enabled      // System notifications
-file_upload_max_size       // Max upload size (MB)
-allowed_file_types         // Permitted file extensions
-backup_frequency           // Backup schedule
-auto_backup_enabled        // Automatic backup flag
+app.name                         // Application name
+app.version                      // Current version
+app.default_user_role            // Default role for new users
+app.registration_enabled         // Allow new registrations
+app.email_verification_required  // Require email verification
+app.notifications_enabled        // System notifications
+app.file_upload_max_size         // Max upload size (MB)
+app.allowed_file_types           // Permitted file extensions
+app.backup_frequency             // Backup schedule
+app.auto_backup_enabled          // Automatic backup flag
 ```
 
 ## Integration with Filament
@@ -269,8 +272,8 @@ php artisan db:seed --class=SettingsSeeder
 ### Reading Settings
 ```php
 // Using helper function
-$schoolName = setting('school_name', 'Default School');
-$passingGrade = setting('passing_grade', 60);
+$schoolName = setting('school.name', 'Default School');
+$passingGrade = setting('academic.passing_grade', 60);
 $systemConfig = setting()->getSystemSettings();
 
 // Using service directly
@@ -294,10 +297,10 @@ $settingsService->updateSystemSettings([
 ### Type Handling
 Settings are automatically cast to appropriate types:
 ```php
-setting('attendance_required')     // Returns boolean
-setting('passing_grade')          // Returns integer  
-setting('grade_scale')           // Returns array (from JSON)
-setting('school_name')           // Returns string
+setting('academic.attendance_required')  // Returns boolean
+setting('academic.passing_grade')        // Returns integer  
+setting('academic.grade_scale')          // Returns array (from JSON)
+setting('school.name')                   // Returns string
 ```
 
 ## Migration Guide
@@ -307,8 +310,8 @@ setting('school_name')           // Returns string
 // Old way
 config('school.name')
 
-// New way  
-setting('school_name')
+// New way (consistent dot notation)
+setting('school.name')
 ```
 
 ### From Database Tables
@@ -317,7 +320,7 @@ setting('school_name')
 SchoolConfig::where('key', 'timezone')->first()->value
 
 // New way
-setting('timezone', 'UTC')
+setting('system.timezone', 'UTC')
 ```
 
 ## Best Practices

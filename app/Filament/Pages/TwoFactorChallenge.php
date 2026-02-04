@@ -121,8 +121,9 @@ class TwoFactorChallenge extends Page
         ]);
 
         $key = $this->rateLimitKey($user);
-        $maxAttempts = 5;
-        $decaySeconds = 60;
+        $maxAttempts = (int) setting('security.max_login_attempts', 5);
+        $lockoutDuration = (int) setting('security.lockout_duration', 15); // minutes
+        $decaySeconds = $lockoutDuration * 60; // Convert minutes to seconds
 
         // If rate limited, do not attempt verification
         if (RateLimiter::tooManyAttempts($key, $maxAttempts)) {

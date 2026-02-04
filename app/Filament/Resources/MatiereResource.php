@@ -47,22 +47,22 @@ class MatiereResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()->hasPermissionTo('view subjects');
+        return auth()->user()->hasPermissionTo('subject.view');
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()->hasPermissionTo('create subjects');
+        return auth()->user()->hasPermissionTo('subject.create');
     }
 
     public static function canEdit(Model $record): bool
     {
-        return auth()->user()->hasPermissionTo('edit subjects');
+        return auth()->user()->hasPermissionTo('subject.edit');
     }
 
     public static function canDelete(Model $record): bool
     {
-        return auth()->user()->hasPermissionTo('delete subjects');
+        return auth()->user()->hasPermissionTo('subject.delete');
     }
 
     public static function form(Form $form): Form

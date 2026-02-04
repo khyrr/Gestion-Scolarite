@@ -46,22 +46,22 @@ class CoursResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()->hasPermissionTo('view courses');
+        return auth()->user()->hasPermissionTo('course.view');
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()->hasPermissionTo('create courses');
+        return auth()->user()->hasPermissionTo('course.create');
     }
 
     public static function canEdit(Model $record): bool
     {
-        return auth()->user()->hasPermissionTo('edit courses');
+        return auth()->user()->hasPermissionTo('course.edit');
     }
 
     public static function canDelete(Model $record): bool
     {
-        return auth()->user()->hasPermissionTo('delete courses');
+        return auth()->user()->hasPermissionTo('course.delete');
     }
 
     public static function getEloquentQuery(): Builder

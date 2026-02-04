@@ -21,7 +21,7 @@ class ApplySecuritySettings
         }
 
         // Apply session timeout
-        $sessionTimeout = setting('session_timeout', 120); // minutes
+        $sessionTimeout = setting('security.session_timeout', 120); // minutes
         config(['session.lifetime' => $sessionTimeout]);
 
         return $next($request);

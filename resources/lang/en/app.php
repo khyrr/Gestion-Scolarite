@@ -570,7 +570,7 @@ return [
     'toutes_les_notes' => 'All Grades',
     'calendrier_evaluations' => 'Evaluation Calendar',
     'planning_devoirs_examens' => 'Homework & Exam Schedule',
-    'voir_et_gerer_les_notes' => 'View and Manage Grades',
+    'voir_et_gerer_les_notes' => 'View and grade.manage',
     'gerer_etudiants' => 'Manage Students',
     'gerer_classes' => 'Manage Classes',
     'gestion_financiere' => 'Financial Management',

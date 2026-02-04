@@ -26,7 +26,7 @@ class Profile extends Page
 
     public static function canViewAny(): bool
     {
-        return auth()->user()->hasRole('super_admin') || auth()->user()->hasPermissionTo('view settings');
+        return auth()->user()->hasRole('super_admin') || auth()->user()->hasPermissionTo('setting.view');
     }
 
     public ?array $data = [];

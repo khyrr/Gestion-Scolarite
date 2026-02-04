@@ -12,7 +12,7 @@ class EnseignantPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('view teachers');
+        return $user->hasPermissionTo('teacher.view');
     }
 
     /**
@@ -25,7 +25,7 @@ class EnseignantPolicy
             return $user->profile_id === $enseignant->id;
         }
         
-        return $user->hasPermissionTo('view teachers');
+        return $user->hasPermissionTo('teacher.view');
     }
 
     /**
@@ -33,7 +33,7 @@ class EnseignantPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('create teachers');
+        return $user->hasPermissionTo('teacher.create');
     }
 
     /**
@@ -46,7 +46,7 @@ class EnseignantPolicy
             return true;
         }
         
-        return $user->hasPermissionTo('edit teachers');
+        return $user->hasPermissionTo('teacher.edit');
     }
 
     /**
@@ -54,7 +54,7 @@ class EnseignantPolicy
      */
     public function delete(User $user, Enseignant $enseignant): bool
     {
-        return $user->hasPermissionTo('delete teachers');
+        return $user->hasPermissionTo('teacher.delete');
     }
 
     /**
@@ -62,7 +62,7 @@ class EnseignantPolicy
      */
     public function restore(User $user, Enseignant $enseignant): bool
     {
-        return $user->hasPermissionTo('delete teachers');
+        return $user->hasPermissionTo('teacher.delete');
     }
 
     /**

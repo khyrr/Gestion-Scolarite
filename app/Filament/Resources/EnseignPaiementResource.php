@@ -47,22 +47,22 @@ class EnseignPaiementResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()->hasPermissionTo('view payments');
+        return auth()->user()->hasPermissionTo('payment.view');
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()->hasPermissionTo('create payments');
+        return auth()->user()->hasPermissionTo('payment.create');
     }
 
     public static function canEdit($record): bool
     {
-        return auth()->user()->hasPermissionTo('edit payments');
+        return auth()->user()->hasPermissionTo('payment.edit');
     }
 
     public static function canDelete($record): bool
     {
-        return auth()->user()->hasPermissionTo('delete payments');
+        return auth()->user()->hasPermissionTo('payment.delete');
     }
 
     public static function form(Form $form): Form

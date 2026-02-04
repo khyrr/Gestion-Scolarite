@@ -44,22 +44,22 @@ class AdminAllowedIpResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()->hasPermissionTo('manage system settings');
+        return auth()->user()->hasPermissionTo('system.manage_settings');
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()->hasPermissionTo('manage system settings');
+        return auth()->user()->hasPermissionTo('system.manage_settings');
     }
 
     public static function canEdit($record): bool
     {
-        return auth()->user()->hasPermissionTo('manage system settings');
+        return auth()->user()->hasPermissionTo('system.manage_settings');
     }
 
     public static function canDelete($record): bool
     {
-        return auth()->user()->hasPermissionTo('manage system settings');
+        return auth()->user()->hasPermissionTo('system.manage_settings');
     }
 
     public static function form(Form $form): Form

@@ -255,7 +255,7 @@ class GradeService
         $maxGrade = $evaluation->note_max ?? 20;
         
         // Get passing grade from settings
-        $passingGradePercentage = setting('passing_grade', 50); // Default 50%
+        $passingGradePercentage = setting('academic.passing_grade', 50); // Default 50%
         $passingGrade = ($maxGrade * $passingGradePercentage) / 100;
 
         return [

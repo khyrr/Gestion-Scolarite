@@ -106,6 +106,12 @@ fi
 if [ -n "$DB_PASSWORD" ]; then
     sed -i "s|DB_PASSWORD=.*|DB_PASSWORD=$DB_PASSWORD|g" /var/www/html/.env
 fi
+if [ -n "$QUEUE_CONNECTION" ]; then
+    sed -i "s|QUEUE_CONNECTION=.*|QUEUE_CONNECTION=$QUEUE_CONNECTION|g" /var/www/html/.env
+fi
+if [ -n "$REDIS_HOST" ]; then
+    sed -i "s|REDIS_HOST=.*|REDIS_HOST=$REDIS_HOST|g" /var/www/html/.env
+fi
 
 # Generate application key if not set
 if [ -z "$APP_KEY" ] || ! grep -q "^APP_KEY=base64:" /var/www/html/.env; then
@@ -127,8 +133,18 @@ php artisan route:cache || true
 php artisan view:cache || true
 
 # Run migrations (uncomment if you want auto-migration on startup)
-# echo "Running migrations..."
-# php artisan migrate --force
+echo "Running migrations..."
+php artisan migrate --force
+
+# Run seeders only if database is empty (check users table)
+echo "Checking if seeders need to run..."
+USER_COUNT=$(php artisan tinker --execute="echo \App\Models\User::count();" 2>/dev/null | tail -1 || echo "0")
+if [ "$USER_COUNT" = "0" ] || [ -z "$USER_COUNT" ]; then
+    echo "Database appears empty. Running seeders..."
+    php artisan db:seed --force
+else
+    echo "Database has $USER_COUNT users. Skipping seeders."
+fi
 
 # Create storage link
 if [ ! -L /var/www/html/public/storage ]; then

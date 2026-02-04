@@ -1,5 +1,5 @@
 # Use official PHP image with Apache
-FROM php:8.2-apache
+FROM php:8.3-apache
 
 # Set working directory
 WORKDIR /var/www/html
@@ -11,11 +11,14 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
+    libicu-dev \
     zip \
     unzip \
     libzip-dev \
     netcat-openbsd \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip intl calendar \
+    && pecl install redis \
+    && docker-php-ext-enable redis
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer

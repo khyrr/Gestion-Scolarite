@@ -16,7 +16,9 @@ RUN apt-get update && apt-get install -y \
     unzip \
     libzip-dev \
     netcat-openbsd \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip intl calendar \
+    libpq-dev \
+    default-mysql-client \
+    && docker-php-ext-install pdo_mysql pdo_pgsql mbstring exif pcntl bcmath gd zip intl calendar \
     && pecl install redis \
     && docker-php-ext-enable redis
 
@@ -33,7 +35,11 @@ COPY . /var/www/html
 COPY --chown=www-data:www-data . /var/www/html
 
 # Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+# Use --prefer-source to avoid corrupted zip dist issues during image builds
+RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-source || composer install --no-dev --optimize-autoloader --no-interaction
+
+# Ensure mysql client config disables SSL verification in container (avoids self-signed cert errors)
+RUN printf '[client]\nssl=0\n' > /root/.my.cnf || true
 
 # Set permissions for Laravel
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache

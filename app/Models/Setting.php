@@ -36,29 +36,39 @@ class Setting extends Model
             return $envValue !== null ? $envValue : $default;
         }
 
-        return Cache::remember("setting.{$key}", 3600, function () use ($key, $default) {
-            // 1. Try database first (highest priority)
-            try {
-                $setting = static::where('key', $key)->first();
-                
-                if ($setting) {
-                    return static::castValue($setting->value, $setting->type);
+        try {
+            return Cache::remember("setting.{$key}", 3600, function () use ($key, $default) {
+                // 1. Try database first (highest priority)
+                try {
+                    $setting = static::where('key', $key)->first();
+                    
+                    if ($setting) {
+                        return static::castValue($setting->value, $setting->type);
+                    }
+                } catch (\Exception $e) {
+                    // If database isn't ready, fall back to ENV
                 }
-            } catch (\Exception $e) {
-                // If database isn't ready, fall back to ENV
-            }
 
-            // 2. Try environment variable (middle priority)
+                // 2. Try environment variable (middle priority)
+                $envKey = strtoupper(str_replace('.', '_', $key));
+                $envValue = env($envKey);
+                
+                if ($envValue !== null) {
+                    return $envValue;
+                }
+
+                // 3. Use default value (lowest priority)
+                return $default;
+            });
+        } catch (\Exception $e) {
+            // If cache write fails (filesystem permission, disk full, etc.), avoid raising an exception
+            logger()->warning('Settings cache write failed: ' . $e->getMessage());
+
             $envKey = strtoupper(str_replace('.', '_', $key));
             $envValue = env($envKey);
-            
-            if ($envValue !== null) {
-                return $envValue;
-            }
 
-            // 3. Use default value (lowest priority)
-            return $default;
-        });
+            return $envValue !== null ? $envValue : $default;
+        }
     }
 
     /**

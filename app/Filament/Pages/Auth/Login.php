@@ -8,10 +8,63 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
 use Filament\Notifications\Notification;
 use App\Models\User;
+use Illuminate\Support\Str;
 use Carbon\Carbon;
 
 class Login extends BaseLogin
 {
+    public function mount(): void
+    {
+        parent::mount();
+
+        // Determine which panel role to use for demo credentials (admin, staff, teacher)
+        // Priority: env('DEMO_PANEL') -> infer from request path -> default to 'admin'
+        $role = $this->determinePanelRole();
+
+        // Load credentials from env: DEMO_<ROLE>_EMAIL / DEMO_<ROLE>_PASSWORD
+        // Fallbacks fall back to admin demo credentials for safety
+        $emailKey = 'DEMO_' . strtoupper($role) . '_EMAIL';
+        $passwordKey = 'DEMO_' . strtoupper($role) . '_PASSWORD';
+
+        // Role-specific default credentials (match seeded demo users)
+        $defaults = [
+            'admin' => ['email' => 'admin@ecole.com', 'password' => 'password123'],
+            'staff' => ['email' => 'secretaire@ecole.com', 'password' => 'password123'],
+            'teacher' => ['email' => 'aminetou@ecole.com', 'password' => 'teacher123'],
+        ];
+
+        $email = env($emailKey, $defaults[$role]['email']);
+        $password = env($passwordKey, $defaults[$role]['password']);
+
+        $this->form->fill([
+            'email' => $email,
+            'password' => $password,
+        ]);
+    }
+
+    /**
+     * Determine which demo panel role to use.
+     */
+    protected function determinePanelRole(): string
+    {
+        // Explicit override via env
+        $envRole = Str::lower(env('DEMO_PANEL', ''));
+        if (in_array($envRole, ['admin', 'staff', 'teacher'], true)) {
+            return $envRole;
+        }
+
+        // Infer from request path (very simple heuristic)
+        $path = request()->path();
+        if (Str::contains($path, ['staff', 'secretaire'])) {
+            return 'staff';
+        }
+        if (Str::contains($path, ['teacher', 'teasher', 'enseignant'])) {
+            return 'teacher';
+        }
+
+        // Default to admin
+        return 'admin';
+    }
     public function authenticate(): ?\Filament\Http\Responses\Auth\Contracts\LoginResponse
     {
         // Get security settings from database

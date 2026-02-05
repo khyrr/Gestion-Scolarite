@@ -87,7 +87,7 @@ class SendLockoutNotification
         }
 
         // Staff roles (Secretary, Accountant, etc.)
-        if ($user->hasAnyRole(['secretary', 'accountant', 'staff'])) {
+        if ($user->hasAnyRole(['secretary', 'accountant'])) {
             return route('filament.staff.pages.account.security');
         }
 

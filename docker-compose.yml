@@ -1,6 +1,7 @@
 services:
   # Laravel Application
   app:
+    env_file: .env.docker
     build:
       context: .
       dockerfile: Dockerfile
@@ -18,12 +19,6 @@ services:
       - APP_KEY=${APP_KEY}
       - APP_DEBUG=${APP_DEBUG}
       - APP_URL=${APP_URL}
-      - DB_CONNECTION=mysql
-      - DB_HOST=db
-      - DB_PORT=3306
-      - DB_DATABASE=${DB_DATABASE}
-      - DB_USERNAME=${DB_USERNAME}
-      - DB_PASSWORD=${DB_PASSWORD}
       - QUEUE_CONNECTION=database
       - REDIS_HOST=redis
       - REDIS_PASSWORD=null
@@ -36,6 +31,7 @@ services:
 
   # Queue Worker
   queue:
+    env_file: .env.docker
     build:
       context: .
       dockerfile: Dockerfile
@@ -51,12 +47,6 @@ services:
       - APP_KEY=${APP_KEY}
       - APP_DEBUG=${APP_DEBUG}
       - APP_URL=${APP_URL}
-      - DB_CONNECTION=mysql
-      - DB_HOST=db
-      - DB_PORT=3306
-      - DB_DATABASE=${DB_DATABASE}
-      - DB_USERNAME=${DB_USERNAME}
-      - DB_PASSWORD=${DB_PASSWORD}
       - QUEUE_CONNECTION=database
       - REDIS_HOST=redis
       - REDIS_PASSWORD=null
@@ -79,8 +69,30 @@ services:
     networks:
       - laravel
 
+  # MySQL service removed — using PostgreSQL (`pg`) instead.
+  # If you need MySQL again, re-add a `db` service using the previous configuration.
+
+  # phpMyAdmin (optional - for database management)
+  phpmyadmin:
+    env_file: .env.docker
+    image: phpmyadmin/phpmyadmin
+    container_name: gestion-scolarite-phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_USER: ${DB_USERNAME}
+      PMA_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+    networks:
+      - laravel
+
   # MySQL Database
   db:
+    env_file: .env.docker
     image: mysql:8.0
     container_name: gestion-scolarite-db
     restart: unless-stopped
@@ -95,23 +107,6 @@ services:
       - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
     ports:
       - "3307:3306"
-    networks:
-      - laravel
-
-  # phpMyAdmin (optional - for database management)
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    container_name: gestion-scolarite-phpmyadmin
-    restart: unless-stopped
-    environment:
-      PMA_HOST: db
-      PMA_PORT: 3306
-      PMA_USER: ${DB_USERNAME}
-      PMA_PASSWORD: ${DB_PASSWORD}
-    ports:
-      - "8080:80"
-    depends_on:
-      - db
     networks:
       - laravel
 

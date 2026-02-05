@@ -118,10 +118,29 @@ docker-compose exec -T db mysql -u gestion_user -p gestion_scolarite < backups/y
 - **Web Server**: Apache
 
 ### Database Service (MySQL)
+This project uses **MySQL** by default inside Docker for demo and development.
 - **Container Name**: gestion-scolarite-db
 - **Port**: 3307 (host) → 3306 (container)
 - **MySQL Version**: 8.0
 - **Volume**: dbdata (persistent storage)
+
+To use MySQL in Docker (default):
+1. In `.env.docker` ensure the following (already set by default):
+   - `DB_CONNECTION=mysql`
+   - `DB_HOST=db`
+   - `DB_PORT=3306`
+   - `DB_DATABASE=gestionscolarite`
+   - `DB_USERNAME=root`
+   - `DB_PASSWORD=root`
+2. Rebuild and recreate containers:
+   - `docker compose down -v`
+   - `docker compose up -d --build`
+3. Run migrations/seeds inside the app container:
+   - `docker compose exec app php artisan migrate --seed`
+
+Notes:
+- The Dockerfile already includes `pdo_mysql` and `pdo_pgsql` support. MySQL is the default for this project.
+- If you still want to use PostgreSQL, you can add a `pg` service and switch `.env.docker` accordingly (we previously experimented with this).
 
 ### phpMyAdmin Service
 - **Container Name**: gestion-scolarite-phpmyadmin
@@ -170,10 +189,21 @@ docker-compose logs -f --tail=100 app
 
 ### Permission Issues
 
+The container's entrypoint now ensures `storage` and `bootstrap/cache` have correct ownership when the container starts. For local development with bind mounts, run these on your host (once):
+
 ```bash
-# Fix storage permissions
+# Add yourself to the www-data group (logout/login required)
+sudo usermod -aG www-data $USER
+# Fix local ownership and perms so both host user and www-data can write
+sudo chown -R $USER:www-data storage bootstrap/cache
+sudo chmod -R 2775 storage bootstrap/cache
+```
+
+If you're dealing with a named volume or want to fix permissions from inside the container (CI or recovery):
+
+```bash
 docker-compose exec app chown -R www-data:www-data storage bootstrap/cache
-docker-compose exec app chmod -R 775 storage bootstrap/cache
+docker-compose exec app chmod -R 2775 storage bootstrap/cache
 ```
 
 ### Database Connection Issues

@@ -35,11 +35,20 @@ mkdir -p storage/framework/cache/data
 mkdir -p storage/logs
 mkdir -p bootstrap/cache
 
-# Set proper permissions
-chown -R www-data:www-data /var/www/html/storage
-chown -R www-data:www-data /var/www/html/bootstrap/cache
-chmod -R 775 /var/www/html/storage
-chmod -R 775 /var/www/html/bootstrap/cache
+# Idempotent permission fix (only chown when needed) — ensures containers and host devs can write
+if [ -d /var/www/html/storage ]; then
+  owner=$(stat -c '%U:%G' /var/www/html/storage 2>/dev/null || true)
+  if [ "$owner" != "www-data:www-data" ]; then
+    echo "Fixing ownership for storage and bootstrap/cache..."
+    chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache || true
+  fi
+
+  # Directories: setgid so new files inherit group, and group-writable
+  find /var/www/html/storage -type d -exec chmod 2775 {} \; || true
+  find /var/www/html/storage -type f -exec chmod 664 {} \; || true
+  chmod -R 2775 /var/www/html/bootstrap/cache || true
+  chmod g+s /var/www/html/storage /var/www/html/bootstrap/cache || true
+fi
 
 # Create .env file from environment variables if it doesn't exist
 if [ ! -f /var/www/html/.env ]; then
@@ -127,10 +136,14 @@ php artisan view:clear || true
 php artisan route:clear || true
 
 # Cache configuration for better performance
-echo "Caching configuration..."
-php artisan config:cache || true
-php artisan route:cache || true
-php artisan view:cache || true
+if [ "$APP_ENV" = "production" ]; then
+  echo "Caching configuration..."
+  php artisan config:cache || true
+  php artisan route:cache || true
+  php artisan view:cache || true
+else
+  echo "Skipping config/route/view caching in non-production environment (APP_ENV=$APP_ENV)"
+fi
 
 # Run migrations (uncomment if you want auto-migration on startup)
 echo "Running migrations..."

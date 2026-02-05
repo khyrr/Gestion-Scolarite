@@ -5,7 +5,7 @@ FROM php:8.3-apache
 WORKDIR /var/www/html
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     curl \
     libpng-dev \
@@ -20,7 +20,11 @@ RUN apt-get update && apt-get install -y \
     default-mysql-client \
     && docker-php-ext-install pdo_mysql pdo_pgsql mbstring exif pcntl bcmath gd zip intl calendar \
     && pecl install redis \
-    && docker-php-ext-enable redis
+    && docker-php-ext-enable redis \
+    && rm -rf /var/lib/apt/lists/*
+
+# Verify mysql client is available in PATH so schema load works during runtime
+RUN command -v mysql >/dev/null 2>&1 || (echo 'mysql client not found after install' >&2 && exit 1)
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer

@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
             ['seeder' => NotesSeeder::class, 'description' => 'Student grades'],
             ['seeder' => EtudePaiementSeeder::class, 'description' => 'Student payments'],
             ['seeder' => EnseignPaiementSeeder::class, 'description' => 'Teacher payments'],
+            ['seeder' => DefaultPagesSeeder::class, 'description' => 'Default Pages & Site Settings'],
         ];
         
         foreach ($seeders as $seeder) {

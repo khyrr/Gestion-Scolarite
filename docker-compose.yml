@@ -24,7 +24,6 @@ services:
       - REDIS_PASSWORD=null
       - REDIS_PORT=6379
     depends_on:
-      - db
       - redis
     networks:
       - laravel
@@ -52,7 +51,6 @@ services:
       - REDIS_PASSWORD=null
       - REDIS_PORT=6379
     depends_on:
-      - db
       - redis
       - app
     command: php artisan queue:work --verbose --tries=3 --timeout=90
@@ -69,51 +67,7 @@ services:
     networks:
       - laravel
 
-  # MySQL service removed — using PostgreSQL (`pg`) instead.
-  # If you need MySQL again, re-add a `db` service using the previous configuration.
-
-  # phpMyAdmin (optional - for database management)
-  phpmyadmin:
-    env_file: .env.docker
-    image: phpmyadmin/phpmyadmin
-    container_name: gestion-scolarite-phpmyadmin
-    restart: unless-stopped
-    environment:
-      PMA_HOST: db
-      PMA_PORT: 3306
-      PMA_USER: ${DB_USERNAME}
-      PMA_PASSWORD: ${DB_PASSWORD}
-    ports:
-      - "8080:80"
-    depends_on:
-      - db
-    networks:
-      - laravel
-
-  # MySQL Database
-  db:
-    env_file: .env.docker
-    image: mysql:8.0
-    container_name: gestion-scolarite-db
-    restart: unless-stopped
-    environment:
-      MYSQL_DATABASE: ${DB_DATABASE}
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
-      MYSQL_USER: ${DB_USERNAME}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
-      MYSQL_ALLOW_EMPTY_PASSWORD: 'no'
-    volumes:
-      - dbdata:/var/lib/mysql
-      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
-    ports:
-      - "3307:3306"
-    networks:
-      - laravel
 
 networks:
   laravel:
     driver: bridge
-
-volumes:
-  dbdata:
-    driver: local

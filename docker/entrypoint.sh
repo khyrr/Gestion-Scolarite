@@ -1,31 +1,38 @@
 #!/bin/bash
+set -o pipefail
 
-echo "Starting Laravel application..."
+log() { echo "[$(date -u +'%Y-%m-%dT%H:%M:%SZ')] $*"; }
+run_artisan() { php artisan "$@" || return $?; }
 
-# Wait for database to be ready (only if DB_HOST is set and not localhost/127.0.0.1)
-if [ -n "$DB_HOST" ] && [ "$DB_HOST" != "localhost" ] && [ "$DB_HOST" != "127.0.0.1" ]; then
-    echo "Waiting for database connection at $DB_HOST:${DB_PORT:-3306}..."
-    
-    # Check if nc command is available
+log "Starting Laravel application..."
+
+DB_READY=false
+DB_HOST_EFFECTIVE="${DB_HOST:-}"
+if [ -n "$DB_HOST_EFFECTIVE" ] && [ "$DB_HOST_EFFECTIVE" != "localhost" ] && [ "$DB_HOST_EFFECTIVE" != "127.0.0.1" ]; then
+    log "Waiting for database connection at ${DB_HOST_EFFECTIVE}:${DB_PORT:-3306}..."
     if command -v nc >/dev/null 2>&1; then
         counter=0
-        max_attempts=30
-        while ! nc -z "$DB_HOST" "${DB_PORT:-3306}" 2>/dev/null; do
+        max_attempts="${DB_WAIT_MAX_ATTEMPTS:-30}"
+        sleep_seconds="${DB_WAIT_SLEEP:-2}"
+        while ! nc -z "$DB_HOST_EFFECTIVE" "${DB_PORT:-3306}" 2>/dev/null; do
             counter=$((counter+1))
-            if [ $counter -ge $max_attempts ]; then
-                echo "Warning: Could not connect to database after $max_attempts attempts. Continuing anyway..."
+            if [ "$counter" -ge "$max_attempts" ]; then
+                log "Warning: Could not connect to database after ${max_attempts} attempts. Continuing anyway..."
                 break
             fi
-            echo "Waiting for database... (attempt $counter/$max_attempts)"
-            sleep 2
+            log "Waiting for database... (attempt $counter/$max_attempts)"
+            sleep "$sleep_seconds"
         done
-        echo "Database connection check complete!"
+        if nc -z "$DB_HOST_EFFECTIVE" "${DB_PORT:-3306}" 2>/dev/null; then
+            DB_READY=true
+        fi
+        log "Database connection check complete!"
     else
-        echo "Skipping database connection check (nc not available)"
+        log "Skipping database connection check (nc not available)"
         sleep 5
     fi
 else
-    echo "Skipping database connection check (no external database configured)"
+    log "Skipping database connection check (no external database configured)"
 fi
 
 # Create storage directories if they don't exist
@@ -39,7 +46,7 @@ mkdir -p bootstrap/cache
 if [ -d /var/www/html/storage ]; then
   owner=$(stat -c '%U:%G' /var/www/html/storage 2>/dev/null || true)
   if [ "$owner" != "www-data:www-data" ]; then
-    echo "Fixing ownership for storage and bootstrap/cache..."
+    log "Fixing ownership for storage and bootstrap/cache..."
     chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache || true
   fi
 
@@ -52,7 +59,7 @@ fi
 
 # Create .env file from environment variables if it doesn't exist
 if [ ! -f /var/www/html/.env ]; then
-    echo "Creating .env file from environment variables..."
+    log "Creating .env file from environment variables..."
     
     # Copy from example or create empty
     if [ -f /var/www/html/.env.example ]; then
@@ -86,102 +93,121 @@ EOF
     fi
 fi
 
-# Update environment variables from Koyeb environment
-echo "Updating .env with environment variables..."
-if [ -n "$APP_KEY" ]; then
-    sed -i "s|APP_KEY=.*|APP_KEY=$APP_KEY|g" /var/www/html/.env
-fi
-if [ -n "$APP_ENV" ]; then
-    sed -i "s|APP_ENV=.*|APP_ENV=$APP_ENV|g" /var/www/html/.env
-fi
-if [ -n "$APP_DEBUG" ]; then
-    sed -i "s|APP_DEBUG=.*|APP_DEBUG=$APP_DEBUG|g" /var/www/html/.env
-fi
-if [ -n "$APP_URL" ]; then
-    sed -i "s|APP_URL=.*|APP_URL=$APP_URL|g" /var/www/html/.env
-fi
-if [ -n "$DB_HOST" ]; then
-    sed -i "s|DB_HOST=.*|DB_HOST=$DB_HOST|g" /var/www/html/.env
-fi
-if [ -n "$DB_PORT" ]; then
-    sed -i "s|DB_PORT=.*|DB_PORT=$DB_PORT|g" /var/www/html/.env
-fi
-if [ -n "$DB_DATABASE" ]; then
-    sed -i "s|DB_DATABASE=.*|DB_DATABASE=$DB_DATABASE|g" /var/www/html/.env
-fi
-if [ -n "$DB_USERNAME" ]; then
-    sed -i "s|DB_USERNAME=.*|DB_USERNAME=$DB_USERNAME|g" /var/www/html/.env
-fi
-if [ -n "$DB_PASSWORD" ]; then
-    sed -i "s|DB_PASSWORD=.*|DB_PASSWORD=$DB_PASSWORD|g" /var/www/html/.env
-fi
-if [ -n "$QUEUE_CONNECTION" ]; then
-    sed -i "s|QUEUE_CONNECTION=.*|QUEUE_CONNECTION=$QUEUE_CONNECTION|g" /var/www/html/.env
-fi
-if [ -n "$REDIS_HOST" ]; then
-    sed -i "s|REDIS_HOST=.*|REDIS_HOST=$REDIS_HOST|g" /var/www/html/.env
-fi
+escape_sed() { printf '%s' "$1" | sed -e 's/[\/&]/\\&/g'; }
+set_env() {
+  local key="$1" value="$2"
+  local escaped
+  escaped=$(escape_sed "$value")
+  if grep -q "^${key}=" /var/www/html/.env; then
+    sed -i "s/^${key}=.*/${key}=${escaped}/" /var/www/html/.env
+  else
+    printf "\n%s=%s\n" "$key" "$value" >> /var/www/html/.env
+  fi
+}
+
+# Update environment variables from runtime environment
+log "Updating .env with environment variables..."
+[ -n "$APP_KEY" ] && set_env "APP_KEY" "$APP_KEY"
+[ -n "$APP_ENV" ] && set_env "APP_ENV" "$APP_ENV"
+[ -n "$APP_DEBUG" ] && set_env "APP_DEBUG" "$APP_DEBUG"
+[ -n "$APP_URL" ] && set_env "APP_URL" "$APP_URL"
+[ -n "$DB_CONNECTION" ] && set_env "DB_CONNECTION" "$DB_CONNECTION"
+[ -n "$DB_HOST" ] && set_env "DB_HOST" "$DB_HOST"
+[ -n "$DB_PORT" ] && set_env "DB_PORT" "$DB_PORT"
+[ -n "$DB_DATABASE" ] && set_env "DB_DATABASE" "$DB_DATABASE"
+[ -n "$DB_USERNAME" ] && set_env "DB_USERNAME" "$DB_USERNAME"
+[ -n "$DB_PASSWORD" ] && set_env "DB_PASSWORD" "$DB_PASSWORD"
+[ -n "$QUEUE_CONNECTION" ] && set_env "QUEUE_CONNECTION" "$QUEUE_CONNECTION"
+[ -n "$REDIS_HOST" ] && set_env "REDIS_HOST" "$REDIS_HOST"
 
 # Generate application key if not set
 if [ -z "$APP_KEY" ] || ! grep -q "^APP_KEY=base64:" /var/www/html/.env; then
-    echo "Generating application key..."
-    php artisan key:generate --force --ansi
+    log "Generating application key..."
+    run_artisan key:generate --force --ansi
 fi
 
 # Clear caches
-echo "Clearing caches..."
-php artisan config:clear || true
-php artisan cache:clear || echo "Warning: Could not clear cache (permissions issue - this is normal on first run)"
-php artisan view:clear || true
-php artisan route:clear || true
+log "Clearing caches..."
+run_artisan config:clear || true
+run_artisan cache:clear || log "Warning: Could not clear cache (permissions issue - this is normal on first run)"
+run_artisan view:clear || true
+run_artisan route:clear || true
 
 # Cache configuration for better performance
-if [ "$APP_ENV" = "production" ]; then
-  echo "Caching configuration..."
-  php artisan config:cache || true
-  php artisan route:cache || true
-  php artisan view:cache || true
+if [ "$APP_ENV" = "production" ] && [ "${RUN_CONFIG_CACHE:-true}" = "true" ]; then
+  log "Caching configuration..."
+  run_artisan config:cache || true
+  run_artisan route:cache || true
+  run_artisan view:cache || true
 else
-  echo "Skipping config/route/view caching in non-production environment (APP_ENV=$APP_ENV)"
+  log "Skipping config/route/view caching (APP_ENV=$APP_ENV, RUN_CONFIG_CACHE=${RUN_CONFIG_CACHE:-true})"
 fi
 
-# Run migrations (uncomment if you want auto-migration on startup)
-echo "Running migrations..."
-php artisan migrate --force
+# Run migrations
+if [ "${RUN_MIGRATIONS:-true}" = "true" ]; then
+  if [ "$DB_READY" = "true" ]; then
+    log "Running migrations..."
+    run_artisan migrate --force
+  else
+    log "Skipping migrations (database not ready)"
+  fi
+else
+  log "Skipping migrations (RUN_MIGRATIONS=false)"
+fi
 
 # Run seeders only if database is empty (check users table)
-echo "Checking if seeders need to run..."
-USER_COUNT=$(php artisan tinker --execute="echo \App\Models\User::count();" 2>/dev/null | tail -1 || echo "0")
-if [ "$USER_COUNT" = "0" ] || [ -z "$USER_COUNT" ]; then
-    echo "Database appears empty. Running seeders..."
-    php artisan db:seed --force
+if [ "${RUN_SEEDERS:-auto}" = "true" ]; then
+  if [ "$DB_READY" = "true" ]; then
+    log "Running seeders (RUN_SEEDERS=true)..."
+    run_artisan db:seed --force
+  else
+    log "Skipping seeders (database not ready)"
+  fi
+elif [ "${RUN_SEEDERS:-auto}" = "auto" ]; then
+  if [ "$DB_READY" = "true" ]; then
+    log "Checking if seeders need to run..."
+    USER_COUNT=$(php -r 'require "vendor/autoload.php"; $app=require "bootstrap/app.php"; $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap(); echo \App\Models\User::count();' 2>/dev/null || echo "0")
+    if [ "$USER_COUNT" = "0" ] || [ -z "$USER_COUNT" ]; then
+      log "Database appears empty. Running seeders..."
+      run_artisan db:seed --force
+    else
+      log "Database has $USER_COUNT users. Skipping seeders."
+    fi
+  else
+    log "Skipping seeders (database not ready)"
+  fi
 else
-    echo "Database has $USER_COUNT users. Skipping seeders."
+  log "Skipping seeders (RUN_SEEDERS=${RUN_SEEDERS})"
 fi
 
 # Create storage link
 if [ ! -L /var/www/html/public/storage ]; then
-    echo "Creating storage link..."
-    php artisan storage:link
+    log "Creating storage link..."
+    run_artisan storage:link
 fi
 
 # Test database connection
-echo "Testing database connection..."
-php artisan migrate:status 2>&1 || echo "Warning: Could not connect to database or no migrations found"
+log "Testing database connection..."
+run_artisan migrate:status 2>&1 || log "Warning: Could not connect to database or no migrations found"
 
 # Optimize for production
-echo "Optimizing application..."
-php artisan optimize || true
+if [ "${RUN_OPTIMIZE:-true}" = "true" ]; then
+  log "Optimizing application..."
+  run_artisan optimize || true
+else
+  log "Skipping optimize (RUN_OPTIMIZE=false)"
+fi
 
 # Display environment info for debugging
-echo "=== Environment Check ==="
-echo "APP_ENV: $APP_ENV"
-echo "APP_DEBUG: $APP_DEBUG"
-echo "DB_HOST: $DB_HOST"
-echo "DB_DATABASE: $DB_DATABASE"
-echo "========================="
+log "=== Environment Check ==="
+log "APP_ENV: $APP_ENV"
+log "APP_DEBUG: $APP_DEBUG"
+log "DB_HOST: $DB_HOST"
+log "DB_DATABASE: $DB_DATABASE"
+log "DB_READY: $DB_READY"
+log "========================="
 
-echo "Laravel application is ready!"
+log "Laravel application is ready!"
 
 # Execute the main command (Apache)
 exec "$@"

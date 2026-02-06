@@ -132,32 +132,47 @@ class EtudiantsSeeder extends Seeder
         foreach ($sampleStudents as $studentData) {
             $classe = $classes->where('nom_classe', $studentData['classe'])->first();
             if (!$classe) continue;
-            
-            // Create student
-            $etudiant = Etudiant::create([
-                'nom' => $studentData['nom'],
-                'prenom' => $studentData['prenom'], 
-                'telephone' => $studentData['telephone'],
-                'adresse' => $studentData['adresse'],
-                'date_naissance' => $studentData['date_naissance'],
-                'genre' => $studentData['genre'],
-                'id_classe' => $classe->id_classe,
-                // matricule will be auto-generated
-            ]);
-            
-            // Create user account if specified
-            if ($studentData['has_account'] && isset($studentData['email'])) {
-                $user = User::create([
-                    'name' => trim($studentData['prenom'] . ' ' . $studentData['nom']),
-                    'email' => $studentData['email'],
-                    'password' => Hash::make('student123'),
-                    'is_active' => true,
-                    'email_verified_at' => now(),
-                    'profile_type' => Etudiant::class,
-                    'profile_id' => $etudiant->id_etudiant,
+
+            // Avoid creating duplicate student records
+            $existingEtudiant = Etudiant::where('nom', $studentData['nom'])
+                ->where('prenom', $studentData['prenom'])
+                ->where('id_classe', $classe->id_classe)
+                ->first();
+
+            if ($existingEtudiant) {
+                $etudiant = $existingEtudiant;
+                $this->command->info('Skipping existing student: ' . $studentData['prenom'] . ' ' . $studentData['nom']);
+            } else {
+                // Create student
+                $etudiant = Etudiant::create([
+                    'nom' => $studentData['nom'],
+                    'prenom' => $studentData['prenom'], 
+                    'telephone' => $studentData['telephone'],
+                    'adresse' => $studentData['adresse'],
+                    'date_naissance' => $studentData['date_naissance'],
+                    'genre' => $studentData['genre'],
+                    'id_classe' => $classe->id_classe,
+                    // matricule will be auto-generated
                 ]);
-                
-                $user->assignRole('student');
+            }
+
+            // Create user account if specified and email not already used
+            if ($studentData['has_account'] && isset($studentData['email'])) {
+                if (!User::where('email', $studentData['email'])->exists()) {
+                    $user = User::create([
+                        'name' => trim($studentData['prenom'] . ' ' . $studentData['nom']),
+                        'email' => $studentData['email'],
+                        'password' => Hash::make('student123'),
+                        'is_active' => true,
+                        'email_verified_at' => now(),
+                        'profile_type' => Etudiant::class,
+                        'profile_id' => $etudiant->id_etudiant,
+                    ]);
+                    
+                    $user->assignRole('student');
+                } else {
+                    $this->command->info('Skipping existing student user: ' . $studentData['email']);
+                }
             }
         }
     }
@@ -177,6 +192,12 @@ class EtudiantsSeeder extends Seeder
                 // Only create accounts for older students (niveau >= 12)
                 $hasAccount = $classe->niveau >= 12 && rand(1, 100) <= 30; // 30% chance
                 
+                // Avoid creating duplicate student entries by name + class
+                if (Etudiant::where('nom', $nom)->where('prenom', $prenom)->where('id_classe', $classe->id_classe)->exists()) {
+                    $this->command->info('Skipping duplicate generated student: ' . $prenom . ' ' . $nom . ' (' . $classe->nom_classe . ')');
+                    continue;
+                }
+
                 $etudiant = Etudiant::create([
                     'nom' => $nom,
                     'prenom' => $prenom,

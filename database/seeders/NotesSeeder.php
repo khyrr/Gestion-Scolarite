@@ -7,6 +7,7 @@ use App\Models\Evaluation;
 use App\Models\Etudiant;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class NotesSeeder extends Seeder
 {
@@ -15,40 +16,95 @@ class NotesSeeder extends Seeder
      */
     public function run(): void
     {
-        $evaluations = Evaluation::with('classe')->get();
+        // Controls
+        $seedProfile = env('SEED_PROFILE', 'full'); // 'full' or 'light'
+        $maxNotesPerEval = $seedProfile === 'full' ? null : (int) env('SEED_MAX_NOTES_PER_EVAL', 5);
+        $maxNotesTotal = (int) (env('SEED_MAX_NOTES') ?? 0); // 0 = no limit
+        $batchSize = (int) (env('SEED_BATCH_SIZE', 500));
 
-        if ($evaluations->isEmpty()) {
-            $this->command->warn('No evaluations found. Run EvaluationsSeeder first.');
-            return;
-        }
+        $this->command->info("Preparing to create notes (profile: {$seedProfile})...");
 
-        $this->command->info("Creating grades for {$evaluations->count()} evaluations...");
+        $totalInserted = 0;
+        $batch = [];
+        $stop = false;
 
-        foreach ($evaluations as $evaluation) {
-            // Get all students from the evaluation's class
-            $students = Etudiant::where('id_classe', $evaluation->id_classe)->get();
+        // Iterate evaluations in chunks to limit memory usage
+        Evaluation::with('classe')->chunk(100, function ($evaluations) use (&$totalInserted, &$batch, &$stop, $maxNotesPerEval, $maxNotesTotal, $batchSize) {
+            foreach ($evaluations as $evaluation) {
+                if ($stop) {
+                    return false; // stops chunking evaluations
+                }
 
-            if ($students->isEmpty()) {
-                continue;
+                // If there is already a large number of notes and a limit is set, stop
+                if ($maxNotesTotal > 0 && $totalInserted >= $maxNotesTotal) {
+                    $stop = true;
+                    return false;
+                }
+
+                // Determine students (limited if configured)
+                $studentsQuery = Etudiant::where('id_classe', $evaluation->id_classe);
+                if (!is_null($maxNotesPerEval)) {
+                    $studentsQuery->limit($maxNotesPerEval);
+                }
+
+                // Pre-fetch existing student notes for this evaluation to avoid duplicates
+                $existing = Note::where('id_evaluation', $evaluation->id_evaluation)->pluck('id_etudiant')->all();
+
+                $studentsQuery->chunk(100, function ($students) use ($evaluation, &$batch, &$totalInserted, &$stop, $existing, $maxNotesTotal, $batchSize) {
+                    foreach ($students as $student) {
+                        if ($stop) {
+                            return false; // stop inner chunk
+                        }
+
+                        if ($maxNotesTotal > 0 && $totalInserted >= $maxNotesTotal) {
+                            $stop = true;
+                            return false;
+                        }
+
+                        if (in_array($student->id_etudiant, $existing, true)) {
+                            continue; // already has a note
+                        }
+
+                        $note = $this->generateRealisticNote($evaluation->note_max, $evaluation->type);
+
+                        $batch[] = [
+                            'note' => $note,
+                            'id_matiere' => $evaluation->id_matiere,
+                            'type' => $evaluation->type,
+                            'commentaire' => $this->generateComment($note, $evaluation->note_max, $evaluation->type),
+                            'id_etudiant' => $student->id_etudiant,
+                            'id_evaluation' => $evaluation->id_evaluation,
+                            'id_classe' => $evaluation->id_classe,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ];
+
+                        $totalInserted++;
+
+                        if (count($batch) >= $batchSize) {
+                            DB::table('notes')->insert($batch);
+                            $batch = [];
+                        }
+                    }
+
+                    return true;
+                });
+
+                if ($stop) {
+                    return false;
+                }
             }
 
-            foreach ($students as $student) {
-                $note = $this->generateRealisticNote($evaluation->note_max, $evaluation->type);
-                
-                Note::create([
-                    'note' => $note,
-                    'id_matiere' => $evaluation->id_matiere,
-                    'type' => $evaluation->type,
-                    'commentaire' => $this->generateComment($note, $evaluation->note_max, $evaluation->type),
-                    'id_etudiant' => $student->id_etudiant,
-                    'id_evaluation' => $evaluation->id_evaluation,
-                    'id_classe' => $evaluation->id_classe,
-                ]);
-            }
+            return true;
+        });
+
+        // Insert remaining batch
+        if (!empty($batch)) {
+            DB::table('notes')->insert($batch);
         }
-        
+
         $notesCount = Note::count();
-        $this->command->info("✅ Created {$notesCount} student grades.");
+        $this->command->info("✅ Created {$notesCount} student grades (inserted {$totalInserted} in this run).");
     }
 
     private function generateRealisticNote(int $noteMax, string $evaluationType): float

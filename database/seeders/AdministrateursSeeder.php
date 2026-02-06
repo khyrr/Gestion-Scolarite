@@ -64,6 +64,18 @@ class AdministrateursSeeder extends Seeder
         ];
 
         foreach ($administrators as $data) {
+            // Skip if user already exists to make seeder idempotent
+            $existingUser = User::where('email', $data['email'])->first();
+            if ($existingUser) {
+                $this->command->info('Skipping existing user: ' . $data['email']);
+                // Ensure role is assigned if missing
+                if (!$existingUser->hasRole($data['role'])) {
+                    $existingUser->assignRole($data['role']);
+                    $this->command->info('Assigned missing role ' . $data['role'] . ' to ' . $data['email']);
+                }
+                continue;
+            }
+
             // Create Administrator profile record
             $admin = Administrateur::create([
                 'nom' => $data['nom'],

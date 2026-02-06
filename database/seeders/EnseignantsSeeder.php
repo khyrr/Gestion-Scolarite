@@ -60,6 +60,17 @@ class EnseignantsSeeder extends Seeder
         ];
 
         foreach ($enseignants as $data) {
+            // Skip if user already exists to make seeder idempotent
+            $existingUser = User::where('email', $data['email'])->first();
+            if ($existingUser) {
+                $this->command->info('Skipping existing user: ' . $data['email']);
+                if (!$existingUser->hasRole('teacher')) {
+                    $existingUser->assignRole('teacher');
+                    $this->command->info('Assigned missing role teacher to ' . $data['email']);
+                }
+                continue;
+            }
+
             // Create Enseignant profile record
             $enseignant = Enseignant::create([
                 'nom' => $data['nom'],
